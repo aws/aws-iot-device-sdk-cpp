@@ -1,0 +1,18 @@
+AWS C++ SDK for Internet of Things Service
+Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This product includes software developed by
+Amazon Inc (http://www.amazon.com/).
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+This software includes third party software subject to the following licensing:
+- OpenSSL library (wrapper code) - OpenSSL license
+- mbedTLS (external library, downloaded separately)  - Apache 2.0
+- RapidJson (JSON Parsing) - MIT
+- Wslay (Websocket support) - MIT
+- Utf8cpp - Custom
+- GoogleTest/GoogleMock - Google's License
+
+The licenses for these third party components are included in LICENSE

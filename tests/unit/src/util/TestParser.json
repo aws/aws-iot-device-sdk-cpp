@@ -1,0 +1,10 @@
+{
+  "test_string":"json_parser_test_string",
+  "test_cstr":"json_parser_test_cstring",
+  "test_uint16_t":16,
+  "test_uin32_t":32,
+  "test_size_t":64,
+  "test_int":-128,
+  "test_bool_true":true,
+  "test_bool_false":false
+}
