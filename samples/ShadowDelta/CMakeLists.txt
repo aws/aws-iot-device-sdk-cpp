@@ -5,7 +5,7 @@ project(aws-iot-cpp-samples CXX)
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -37,18 +37,18 @@ endif()
 ################################
 set(SHADOW_DELTA_SAMPLE_TARGET_NAME shadow-delta-sample)
 # Add Target
-add_executable(${SHADOW_DELTA_SAMPLE_TARGET_NAME} "${CMAKE_SOURCE_DIR}/samples/ShadowDelta/ShadowDelta.cpp;${CMAKE_SOURCE_DIR}/common/ConfigCommon.cpp")
+add_executable(${SHADOW_DELTA_SAMPLE_TARGET_NAME} "${PROJECT_SOURCE_DIR}/ShadowDelta.cpp;${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 # Add Target specific includes
-target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common)
-target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/samples/ShadowDelta)
+target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common)
+target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/ShadowDelta)
 
 # Configure Threading library
 find_package(Threads REQUIRED)
 
 # Add SDK includes
 target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
-target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../include)
 
 target_link_libraries(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC "Threads::Threads")
 target_link_libraries(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${SDK_TARGET_NAME})
@@ -56,22 +56,22 @@ target_link_libraries(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${SDK_TARGET_NAM
 # Copy Json config file
 add_custom_command(TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy ${CMAKE_SOURCE_DIR}/common/SampleConfig.json $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/config/SampleConfig.json)
+		copy ${PROJECT_SOURCE_DIR}/../../common/SampleConfig.json $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/config/SampleConfig.json)
 set_property(TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CUSTOM_COMPILER_FLAGS})
 
 # Gather list of all .cert files in "/cert"
 add_custom_command(TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory ${CMAKE_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/certs)
+		copy_directory ${PROJECT_SOURCE_DIR}/../../certs $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/certs)
 
 if(MSVC)
-	target_sources(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common/ConfigCommon.hpp)
-	source_group("Header Files\\Samples\\ShadowDelta" FILES ${CMAKE_SOURCE_DIR}/common/ConfigCommon.hpp)
-	source_group("Source Files\\Samples\\ShadowDelta" FILES ${CMAKE_SOURCE_DIR}/common/ConfigCommon.cpp)
+	target_sources(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)
+	source_group("Header Files\\Samples\\ShadowDelta" FILES ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)
+	source_group("Source Files\\Samples\\ShadowDelta" FILES ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp)
 
-	target_sources(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/samples/ShadowDelta/ShadowDelta.hpp)
-	source_group("Header Files\\Samples\\ShadowDelta" FILES ${CMAKE_SOURCE_DIR}/samples/ShadowDelta/ShadowDelta.hpp)
-	source_group("Source Files\\Samples\\ShadowDelta" FILES ${CMAKE_SOURCE_DIR}/samples/ShadowDelta/ShadowDelta.cpp)
+	target_sources(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/ShadowDelta/ShadowDelta.hpp)
+	source_group("Header Files\\Samples\\ShadowDelta" FILES ${PROJECT_SOURCE_DIR}/../../samples/ShadowDelta/ShadowDelta.hpp)
+	source_group("Source Files\\Samples\\ShadowDelta" FILES ${PROJECT_SOURCE_DIR}/../../samples/ShadowDelta/ShadowDelta.cpp)
 endif()
 
 #########################
@@ -79,4 +79,4 @@ endif()
 #########################
 
 set(NETWORK_WRAPPER_DEST_TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME})
-include(${CMAKE_SOURCE_DIR}/network/CMakeLists.txt.in)
+include(${PROJECT_SOURCE_DIR}/../../network/CMakeLists.txt.in)
