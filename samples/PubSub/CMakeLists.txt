@@ -5,7 +5,7 @@ project(aws-iot-cpp-samples CXX)
 # Section : Disable in-source builds #
 ######################################
 
-if(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -80,5 +80,3 @@ endif()
 
 set(NETWORK_WRAPPER_DEST_TARGET ${PUB_SUB_SAMPLE_TARGET_NAME})
 include(${PROJECT_SOURCE_DIR}/../../network/CMakeLists.txt.in)
-
-MESSAGE( STATUS "CMAKE_INCLUDE_PATH: " ${CMAKE_INCLUDE_PATH} )
