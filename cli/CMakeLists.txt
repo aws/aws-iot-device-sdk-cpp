@@ -66,7 +66,7 @@ set_property(TARGET ${CLI_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CU
 # Gather list of all .cert files in "/cert"
 add_custom_command(TARGET ${CLI_TARGET_NAME} PRE_BUILD
 				COMMAND ${CMAKE_COMMAND} -E
-				copy_directory ${PROJECT_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${CLI_TARGET_NAME}>/certs)
+				copy_directory ${PROJECT_SOURCE_DIR}/../certs $<TARGET_FILE_DIR:${CLI_TARGET_NAME}>/certs)
 
 if(MSVC)
 	set(CLI_HEADERS "${PROJECT_SOURCE_DIR}/cli.hpp")

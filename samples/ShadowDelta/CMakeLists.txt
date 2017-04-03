@@ -62,7 +62,7 @@ set_property(TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME} APPEND_STRING PROPERTY CO
 # Gather list of all .cert files in "/cert"
 add_custom_command(TARGET ${SHADOW_DELTA_SAMPLE_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory ${PROJECT_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/certs)
+		copy_directory ${PROJECT_SOURCE_DIR}/../../certs $<TARGET_FILE_DIR:${SHADOW_DELTA_SAMPLE_TARGET_NAME}>/certs)
 
 if(MSVC)
 	target_sources(${SHADOW_DELTA_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)

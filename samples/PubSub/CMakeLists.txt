@@ -62,7 +62,7 @@ set_property(TARGET ${PUB_SUB_SAMPLE_TARGET_NAME} APPEND_STRING PROPERTY COMPILE
 # Gather list of all .cert files in "/cert"
 add_custom_command(TARGET ${PUB_SUB_SAMPLE_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory ${PROJECT_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/certs)
+		copy_directory ${PROJECT_SOURCE_DIR}/../../certs $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/certs)
 
 if(MSVC)
 	target_sources(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)
