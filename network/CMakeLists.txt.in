@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -21,7 +21,7 @@ if(${NETWORK_LIBRARY} MATCHES "MbedTLS")
 	if(NOT DEFINED BUILD_MBEDTLS_ONCE)
 		set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
 		# Download and unpack googletest at configure time
-		configure_file(${CMAKE_SOURCE_DIR}/network/CMakeLists-mbedtls.txt.in
+		configure_file(${PROJECT_SOURCE_DIR}/network/CMakeLists-mbedtls.txt.in
 				${CMAKE_BINARY_DIR}/third_party/mbedtls/download/CMakeLists.txt)
 
 		execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -42,13 +42,13 @@ if(${NETWORK_LIBRARY} MATCHES "MbedTLS")
 	target_link_libraries(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC mbedcrypto)
 	target_link_libraries(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC mbedx509)
 
-	set(SslLibraryIncludePaths "${CMAKE_BINARY_DIR}/third_party/mbedtls/src/include;${CMAKE_SOURCE_DIR}/network/MbedTLS")
-	file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/MbedTLS/*.*)
+	set(SslLibraryIncludePaths "${CMAKE_BINARY_DIR}/third_party/mbedtls/src/include;${CMAKE_CURRENT_LIST_DIR}/MbedTLS")
+	file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/MbedTLS/*.*)
 	target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryIncludePaths})
 	target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibrarySourcePaths})
 	if(MSVC)
-		file(GLOB_RECURSE SslLibraryHeaders FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/MbedTLS/*.hpp)
-		file(GLOB_RECURSE SslLibrarySources FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/MbedTLS/*.cpp)
+		file(GLOB_RECURSE SslLibraryHeaders FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/MbedTLS/*.hpp)
+		file(GLOB_RECURSE SslLibrarySources FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/MbedTLS/*.cpp)
 		target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryHeaders})
 		source_group("Header Files\\network\\OpenSSL" FILES ${SslLibraryHeaders})
 		source_group("Source Files\\network\\OpenSSL" FILES ${SslLibrarySources})
@@ -77,14 +77,14 @@ else()
 	endif()
 
 	# Default
-	set(SslLibraryIncludePaths "${OPENSSL_INCLUDE_DIR};${CMAKE_SOURCE_DIR}/network/OpenSSL")
+	set(SslLibraryIncludePaths "${OPENSSL_INCLUDE_DIR}\;${CMAKE_CURRENT_LIST_DIR}/OpenSSL")
 
-	file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/OpenSSL/*.*)
+	file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/OpenSSL/*.*)
 	target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryIncludePaths})
 	target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibrarySourcePaths})
 	if(MSVC)
-		file(GLOB_RECURSE SslLibraryHeaders FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/OpenSSL/*.hpp)
-		file(GLOB_RECURSE SslLibrarySources FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/OpenSSL/*.cpp)
+		file(GLOB_RECURSE SslLibraryHeaders FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/OpenSSL/*.hpp)
+		file(GLOB_RECURSE SslLibrarySources FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/OpenSSL/*.cpp)
 		target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryHeaders})
 		source_group("Header Files\\network\\OpenSSL" FILES ${SslLibraryHeaders})
 		source_group("Source Files\\network\\OpenSSL" FILES ${SslLibrarySources})
@@ -92,20 +92,20 @@ else()
 
 	if(${NETWORK_LIBRARY} MATCHES "WebSocket")
 		add_definitions(-DUSE_WEBSOCKETS)
-		target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${CMAKE_SOURCE_DIR}/network/WebSocket)
-		target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${CMAKE_SOURCE_DIR}/network/WebSocket/wslay)
+		target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/WebSocket)
+		target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/WebSocket/wslay)
 
 		set(SslLibraryIncludePaths "${OPENSSL_INCLUDE_DIR};network/WebSocket/;network/WebSocket/wslay/")
-		file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/WebSocket/*.*)
+		file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/WebSocket/*.*)
 		target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryIncludePaths})
 		target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibrarySourcePaths})
 
 		if(MSVC)
-			file(GLOB_RECURSE WebSocket FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/WebSocket/*.cpp)
-			file(GLOB_RECURSE WebSocketLayer FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/WebSocket/wslay/*.cpp)
+			file(GLOB_RECURSE WebSocket FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/WebSocket/*.cpp)
+			file(GLOB_RECURSE WebSocketLayer FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/WebSocket/wslay/*.cpp)
 
-			file(GLOB_RECURSE WebSocketIncludes FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/WebSocket/*.hpp)
-			file(GLOB_RECURSE WebSocketLayerIncludes FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/network/WebSocket/wslay/*.hpp)
+			file(GLOB_RECURSE WebSocketIncludes FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/WebSocket/*.hpp)
+			file(GLOB_RECURSE WebSocketLayerIncludes FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/WebSocket/wslay/*.hpp)
 			source_group("Header Files\\network\\WebSocket" FILES ${WebSocketIncludes})
 			source_group("Header Files\\network\\WebSocket\\Wslay" FILES ${WebSocketLayerIncludes})
 			source_group("Source Files\\network\\WebSocket" FILES ${WebSocket})
