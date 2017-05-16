@@ -126,10 +126,10 @@ if(UNIX)
 	add_subdirectory(cli)
 endif()
 
-add_subdirectory(tests/integration)
+# add_subdirectory(tests/integration)
 
-add_subdirectory(tests/unit)
-
-add_subdirectory(samples/PubSub)
-
-add_subdirectory(samples/ShadowDelta)
+# add_subdirectory(tests/unit)
+# 
+# add_subdirectory(samples/PubSub)
+# 
+# add_subdirectory(samples/ShadowDelta)
