@@ -5,7 +5,7 @@ project(rapidjson-download NONE)
 include(ExternalProject)
 ExternalProject_Add(rapidjson
   DOWNLOAD_COMMAND	git clone https://github.com/miloyip/rapidjson.git .
-  DOWNLOAD_DIR		"${CMAKE_BINARY_DIR}/third_party/rapidjson/src"
+  DOWNLOAD_DIR		"${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND     ""
   INSTALL_COMMAND   ""

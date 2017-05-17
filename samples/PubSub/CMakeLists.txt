@@ -5,7 +5,7 @@ project(aws-iot-cpp-samples CXX)
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -37,18 +37,18 @@ endif()
 ################################
 set(PUB_SUB_SAMPLE_TARGET_NAME pub-sub-sample)
 # Add Target
-add_executable(${PUB_SUB_SAMPLE_TARGET_NAME} "${CMAKE_SOURCE_DIR}/samples/PubSub/PubSub.cpp;${CMAKE_SOURCE_DIR}/common/ConfigCommon.cpp")
+add_executable(${PUB_SUB_SAMPLE_TARGET_NAME} "${PROJECT_SOURCE_DIR}/PubSub.cpp;${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 # Add Target specific includes
-target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common)
-target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/samples/PubSub)
+target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common)
+target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/PubSub)
 
 # Configure Threading library
 find_package(Threads REQUIRED)
 
 # Add SDK includes
-target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
-target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
+target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../include)
 
 target_link_libraries(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC "Threads::Threads")
 target_link_libraries(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${SDK_TARGET_NAME})
@@ -56,22 +56,22 @@ target_link_libraries(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${SDK_TARGET_NAME})
 # Copy Json config file
 add_custom_command(TARGET ${PUB_SUB_SAMPLE_TARGET_NAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy ${CMAKE_SOURCE_DIR}/common/SampleConfig.json $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/config/SampleConfig.json)
+		copy ${PROJECT_SOURCE_DIR}/../../common/SampleConfig.json $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/config/SampleConfig.json)
 set_property(TARGET ${PUB_SUB_SAMPLE_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CUSTOM_COMPILER_FLAGS})
 
 # Gather list of all .cert files in "/cert"
 add_custom_command(TARGET ${PUB_SUB_SAMPLE_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory ${CMAKE_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/certs)
+		copy_directory ${PROJECT_SOURCE_DIR}/../../certs $<TARGET_FILE_DIR:${PUB_SUB_SAMPLE_TARGET_NAME}>/certs)
 
 if(MSVC)
-	target_sources(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common/ConfigCommon.hpp)
-	source_group("Header Files\\Samples\\PubSub" FILES ${CMAKE_SOURCE_DIR}/common/ConfigCommon.hpp)
-	source_group("Source Files\\Samples\\PubSub" FILES ${CMAKE_SOURCE_DIR}/common/ConfigCommon.cpp)
+	target_sources(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)
+	source_group("Header Files\\Samples\\PubSub" FILES ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.hpp)
+	source_group("Source Files\\Samples\\PubSub" FILES ${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp)
 
-	target_sources(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/samples/PubSub/PubSub.hpp)
-	source_group("Header Files\\Samples\\PubSub" FILES ${CMAKE_SOURCE_DIR}/samples/PubSub/PubSub.hpp)
-	source_group("Source Files\\Samples\\PubSub" FILES ${CMAKE_SOURCE_DIR}/samples/PubSub/PubSub.cpp)
+	target_sources(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/PubSub/PubSub.hpp)
+	source_group("Header Files\\Samples\\PubSub" FILES ${PROJECT_SOURCE_DIR}/../../samples/PubSub/PubSub.hpp)
+	source_group("Source Files\\Samples\\PubSub" FILES ${PROJECT_SOURCE_DIR}/../../samples/PubSub/PubSub.cpp)
 endif()
 
 #########################
@@ -79,4 +79,4 @@ endif()
 #########################
 
 set(NETWORK_WRAPPER_DEST_TARGET ${PUB_SUB_SAMPLE_TARGET_NAME})
-include(${CMAKE_SOURCE_DIR}/network/CMakeLists.txt.in)
+include(${PROJECT_SOURCE_DIR}/../../network/CMakeLists.txt.in)

@@ -5,7 +5,7 @@ project(aws-iot-cpp-unit-tests CXX)
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${CMAKE_CURRENT_LIST_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -40,8 +40,8 @@ enable_testing()
 set(UNIT_TEST_TARGET_NAME aws-iot-unit-tests)
 add_executable(${UNIT_TEST_TARGET_NAME} "")
 
-target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
-target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
+target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 
 # Configure Threading library
 find_package(Threads REQUIRED)
@@ -49,24 +49,24 @@ target_link_libraries(${UNIT_TEST_TARGET_NAME} "Threads::Threads")
 
 # Download and unpack googletest at configure time
 configure_file(${CMAKE_CURRENT_LIST_DIR}/CMakeLists-gtest.txt.in
-		${CMAKE_BINARY_DIR}/third_party/googletest/download/CMakeLists.txt)
+		${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/googletest/download/CMakeLists.txt)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/googletest/download)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/googletest/download)
 
 # Prevent GoogleTest from overriding compiler/linker options
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # This adds the following targets: gtest, gtest_main, gmock and gmock_main
-add_subdirectory(${CMAKE_BINARY_DIR}/third_party/googletest/src
-		${CMAKE_BINARY_DIR}/third_party/googletest/build)
+add_subdirectory(${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/googletest/src
+		${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/googletest/build)
 
-file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/tests/unit/src/*.cpp)
+file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/tests/unit/src/*.cpp)
 target_sources(${UNIT_TEST_TARGET_NAME} PUBLIC ${SDK_UNIT_TEST_SOURCES})
-target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/tests/unit/include)
+target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/tests/unit/include)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} gtest gtest_main gmock gmock_main)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${THREAD_LIBRARY_LINK_STRING})
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${SDK_TARGET_NAME})
@@ -111,7 +111,7 @@ endif()
 
 add_custom_command(TARGET ${UNIT_TEST_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
-		copy ${CMAKE_SOURCE_DIR}/tests/unit/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
+		copy ${CMAKE_CURRENT_LIST_DIR}/tests/unit/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
 
 set_property(TARGET ${UNIT_TEST_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CUSTOM_COMPILER_FLAGS})
 
