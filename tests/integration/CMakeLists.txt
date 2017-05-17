@@ -39,7 +39,7 @@ set(INTEGRATION_TEST_TARGET_NAME aws-iot-integration-tests)
 # Add Target
 add_executable(${INTEGRATION_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
-target_include_directories(${INTEGRATION_TEST_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
+target_include_directories(${INTEGRATION_TEST_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
 target_include_directories(${INTEGRATION_TEST_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../include)
 
 # Configure Threading library

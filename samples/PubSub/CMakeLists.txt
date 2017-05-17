@@ -47,7 +47,7 @@ target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE
 find_package(Threads REQUIRED)
 
 # Add SDK includes
-target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
+target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
 target_include_directories(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../include)
 
 target_link_libraries(${PUB_SUB_SAMPLE_TARGET_NAME} PUBLIC "Threads::Threads")

@@ -22,27 +22,27 @@ if(${NETWORK_LIBRARY} MATCHES "MbedTLS")
 		set(BUILD_MBEDTLS_ONCE CACHE INTERNAL "Done")
 		# Download and unpack googletest at configure time
 		configure_file(${CMAKE_CURRENT_LIST_DIR}/CMakeLists-mbedtls.txt.in
-				${CMAKE_BINARY_DIR}/third_party/mbedtls/download/CMakeLists.txt)
+				${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/download/CMakeLists.txt)
 
 		execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/mbedtls/download)
+				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/download)
 
 		execute_process(COMMAND ${CMAKE_COMMAND} --build .
-				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/mbedtls/download)
+				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/download)
 
 		option(ENABLE_TESTING Off)
-		add_subdirectory(${CMAKE_BINARY_DIR}/third_party/mbedtls/src
-				${CMAKE_BINARY_DIR}/third_party/mbedtls/build)
+		add_subdirectory(${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/src
+				${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/build)
 	endif()
 
 	add_custom_command(TARGET ${NETWORK_WRAPPER_DEST_TARGET} PRE_BUILD
-			COMMAND $(MAKE) -C ${CMAKE_BINARY_DIR}/third_party/mbedtls/src)
-	set(MBEDTLS_LIB_DIR "${CMAKE_BINARY_DIR}/third_party/mbedtls/src/library")
+			COMMAND $(MAKE) -C ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/src)
+	set(MBEDTLS_LIB_DIR "${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/src/library")
 	target_link_libraries(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC mbedtls)
 	target_link_libraries(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC mbedcrypto)
 	target_link_libraries(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC mbedx509)
 
-	set(SslLibraryIncludePaths "${CMAKE_BINARY_DIR}/third_party/mbedtls/src/include;${CMAKE_CURRENT_LIST_DIR}/MbedTLS")
+	set(SslLibraryIncludePaths "${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/src/include;${CMAKE_CURRENT_LIST_DIR}/MbedTLS")
 	file(GLOB_RECURSE SslLibrarySourcePaths FOLLOW_SYMLINKS ${CMAKE_CURRENT_LIST_DIR}/MbedTLS/*.*)
 	target_include_directories(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibraryIncludePaths})
 	target_sources(${NETWORK_WRAPPER_DEST_TARGET} PUBLIC ${SslLibrarySourcePaths})

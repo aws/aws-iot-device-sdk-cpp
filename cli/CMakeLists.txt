@@ -48,7 +48,7 @@ target_include_directories(${CLI_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../cl
 find_package(Threads REQUIRED)
 
 # Add SDK includes
-target_include_directories(${CLI_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
+target_include_directories(${CLI_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
 target_include_directories(${CLI_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../include)
 
 target_link_libraries(${CLI_TARGET_NAME} PUBLIC "Threads::Threads")

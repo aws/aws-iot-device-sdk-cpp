@@ -35,6 +35,10 @@ elseif(WIN32)
 	set(CUSTOM_COMPILER_FLAGS "/W4")
 endif()
 
+if(NOT DEPENDENCY_DIR)
+    set(DEPENDENCY_DIR "third_party")
+endif()
+
 #############################
 # Add SDK Target #
 #############################
@@ -43,12 +47,12 @@ set(SDK_TARGET_NAME aws-iot-sdk-cpp)
 add_library(${SDK_TARGET_NAME} "")
 
 # Download and include rapidjson, not optional
-configure_file(CMakeLists-rapidjson.txt.in ${CMAKE_BINARY_DIR}/third_party/rapidjson/download/CMakeLists.txt)
+configure_file(CMakeLists-rapidjson.txt.in ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/rapidjson/download)
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download)
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/rapidjson/download)
-target_include_directories(${SDK_TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download)
+target_include_directories(${SDK_TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
 
 # Get Common SDK Sources
 file(GLOB_RECURSE SDK_SOURCES FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/src/*.cpp)
@@ -126,10 +130,10 @@ if(UNIX)
 	add_subdirectory(cli)
 endif()
 
-# add_subdirectory(tests/integration)
+add_subdirectory(tests/integration)
 
-# add_subdirectory(tests/unit)
-# 
-# add_subdirectory(samples/PubSub)
-# 
-# add_subdirectory(samples/ShadowDelta)
+add_subdirectory(tests/unit)
+
+add_subdirectory(samples/PubSub)
+
+add_subdirectory(samples/ShadowDelta)
