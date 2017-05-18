@@ -67,6 +67,8 @@ namespace awsiotsdk {
 			root_ca_location_ = root_ca_location;
 			device_cert_location_ = device_cert_location;
 			device_private_key_location_ = device_private_key_location;
+			
+			proxy_type_ = ProxyType::NONE;
 		}
 
 		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
@@ -79,6 +81,26 @@ namespace awsiotsdk {
 			root_ca_location_ = root_ca_location;
 			device_cert_location_.clear();
 			device_private_key_location_.clear();
+			
+			proxy_type_ = ProxyType::NONE;
+		}
+		
+		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+											 std::chrono::milliseconds tls_handshake_timeout,
+											 std::chrono::milliseconds tls_read_timeout,
+											 std::chrono::milliseconds tls_write_timeout,
+											 bool server_verification_flag,
+											 util::String proxy, uint16_t proxy_port, ProxyType proxy_type)
+			:OpenSSLConnection(proxy, proxy_port, tls_handshake_timeout, tls_read_timeout, tls_write_timeout,
+							   server_verification_flag) {
+			
+			root_ca_location_ = root_ca_location;
+			device_cert_location_.clear();
+			device_private_key_location_.clear();
+
+			target_endpoint_ = endpoint; //save the actual endpoints and connect to the proxy
+			target_port_ = endpoint_port;
+			proxy_type_ = proxy_type;
 		}
 
 		ResponseCode OpenSSLConnection::Initialize() {
@@ -159,6 +181,73 @@ namespace awsiotsdk {
 			if(-1 != connect_status) {
 				ret_val = ResponseCode::SUCCESS;
 			}
+
+			return ret_val;
+		}
+		
+		ResponseCode OpenSSLConnection::ConnectHttpProxy() {
+			ResponseCode ret_val = ResponseCode::SUCCESS;
+
+			// -> Assemble Wss Http request
+			util::Vector <unsigned char> rw_buf;
+			rw_buf.resize(MAX_RW_BUF_LEN);
+			snprintf((char*)&rw_buf[0], MAX_RW_BUF_LEN,
+				"CONNECT %s:%d %s\r\n"
+				"Host: %s:%d\r\n"
+				"Proxy-Authorization: Basic %s\r\n"
+				"Proxy-Connection: keep-alive\r\n"
+				"\r\n",
+				target_endpoint_.c_str(), target_port_, HTTP_1_1, target_endpoint_.c_str(), target_port_, "Ly9UT0RPIGltcGxlbWVudCBiYXNlNjQgZW5jb2Rpbmcgb2YgcGFzc3dvcmQgaW4gdGhlIEZvcm1hdCB1c2VyOnBhc3N3b3Jk" //"base64-encoded"  //TODO implement base64 encoding user:password
+			);
+
+			// Send out request
+			size_t out_len = strnlen((char*)&rw_buf[0], MAX_RW_BUF_LEN);
+			util::String out_data((char *)&rw_buf[0], out_len);
+#if defined(WIN32) || defined(WIN64)
+			int send_status = send(server_tcp_socket_fd_, out_data.c_str(), out_data.length(), 0);
+			if (SOCKET_ERROR == send_status) {
+				AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "send - %s", strerror(errno));
+				ret_val = ResponseCode::NETWORK_PROXY_CONNECT_ERROR;
+			}
+			else {
+				int recv_status;
+				bool response_complete = false;
+
+				do {
+					char recvbuf[MAX_RW_BUF_LEN];
+					int recvbuflen = MAX_RW_BUF_LEN;
+
+					recv_status = recv(server_tcp_socket_fd_, recvbuf, recvbuflen, 0);
+					if (recv_status > 0) {
+						util::String data(recvbuf, recv_status);
+
+						response_complete = (data.find(HTTP_1_1) == 0 && recv_status - data.find("\r\n\r\n") == 4);
+
+						if (response_complete) {
+							size_t response = std::stoul(data.substr(data.find(" ") + 1, 3));
+							if (response >= 300) {
+								ret_val = ResponseCode::NETWORK_PROXY_CONNECT_ERROR;
+
+								if (response == 407) {
+									ret_val = ResponseCode::NETWORK_PROXY_AUTHORIZATION_ERROR;
+								}
+							}
+						}
+					}
+					else if (recv_status == 0) {
+						ret_val = ResponseCode::NETWORK_PROXY_CONNECT_ERROR;
+						printf("Connection closed\n");
+					}
+					else {
+						printf("recv failed: %d\n", WSAGetLastError());
+					}
+
+				} while (recv_status > 0 && !response_complete);
+			}
+#else
+			//TODO implement other platforms
+			ret_val = ResponseCode::NETWORK_PROXY_NOT_IMPLEMENTED;
+#endif
 
 			return ret_val;
 		}
@@ -289,6 +378,21 @@ namespace awsiotsdk {
 			if(ResponseCode::SUCCESS != networkResponse) {
 				AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "TCP Connection error");
 				return networkResponse;
+			}
+			
+			if (proxy_type_ != ProxyType::NONE) {
+				switch (proxy_type_)
+				{
+				case ProxyType::HTTP:
+					networkResponse = ConnectHttpProxy();
+					break;
+				default:
+					break;
+				}				
+				if (ResponseCode::SUCCESS != networkResponse) {
+					AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Unable to connect to proxy");
+					return networkResponse;
+				}
 			}
 
 			SSL_set_fd(p_ssl_handle_, server_tcp_socket_fd_);

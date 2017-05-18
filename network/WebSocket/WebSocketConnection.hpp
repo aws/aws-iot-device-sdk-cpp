@@ -36,6 +36,7 @@ typedef SSIZE_T ssize_t;
 #include "wslay/wslay.hpp"
 #include "NetworkConnection.hpp"
 #include "ResponseCode.hpp"
+#include "ProxyType.hpp"
 
 namespace awsiotsdk {
 	namespace network {
@@ -207,6 +208,34 @@ namespace awsiotsdk {
 								std::chrono::milliseconds tls_handshake_timeout,
 								std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
 								bool server_verification_flag);
+								
+						/**
+			* @brief Constructor for the WebSocket for MQTT implementation
+			*
+			* Performs any initialization required by the WebSocket layer.
+			*
+			* @param util::String endpoint - The target endpoint to connect to
+			* @param uint16_t endpoint_port - The port on the target to connect to
+			* @param util::String root_ca_location - Path of the location of the Root CA
+			* @param util::String aws_access_key_id - AWS Access Key Id
+			* @param util::String aws_secret_access_key - AWS Secret Access Key
+			* @param util::String aws_session_token - AWS Session Token
+			* @param std::chrono::milliseconds tls_handshake_timeout - The value to use for timeout of handshake operation
+			* @param std::chrono::milliseconds tls_read_timeout - The value to use for timeout of read operation
+			* @param std::chrono::milliseconds tls_write_timeout - The value to use for timeout of write operation
+			* @param bool server_verification_flag - used to decide whether server verification is needed or not
+			* @param util::String proxy - The proxy to connect to
+			* @param uint16_t proxy_port - The proxy port on the target to connect to
+			*
+			*/
+			WebSocketConnection(util::String endpoint, uint16_t endpoint_port, 
+								util::String root_ca_location,
+								util::String aws_region, util::String aws_access_key_id,
+								util::String aws_secret_access_key, util::String aws_session_token,
+								std::chrono::milliseconds tls_handshake_timeout,
+								std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
+								bool server_verification_flag,
+								util::String proxy,	uint16_t proxy_port, ProxyType proxy_type);
 
 			/**
 			 * @brief Check if WebSocket layer is still connected

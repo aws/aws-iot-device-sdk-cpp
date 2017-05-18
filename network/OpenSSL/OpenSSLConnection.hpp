@@ -45,6 +45,7 @@
 
 #include "NetworkConnection.hpp"
 #include "ResponseCode.hpp"
+#include "ProxyType.hpp"
 
 namespace awsiotsdk {
 	namespace network {
@@ -71,6 +72,10 @@ namespace awsiotsdk {
 			SSL_CTX *p_ssl_context_;					///< SSL Context instance
 			SSL *p_ssl_handle_;							///< SSL Handle
 			int server_tcp_socket_fd_;					///< Server Socket descriptor
+			
+			util::String target_endpoint_;				///< Original endpoint if a proxy is used for this connection
+			uint16_t target_port_;						///< Original endpoint port if a proxy is used
+			ProxyType proxy_type_;
 
 
 			/**
@@ -88,6 +93,15 @@ namespace awsiotsdk {
 			 * @return ResponseCode - successful connection or TCP error
 			 */
 			ResponseCode ConnectTCPSocket();
+			
+			/**
+			* @brief Connect to the HTTP proxy
+			*
+			* Attempts to connect to the HTTP proxy
+			*
+			* @return ResponseCode - successful connection or proxy error
+			*/
+			ResponseCode ConnectHttpProxy();
 
 			/**
 			 * @brief Attempt connection
@@ -168,6 +182,13 @@ namespace awsiotsdk {
 							  std::chrono::milliseconds tls_handshake_timeout,
 							  std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
 							  bool server_verification_flag);
+							  
+			OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+							  std::chrono::milliseconds tls_handshake_timeout,
+							  std::chrono::milliseconds tls_read_timeout,
+							  std::chrono::milliseconds tls_write_timeout,
+							  bool server_verification_flag,
+							  util::String proxy, uint16_t proxy_port, ProxyType proxy_type);
 
 			ResponseCode Initialize();
 

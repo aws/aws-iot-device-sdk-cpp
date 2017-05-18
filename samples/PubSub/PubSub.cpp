@@ -112,7 +112,8 @@ namespace awsiotsdk {
 			ResponseCode rc = ResponseCode::SUCCESS;
 
 #ifdef USE_WEBSOCKETS
-			p_network_connection_ = std::shared_ptr<NetworkConnection>(
+			if(ConfigCommon::proxy_ == ""){
+				p_network_connection_ = std::shared_ptr<NetworkConnection>(
 				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
 												 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
 												 ConfigCommon::aws_access_key_id_,
@@ -121,6 +122,18 @@ namespace awsiotsdk {
 												 ConfigCommon::tls_handshake_timeout_,
 												 ConfigCommon::tls_read_timeout_,
 												 ConfigCommon::tls_write_timeout_, true));
+			}else{
+				std::shared_ptr<NetworkConnection>(
+				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
+												 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
+												 ConfigCommon::aws_access_key_id_,
+												 ConfigCommon::aws_secret_access_key_,
+												 ConfigCommon::aws_session_token_,
+												 ConfigCommon::tls_handshake_timeout_,
+												 ConfigCommon::tls_read_timeout_,
+												 ConfigCommon::tls_write_timeout_, true,
+												 ConfigCommon::proxy_, ConfigCommon::proxy_port_, ProxyType::HTTP));
+			}
 			if(nullptr == p_network_connection_) {
 				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection with rc : %d", static_cast<int>(rc));
 				rc = ResponseCode::FAILURE;

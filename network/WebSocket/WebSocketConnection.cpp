@@ -125,6 +125,45 @@ namespace awsiotsdk {
 			wss_frame_read_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
 			wss_frame_write_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
 		}
+		
+		WebSocketConnection::WebSocketConnection(util::String endpoint, uint16_t endpoint_port,
+												 util::String root_ca_location, util::String aws_region,
+												 util::String aws_access_key_id, util::String aws_secret_access_key,
+												 util::String aws_session_token,
+												 std::chrono::milliseconds tls_handshake_timeout,
+												 std::chrono::milliseconds tls_read_timeout,
+												 std::chrono::milliseconds tls_write_timeout,
+												 bool server_verification_flag,
+												 util::String proxy,
+												 uint16_t proxy_port,
+												 ProxyType proxy_type)
+			:openssl_connection_(endpoint, endpoint_port, root_ca_location, tls_handshake_timeout, tls_read_timeout,
+								 tls_write_timeout, server_verification_flag, proxy, proxy_port, proxy_type) {
+			endpoint_ = endpoint;
+			endpoint_port_ = endpoint_port;
+			root_ca_location_ = root_ca_location;
+			aws_access_key_id_ = aws_access_key_id;
+			aws_secret_access_key_ = aws_secret_access_key;
+			aws_session_token_ = aws_session_token;
+			aws_region_ = aws_region;
+
+			is_connected_ = false;
+			curr_read_buf_size_ = 0;
+
+			p_wslay_frame_Callbacks_ = new wslay_frame_callbacks();
+			p_wslay_frame_Callbacks_->send_callback = std::bind(&WebSocketConnection::WssFrameSendCallback, this,
+																std::placeholders::_1, std::placeholders::_2,
+																std::placeholders::_3, std::placeholders::_4);
+			p_wslay_frame_Callbacks_->recv_callback = std::bind(&WebSocketConnection::WssFrameRecvCallback, this,
+																std::placeholders::_1, std::placeholders::_2,
+																std::placeholders::_3, std::placeholders::_4);
+			p_wslay_frame_Callbacks_->genmask_callback = std::bind(&WebSocketConnection::WssFrameGenMaskCallback, this,
+																std::placeholders::_1, std::placeholders::_2,
+																std::placeholders::_3);
+
+			wss_frame_read_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
+			wss_frame_write_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
+		}
 
 		ResponseCode WebSocketConnection::ConnectInternal() {
 			// Init Tls

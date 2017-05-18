@@ -78,6 +78,10 @@ namespace awsiotsdk {
 		NETWORK_TCP_SETUP_ERROR = -301,        ///< Error associated with setting up the parameters of a Socket.
 		NETWORK_TCP_UNKNOWN_HOST = -302,    ///< Returned when the server is unknown.
 		NETWORK_TCP_NO_ENDPOINT_SPECIFIED = -303,	///< Returned when the Network connection was not provided an endpoint
+		
+		NETWORK_PROXY_CONNECT_ERROR = -350,  ///< Returned when the proxy connection failed
+		NETWORK_PROXY_AUTHORIZATION_ERROR = -357, ///< Returned when the proxy requires authentication or something related to the authorization went wrong.
+		NETWORK_PROXY_NOT_IMPLEMENTED = -360,  ///< Returned when the platform or proxy type is not implemented
 
 		// Network SSL Error Codes
 

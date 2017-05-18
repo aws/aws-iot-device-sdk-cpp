@@ -35,6 +35,12 @@ namespace awsiotsdk {
 		static uint16_t endpoint_port_;
 
 		static util::String endpoint_;
+
+		static uint16_t proxy_port_;
+		static util::String proxy_;
+		static util::String proxy_user_name_;
+		static util::String proxy_password_;
+
 		static util::String root_ca_path_;
 		static util::String client_cert_path_;
 		static util::String client_key_path_;

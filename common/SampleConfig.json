@@ -1,6 +1,10 @@
 {
   "endpoint": "",
   "port": 8883,
+  "proxy": "",
+  "proxy_port": 8080,
+  "proxy_user_name": "",
+  "proxy_password": "",
   "root_ca_relative_path": "certs/rootCA.crt",
   "device_certificate_relative_path": "certs/cert.pem",
   "device_private_key_relative_path": "certs/privkey.pem",
