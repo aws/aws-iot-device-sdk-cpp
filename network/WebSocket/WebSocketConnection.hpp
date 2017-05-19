@@ -177,8 +177,6 @@ namespace awsiotsdk {
 
 			int VerifyWssAcceptKey(const char* accept_key, const char* client_key);
 
-			void Base64Encode(char* res_buf, size_t* res_len, const unsigned char* buf_in, size_t buf_in_data_len);
-
 			ResponseCode ReadFromNetworkBuffer(util::Vector<unsigned char> &read_buf, size_t bytes_to_read);
 
 			ResponseCode WriteToNetworkBuffer(const util::String &write_buf);

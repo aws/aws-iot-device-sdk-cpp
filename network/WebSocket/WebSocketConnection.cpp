@@ -662,7 +662,7 @@ namespace awsiotsdk {
 			if(isRandomGot < 0) {
 				return ResponseCode::WEBSOCKET_GEN_CLIENT_KEY_ERROR;
 			}
-			Base64Encode(res_buf, res_len, random_bytes_16, RANDOM_BYTES_LEN);
+			openssl_connection_.Base64Encode(res_buf, res_len, random_bytes_16, RANDOM_BYTES_LEN);
 
 			return ResponseCode::SUCCESS;
 		}
@@ -694,32 +694,9 @@ namespace awsiotsdk {
 			size_t client_gen_accept_key_len = 0;
 			unsigned char sha1_res_buf[SHA_DIGEST_LENGTH];
 			SHA1((unsigned char*)to_hash_buf, strnlen(to_hash_buf, TO_HASH_BUF_LEN), sha1_res_buf);
-			Base64Encode(client_gen_accept_key_buf, &client_gen_accept_key_len, sha1_res_buf, SHA_DIGEST_LENGTH);
+			openssl_connection_.Base64Encode(client_gen_accept_key_buf, &client_gen_accept_key_len, sha1_res_buf, SHA_DIGEST_LENGTH);
 
 			return strncmp(accept_key, client_gen_accept_key_buf, client_gen_accept_key_len);
-		}
-
-		void WebSocketConnection::Base64Encode(char* res_buf, size_t* res_len, const unsigned char* buf_in, size_t buf_in_data_len) {
-			BIO* mem_buf, *b64_func;
-			BUF_MEM* mem_struct;
-
-			b64_func = BIO_new(BIO_f_base64());
-			mem_buf = BIO_new(BIO_s_mem());
-			mem_buf = BIO_push(b64_func, mem_buf);
-
-			BIO_set_flags(mem_buf, BIO_FLAGS_BASE64_NO_NL);
-			int rc = BIO_set_close(mem_buf, BIO_CLOSE);
-			IOT_UNUSED(rc);
-			BIO_write(mem_buf, buf_in, (int)buf_in_data_len);
-			rc = BIO_flush(mem_buf);
-			IOT_UNUSED(rc);
-
-			BIO_get_mem_ptr(mem_buf, &mem_struct);
-			memcpy(res_buf, mem_struct->data, mem_struct->length);
-			*res_len = mem_struct->length;
-			res_buf[*res_len] = '\0';
-
-			BIO_free_all(mem_buf);
 		}
 
 		ResponseCode WebSocketConnection::ReadFromNetworkBuffer(util::Vector<unsigned char> &read_buf, size_t bytes_to_read) {

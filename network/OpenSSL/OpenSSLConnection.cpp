@@ -36,6 +36,10 @@
 
 #define OPENSSL_WRAPPER_LOG_TAG "[OpenSSL Wrapper]"
 
+#define MAX_RW_BUF_LEN 2048
+#define HTTP_1_1 "HTTP/1.1"
+#define MAX_PROXY_AUHTORIZATION_LENGTH 2048
+
 namespace awsiotsdk {
 	namespace network {
 		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port,
@@ -86,21 +90,35 @@ namespace awsiotsdk {
 		}
 		
 		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
-											 std::chrono::milliseconds tls_handshake_timeout,
-											 std::chrono::milliseconds tls_read_timeout,
-											 std::chrono::milliseconds tls_write_timeout,
-											 bool server_verification_flag,
-											 util::String proxy, uint16_t proxy_port, ProxyType proxy_type)
-			:OpenSSLConnection(proxy, proxy_port, tls_handshake_timeout, tls_read_timeout, tls_write_timeout,
-							   server_verification_flag) {
-			
+											std::chrono::milliseconds tls_handshake_timeout,
+											std::chrono::milliseconds tls_read_timeout,
+											std::chrono::milliseconds tls_write_timeout,
+											bool server_verification_flag,
+											util::String proxy, uint16_t proxy_port, ProxyType proxy_type)
+			:OpenSSLConnection(endpoint, endpoint_port,
+								root_ca_location,
+								tls_handshake_timeout, tls_read_timeout, tls_write_timeout, server_verification_flag,
+								proxy, proxy_port, "", "", proxy_type) {}
+
+		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+											std::chrono::milliseconds tls_handshake_timeout,
+											std::chrono::milliseconds tls_read_timeout,
+											std::chrono::milliseconds tls_write_timeout,
+											bool server_verification_flag,
+											util::String proxy, uint16_t proxy_port, util::String proxy_user_name, util::String proxy_password, ProxyType proxy_type)
+			: OpenSSLConnection(proxy, proxy_port, tls_handshake_timeout, tls_read_timeout, tls_write_timeout,
+				server_verification_flag) {
+
 			root_ca_location_ = root_ca_location;
 			device_cert_location_.clear();
 			device_private_key_location_.clear();
 
-			target_endpoint_ = endpoint; //save the actual endpoints and connect to the proxy
+			target_endpoint_ = endpoint;
 			target_port_ = endpoint_port;
 			proxy_type_ = proxy_type;
+
+			proxy_user_name_ = proxy_user_name;
+			proxy_password_ = proxy_password;
 		}
 
 		ResponseCode OpenSSLConnection::Initialize() {
@@ -188,7 +206,13 @@ namespace awsiotsdk {
 		ResponseCode OpenSSLConnection::ConnectHttpProxy() {
 			ResponseCode ret_val = ResponseCode::SUCCESS;
 
-			// -> Assemble Wss Http request
+			util::String credentials = proxy_user_name_ + ":" + proxy_password_;
+
+			char encoded_credentials[MAX_PROXY_AUHTORIZATION_LENGTH];
+			size_t encoded_credentials_length = 0;
+			Base64Encode(encoded_credentials, &encoded_credentials_length, reinterpret_cast<const unsigned char*>(credentials.c_str()), credentials.length());
+
+			// -> Assemble proxy connect HTTP request
 			util::Vector <unsigned char> rw_buf;
 			rw_buf.resize(MAX_RW_BUF_LEN);
 			snprintf((char*)&rw_buf[0], MAX_RW_BUF_LEN,
@@ -197,7 +221,7 @@ namespace awsiotsdk {
 				"Proxy-Authorization: Basic %s\r\n"
 				"Proxy-Connection: keep-alive\r\n"
 				"\r\n",
-				target_endpoint_.c_str(), target_port_, HTTP_1_1, target_endpoint_.c_str(), target_port_, "Ly9UT0RPIGltcGxlbWVudCBiYXNlNjQgZW5jb2Rpbmcgb2YgcGFzc3dvcmQgaW4gdGhlIEZvcm1hdCB1c2VyOnBhc3N3b3Jk" //"base64-encoded"  //TODO implement base64 encoding user:password
+				target_endpoint_.c_str(), target_port_, HTTP_1_1, target_endpoint_.c_str(), target_port_, encoded_credentials
 			);
 
 			// Send out request
@@ -534,6 +558,29 @@ namespace awsiotsdk {
 #ifdef WIN32
 			WSACleanup();
 #endif
+		}
+
+		void OpenSSLConnection::Base64Encode(char* res_buf, size_t* res_len, const unsigned char* buf_in, size_t buf_in_data_len) const {
+			BIO* mem_buf, *b64_func;
+			BUF_MEM* mem_struct;
+
+			b64_func = BIO_new(BIO_f_base64());
+			mem_buf = BIO_new(BIO_s_mem());
+			mem_buf = BIO_push(b64_func, mem_buf);
+
+			BIO_set_flags(mem_buf, BIO_FLAGS_BASE64_NO_NL);
+			int rc = BIO_set_close(mem_buf, BIO_CLOSE);
+			IOT_UNUSED(rc);
+			BIO_write(mem_buf, buf_in, (int)buf_in_data_len);
+			rc = BIO_flush(mem_buf);
+			IOT_UNUSED(rc);
+
+			BIO_get_mem_ptr(mem_buf, &mem_struct);
+			memcpy(res_buf, mem_struct->data, mem_struct->length);
+			*res_len = mem_struct->length;
+			res_buf[*res_len] = '\0';
+
+			BIO_free_all(mem_buf);
 		}
 	}
 }

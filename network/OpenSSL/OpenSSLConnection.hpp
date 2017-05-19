@@ -75,6 +75,8 @@ namespace awsiotsdk {
 			
 			util::String target_endpoint_;				///< Original endpoint if a proxy is used for this connection
 			uint16_t target_port_;						///< Original endpoint port if a proxy is used
+			util::String proxy_user_name_;
+			util::String proxy_password_;
 			ProxyType proxy_type_;
 
 
@@ -190,6 +192,13 @@ namespace awsiotsdk {
 							  bool server_verification_flag,
 							  util::String proxy, uint16_t proxy_port, ProxyType proxy_type);
 
+			OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+							std::chrono::milliseconds tls_handshake_timeout,
+							std::chrono::milliseconds tls_read_timeout,
+							std::chrono::milliseconds tls_write_timeout,
+							bool server_verification_flag,
+							util::String proxy, uint16_t proxy_port, util::String proxy_user_name, util::String proxy_password, ProxyType proxy_type);
+
 			ResponseCode Initialize();
 
 			/**
@@ -211,6 +220,9 @@ namespace awsiotsdk {
 			bool IsPhysicalLayerConnected();
 
 			virtual ~OpenSSLConnection();
+
+		public:
+			void Base64Encode(char* res_buf, size_t* res_len, const unsigned char* buf_in, size_t buf_in_data_len) const;
 		};
 	}
 }
