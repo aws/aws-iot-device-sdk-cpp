@@ -107,6 +107,14 @@ namespace awsiotsdk {
 	size_t ConfigCommon::maximum_outgoing_action_queue_length_;
 	uint32_t ConfigCommon::action_processing_rate_hz_;
 
+	void ConfigCommon::logParseError(const ResponseCode& response_code, const util::JsonDocument& config) {
+			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
+				"\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
+				static_cast<int>(response_code),
+				static_cast<int>(util::JsonParser::GetParseErrorCode(config)),
+				static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(config)));
+	}
+
 	ResponseCode ConfigCommon::InitializeCommon(const util::String &config_file_relative_path) {
 		util::String current_working_directory;
 		{
@@ -136,71 +144,43 @@ namespace awsiotsdk {
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_ENDPOINT_KEY, endpoint_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetUint16Value(sdk_config_json_, SDK_CONFIG_ENDPOINT_PORT_KEY, endpoint_port_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_PROXY_KEY, proxy_);
 		if (ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-				"\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-				static_cast<int>(rc),
-				static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-				static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetUint16Value(sdk_config_json_, SDK_CONFIG_PROXY_PORT_KEY, proxy_port_);
 		if (ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-				"\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-				static_cast<int>(rc),
-				static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-				static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_PROXY_USER_NAME_KEY, proxy_user_name_);
 		if (ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-				"\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-				static_cast<int>(rc),
-				static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-				static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_PROXY_PASSWORD_KEY, proxy_password_);
 		if (ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-				"\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-				static_cast<int>(rc),
-				static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-				static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_ROOT_CA_RELATIVE_KEY, temp_str);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		root_ca_path_ = current_working_directory;
@@ -209,11 +189,7 @@ namespace awsiotsdk {
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_DEVICE_CERT_RELATIVE_KEY, temp_str);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		client_cert_path_ = current_working_directory;
@@ -222,11 +198,7 @@ namespace awsiotsdk {
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_DEVICE_PRIVATE_KEY_RELATIVE_KEY, temp_str);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		client_key_path_ = current_working_directory;
@@ -235,61 +207,37 @@ namespace awsiotsdk {
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_CLIENT_ID_KEY, base_client_id_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_THING_NAME_KEY, thing_name_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_AWS_REGION_KEY, aws_region_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_AWS_ACCESS_KEY_ID_KEY, aws_access_key_id_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_AWS_SECRET_ACCESS_KEY, aws_secret_access_key_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_AWS_SESSION_TOKEN_KEY, aws_session_token_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
@@ -297,77 +245,49 @@ namespace awsiotsdk {
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_MQTT_COMMAND_TIMEOUT_MSECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		mqtt_command_timeout_ = std::chrono::milliseconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_TLS_HANDSHAKE_TIMEOUT_MSECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		tls_handshake_timeout_ = std::chrono::milliseconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_TLS_READ_TIMEOUT_MSECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		tls_read_timeout_ = std::chrono::milliseconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_TLS_WRITE_TIMEOUT_MSECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		tls_write_timeout_ = std::chrono::milliseconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_KEEPALIVE_INTERVAL_SECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		keep_alive_timeout_secs_ = std::chrono::seconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_MIN_RECONNECT_INTERVAL_SECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		minimum_reconnect_interval_ = std::chrono::seconds(temp);
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_MAX_RECONNECT_INTERVAL_SECS_KEY, temp);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 		maximum_reconnect_interval_ = std::chrono::seconds(temp);
@@ -375,43 +295,27 @@ namespace awsiotsdk {
 		rc = util::JsonParser::GetSizeTValue(sdk_config_json_, SDK_CONFIG_MAX_TX_ACTION_QUEUE_LENGTH_KEY,
 											 maximum_outgoing_action_queue_length_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetSizeTValue(sdk_config_json_, SDK_CONFIG_MAX_ACKS_TO_WAIT_FOR_KEY,
 											 max_pending_acks_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetBoolValue(sdk_config_json_, SDK_CONFIG_IS_CLEAN_SESSION_KEY, is_clean_session_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
 		rc = util::JsonParser::GetUint32Value(sdk_config_json_, SDK_CONFIG_ACTION_PROCESSING_RATE_KEY,
 											  action_processing_rate_hz_);
 		if(ResponseCode::SUCCESS != rc) {
-			AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
-						  "\"Error in Parsing, rc : %d parse error code : %d, offset : %d",
-						  static_cast<int>(rc),
-						  static_cast<int>(util::JsonParser::GetParseErrorCode(sdk_config_json_)),
-						  static_cast<unsigned int>(util::JsonParser::GetParseErrorOffset(sdk_config_json_)));
+			logParseError(rc, sdk_config_json_);
 			return rc;
 		}
 
