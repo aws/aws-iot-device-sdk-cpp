@@ -33,6 +33,9 @@ elseif(WIN32)
 	set(CUSTOM_COMPILER_FLAGS "/W4")
 endif()
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+find_package(Sanitizers)
+
 #############################
 # Add SDK Testing Target #
 #############################
@@ -70,6 +73,8 @@ target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/t
 target_link_libraries(${UNIT_TEST_TARGET_NAME} gtest gtest_main gmock gmock_main)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${THREAD_LIBRARY_LINK_STRING})
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${SDK_TARGET_NAME})
+
+add_sanitizers(${UNIT_TEST_TARGET_NAME})
 
 find_program(GCOV gcov)
 find_program(LCOV lcov)

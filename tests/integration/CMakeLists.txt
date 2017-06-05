@@ -32,6 +32,9 @@ elseif(WIN32)
 	set(CUSTOM_COMPILER_FLAGS "/W4")
 endif()
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+find_package(Sanitizers)
+
 ####################################
 # Target : Build Integration Tests #
 ####################################
@@ -67,6 +70,8 @@ set_property(TARGET ${INTEGRATION_TEST_TARGET_NAME} APPEND_STRING PROPERTY COMPI
 add_custom_command(TARGET ${INTEGRATION_TEST_TARGET_NAME} PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E
 		copy_directory ${CMAKE_SOURCE_DIR}/certs $<TARGET_FILE_DIR:${INTEGRATION_TEST_TARGET_NAME}>/certs)
+
+add_sanitizers(${INTEGRATION_TEST_TARGET_NAME})
 
 if(MSVC)
 	target_sources(${INTEGRATION_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common/ConfigCommon.hpp)

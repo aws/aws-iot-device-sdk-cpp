@@ -119,7 +119,7 @@ namespace awsiotsdk {
 				utf8String = Utf8String::Create(read_string.get(), len);
 			}
 
-			return std::move(utf8String);
+			return utf8String;
 		}
 
 		util::String TestHelper::GetSerializedPublishMessage(util::String topic_name, uint16_t packet_id, mqtt::QoS qos, bool is_duplicate, bool is_retained, util::String payload) {
