@@ -41,3 +41,7 @@ This test verifies that the SDK can be used in applications that create several 
 NOTE - This test can fail if auto-reconnect happens while the test is in progress. Its a reliable indicator that functionality is working as expected. It is not a reliable indicator of the stability of the connection.
 
 
+### Multiple Subscription Auto Reconnect Test
+
+This test verifies that the SDK can be used in applications with varying number of subscriptions and that the auto-reconnect will not fail irrespective of number of subscriptions. It creates a client that connects and subscribes to multiple topics, ranging from 0 to 8. It publishes a few messages to verify connectivity. Then it proceeds to simulate a disconnect and waits for reconnect to occur. The connection is verified by messages on the subscribe lifecycle event topic. Once the connection is successfully restored, the client publishes messages again on the test topic to verify resubscribe worked as expected. 
+

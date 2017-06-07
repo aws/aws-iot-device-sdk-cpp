@@ -27,5 +27,5 @@ using namespace awsiotsdk;
 using namespace awsiotsdk::util::Logging;
 
 void ConsoleLogSystem::ProcessFormattedStatement(util::String &&statement) {
-	std::cout << statement;
+    std::cout << statement;
 }

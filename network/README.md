@@ -1,11 +1,11 @@
-##Network Layer Implementation Guide
+## Network Layer Implementation Guide
 
-###Design
+### Design
 The Network interface for the SDK has been designed to give control of how the Network is initialized to the application. The SDK provides a base class for [Network Connection](https://github.com/aws/aws-iot-device-sdk-cpp/blob/master/include/NetworkConnection.hpp). The SDK itself interacts with shared_ptr instances of Concrete implementations of this base class.
 
 The SDK will only ever call the functions that are defined in the NetworkConnection base class as public members. The only exception to this is the Destroy function. Further description of each function's purpose is below. Each Network function should return a certain set of Response Codes that the SDK will understand and process. All other codes are treated as unknown and a disconnect occurs.
 
-###APIs
+### APIs
 The Network Base class defines the following functions that are a Concrete implementation is required to provide:
  
  * virtual bool IsConnected() - Pure virtual function, public, directly called by SDK, implementation should return the state of the underlying Network Connection 	 
@@ -21,7 +21,7 @@ It also defines the following functions that are called by the SDK:
  * virtual ResponseCode Read(util::Vector<unsigned char> &buf, size_t buf_read_offset, size_t size_bytes_to_read, size_t &size_read_bytes_out) final - Final function. Implementation in base class blocks on obtaining read lock. It then verifies if the Network is Connected and if it is, calls ReadInternal.
  * virtual ResponseCode Disconnect() final - Final function. Checks if Network is connected. Returns error if it isn't. Calls DisconnectInternal if connected.
 
-###Response Codes
+### Response Codes
 The [ResponseCode](https://github.com/aws/aws-iot-device-sdk-cpp/blob/master/include/ResponseCode.hpp) enum class contains strongly typed Response Codes used by the SDK. They are divided into sections. The NetworkConnection implementations are expected to return response codes defined in the below sections
  
  * Network Success Codes (Values in the +200 range)
@@ -32,5 +32,5 @@ The [ResponseCode](https://github.com/aws/aws-iot-device-sdk-cpp/blob/master/inc
  
 Any unexpected behavior is always treated as an issue with the Network Connection at the moment and a Reconnect occurs.
 
-###Thread Safety
+### Thread Safety
 Since the SDK itself cannot guarantee thread safety within the Network libraries that are being used, we apply mutex guards at the Base class level. Only one read and one write request can be in progress at a time.

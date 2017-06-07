@@ -31,31 +31,31 @@ static std::shared_ptr<LogSystemInterface> AWSLogSystem(nullptr);
 static std::shared_ptr<LogSystemInterface> OldLogger(nullptr);
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Logging {
+    namespace util {
+        namespace Logging {
 
-			void InitializeAWSLogging(const std::shared_ptr<LogSystemInterface> &logSystem) {
-				AWSLogSystem = logSystem;
-			}
+            void InitializeAWSLogging(const std::shared_ptr<LogSystemInterface> &logSystem) {
+                AWSLogSystem = logSystem;
+            }
 
-			void ShutdownAWSLogging(void) {
-				InitializeAWSLogging(nullptr);
-			}
+            void ShutdownAWSLogging(void) {
+                InitializeAWSLogging(nullptr);
+            }
 
-			LogSystemInterface *GetLogSystem() {
-				return AWSLogSystem.get();
-			}
+            LogSystemInterface *GetLogSystem() {
+                return AWSLogSystem.get();
+            }
 
-			void PushLogger(const std::shared_ptr<LogSystemInterface> &logSystem) {
-				OldLogger = AWSLogSystem;
-				AWSLogSystem = logSystem;
-			}
+            void PushLogger(const std::shared_ptr<LogSystemInterface> &logSystem) {
+                OldLogger = AWSLogSystem;
+                AWSLogSystem = logSystem;
+            }
 
-			void PopLogger() {
-				AWSLogSystem = OldLogger;
-				OldLogger = nullptr;
-			}
+            void PopLogger() {
+                AWSLogSystem = OldLogger;
+                OldLogger = nullptr;
+            }
 
-		} // namespace Logging
-	} // namespace util
+        } // namespace Logging
+    } // namespace util
 } // namespace awsiotsdk

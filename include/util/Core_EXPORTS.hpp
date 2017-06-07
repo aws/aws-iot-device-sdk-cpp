@@ -16,16 +16,16 @@
 #pragma once
 
 #if defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32)
-    #ifdef _MSC_VER
-        #pragma warning(disable : 4251)
-    #endif // _MSC_VER
+#ifdef _MSC_VER
+#pragma warning(disable : 4251)
+#endif // _MSC_VER
 
-    #ifdef USE_EXPORT
-        #define  AWS_API_EXPORT __declspec(dllexport)
-    #else // USE_EXPORT
-        #define AWS_API_EXPORT
-    #endif // USE_EXPORT
+#ifdef USE_EXPORT
+#define  AWS_API_EXPORT __declspec(dllexport)
+#else // USE_EXPORT
+#define AWS_API_EXPORT
+#endif // USE_EXPORT
 #else // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32)
-    #define AWS_API_EXPORT
+#define AWS_API_EXPORT
 #endif // defined (USE_WINDOWS_DLL_SEMANTICS) || defined (WIN32)
 

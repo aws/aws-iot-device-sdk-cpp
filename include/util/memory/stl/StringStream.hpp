@@ -26,10 +26,10 @@
 #include <sstream>
 
 namespace awsiotsdk {
-	namespace util {
-		typedef std::basic_stringstream<char, std::char_traits<char> > StringStream;
-		typedef std::basic_istringstream<char, std::char_traits<char> > IStringStream;
-		typedef std::basic_ostringstream<char, std::char_traits<char> > OStringStream;
-		typedef std::basic_stringbuf<char, std::char_traits<char> > StringBuf;
-	} // namespace util
+    namespace util {
+        typedef std::basic_stringstream<char, std::char_traits<char> > StringStream;
+        typedef std::basic_istringstream<char, std::char_traits<char> > IStringStream;
+        typedef std::basic_ostringstream<char, std::char_traits<char> > OStringStream;
+        typedef std::basic_stringbuf<char, std::char_traits<char> > StringBuf;
+    } // namespace util
 } // namespace awsiotsdk

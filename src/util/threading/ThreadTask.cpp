@@ -22,31 +22,31 @@
 #include "util/threading/ThreadTask.hpp"
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Threading {
-			ThreadTask::ThreadTask(DestructorAction destructor_action, std::shared_ptr<std::atomic_bool> sync_point,
-								   util::String thread_descriptor)
-					: destructor_action_(destructor_action), m_continue_(sync_point),
-					  thread_descriptor_(thread_descriptor) {
-			}
+    namespace util {
+        namespace Threading {
+            ThreadTask::ThreadTask(DestructorAction destructor_action, std::shared_ptr<std::atomic_bool> sync_point,
+                                   util::String thread_descriptor)
+                : destructor_action_(destructor_action), m_continue_(sync_point),
+                  thread_descriptor_(thread_descriptor) {
+            }
 
-			ThreadTask::~ThreadTask() {
-				Stop();
-				std::cout<<"Exiting Thread "<<thread_descriptor_<<"!!"<<std::endl;
-				if(m_thread_.joinable()) {
-					if(destructor_action_ == DestructorAction::JOIN) {
-						m_thread_.join();
-					} else {
-						m_thread_.detach();
-					}
-				}
-				std::cout<<"Successfully Exited Thread "<<thread_descriptor_<<"!!"<<std::endl;
-			}
+            ThreadTask::~ThreadTask() {
+                Stop();
+                std::cout << "Exiting Thread " << thread_descriptor_ << "!!" << std::endl;
+                if (m_thread_.joinable()) {
+                    if (destructor_action_ == DestructorAction::JOIN) {
+                        m_thread_.join();
+                    } else {
+                        m_thread_.detach();
+                    }
+                }
+                std::cout << "Successfully Exited Thread " << thread_descriptor_ << "!!" << std::endl;
+            }
 
-			void ThreadTask::Stop() {
-				std::atomic_bool & _m_continue_ = *m_continue_;
-				_m_continue_ = false;
-			}
-		}
-	}
+            void ThreadTask::Stop() {
+                std::atomic_bool &_m_continue_ = *m_continue_;
+                _m_continue_ = false;
+            }
+        }
+    }
 }

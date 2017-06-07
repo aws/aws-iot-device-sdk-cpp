@@ -26,44 +26,44 @@
 #include "NetworkConnection.hpp"
 
 namespace awsiotsdk {
-	ResponseCode NetworkConnection::Connect() {
-		std::lock(read_mutex, write_mutex);
-		std::lock_guard<std::mutex> read_guard(read_mutex, std::adopt_lock);
-		std::lock_guard<std::mutex> write_guard(write_mutex, std::adopt_lock);
-		return ConnectInternal();
-	}
+    ResponseCode NetworkConnection::Connect() {
+        std::lock(read_mutex, write_mutex);
+        std::lock_guard<std::mutex> read_guard(read_mutex, std::adopt_lock);
+        std::lock_guard<std::mutex> write_guard(write_mutex, std::adopt_lock);
+        return ConnectInternal();
+    }
 
-	ResponseCode NetworkConnection::Write(const util::String &buf, size_t &size_written_bytes_out) {
-		ResponseCode rc;
-		std::lock_guard<std::mutex> write_guard(write_mutex);
-		{
-			// Check connection state before calling internal write
-			if(IsConnected()) {
-				rc = WriteInternal(buf, size_written_bytes_out);
-			} else {
-				rc = ResponseCode::NETWORK_DISCONNECTED_ERROR;
-			}
-		}
-		return rc;
-	}
+    ResponseCode NetworkConnection::Write(const util::String &buf, size_t &size_written_bytes_out) {
+        ResponseCode rc;
+        std::lock_guard<std::mutex> write_guard(write_mutex);
+        {
+            // Check connection state before calling internal write
+            if (IsConnected()) {
+                rc = WriteInternal(buf, size_written_bytes_out);
+            } else {
+                rc = ResponseCode::NETWORK_DISCONNECTED_ERROR;
+            }
+        }
+        return rc;
+    }
 
-	ResponseCode NetworkConnection::Read(util::Vector<unsigned char> &buf, size_t buf_read_offset,
-										 size_t size_bytes_to_read, size_t &size_read_bytes_out) {
-		ResponseCode rc;
-		std::lock_guard<std::mutex> read_guard(read_mutex);
-		{
-			// Check connection state before calling internal read
-			if(IsConnected()) {
-				rc = ReadInternal(buf, buf_read_offset, size_bytes_to_read, size_read_bytes_out);
-			} else {
-				rc = ResponseCode::NETWORK_DISCONNECTED_ERROR;
-			}
-		}
-		return rc;
-	}
+    ResponseCode NetworkConnection::Read(util::Vector<unsigned char> &buf, size_t buf_read_offset,
+                                         size_t size_bytes_to_read, size_t &size_read_bytes_out) {
+        ResponseCode rc;
+        std::lock_guard<std::mutex> read_guard(read_mutex);
+        {
+            // Check connection state before calling internal read
+            if (IsConnected()) {
+                rc = ReadInternal(buf, buf_read_offset, size_bytes_to_read, size_read_bytes_out);
+            } else {
+                rc = ResponseCode::NETWORK_DISCONNECTED_ERROR;
+            }
+        }
+        return rc;
+    }
 
-	ResponseCode NetworkConnection::Disconnect() {
-		// Disconnect irrespective of state of other requests
-		return DisconnectInternal();
-	}
+    ResponseCode NetworkConnection::Disconnect() {
+        // Disconnect irrespective of state of other requests
+        return DisconnectInternal();
+    }
 }

@@ -51,7 +51,7 @@ enum wslay_io_flags {
     /*T_R
      * There is more data to send.
      */
-            WSLAY_MSG_MORE = 1
+        WSLAY_MSG_MORE = 1
 };
 
 /*
@@ -98,7 +98,7 @@ typedef std::function<int(uint8_t *buf, size_t len,
 /*typedef int (*wslay_frame_genmask_callback)(uint8_t *buf, size_t len,
                                             void *user_data);*/
 typedef std::function<int(uint8_t *buf, size_t len,
-                                   void *user_data)> wslay_frame_genmask_callback;
+                          void *user_data)> wslay_frame_genmask_callback;
 struct wslay_frame_callbacks {
     wslay_frame_send_callback send_callback;
     wslay_frame_recv_callback recv_callback;
@@ -212,6 +212,5 @@ ssize_t wslay_frame_recv(wslay_frame_context_ptr ctx,
                          struct wslay_frame_iocb *iocb);
 
 struct wslay_event_context;
-
 
 #endif /* WSLAY_H */

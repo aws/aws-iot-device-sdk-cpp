@@ -24,30 +24,25 @@
 #include "util/logging/FormattedLogSystem.hpp"
 #include "util/Core_EXPORTS.hpp"
 
-namespace awsiotsdk
-{
-    namespace util
-    {
-        namespace Logging
-        {
+namespace awsiotsdk {
+    namespace util {
+        namespace Logging {
             /**
              * Log system interface that logs to std::cout
              */
-            class AWS_API_EXPORT ConsoleLogSystem : public FormattedLogSystem
-            {
+            class AWS_API_EXPORT ConsoleLogSystem : public FormattedLogSystem {
             public:
 
                 using Base = FormattedLogSystem;
 
                 ConsoleLogSystem(LogLevel logLevel) :
-                    Base(logLevel)
-                {}
+                    Base(logLevel) {}
 
                 virtual ~ConsoleLogSystem() {}
 
             protected:
 
-                virtual void ProcessFormattedStatement(util::String&& statement) override;
+                virtual void ProcessFormattedStatement(util::String &&statement) override;
             };
 
         } // namespace Logging

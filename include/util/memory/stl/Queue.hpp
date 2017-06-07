@@ -28,7 +28,7 @@
 #include <queue>
 
 namespace awsiotsdk {
-	namespace util {
-		template<typename T> using Queue = std::queue<T>;
-	} // namespace util
+    namespace util {
+        template<typename T> using Queue = std::queue<T>;
+    } // namespace util
 } // namespace awsiotsdk

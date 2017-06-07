@@ -1,5 +1,5 @@
 # Known Issues/Limitations
-## [1.0.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.0.0) (October 27, 2016)
+## [1.1.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.0) (May 8th, 2017)
 
 ### Common
 
@@ -19,6 +19,7 @@
   - CMake, build settings - Provide options for setting up certain values that are hardcoded using macros at the moment
   - Testing - More edge case testing required for Reconnect logic
   - Testing - Improvements needed on Integration testing for network reference layers specifically for different compilers and platforms
+  - UTF-8 string - improve validation checks
   
 ### Windows
   
