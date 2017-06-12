@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(aws-iot-sdk-cpp CXX)
+option(BUILD_SHARED_LIBRARY "Build the library as a shared object, will build it as a static library otherwise" NO)
 
 ######################################
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
@@ -30,9 +31,13 @@ if(UNIX AND NOT APPLE)
 	set(THREADS_PREFER_PTHREAD_FLAG ON)
 	set(CUSTOM_COMPILER_FLAGS "-fno-exceptions -Wall -Werror")
 elseif(APPLE)
-	set(CUSTOM_COMPILER_FLAGS "-fno-exceptions")
+    set(CUSTOM_COMPILER_FLAGS "-fno-exceptions -Werror -Wall")
 elseif(WIN32)
 	set(CUSTOM_COMPILER_FLAGS "/W4")
+endif()
+
+if(NOT DEPENDENCY_DIR)
+    set(DEPENDENCY_DIR "third_party")
 endif()
 
 #############################
@@ -40,40 +45,45 @@ endif()
 #############################
 # Create library file. The Client applications MUST link to below target if using this CMake file
 set(SDK_TARGET_NAME aws-iot-sdk-cpp)
-add_library(${SDK_TARGET_NAME} "")
+if (BUILD_SHARED_LIBRARY)
+    add_library(${SDK_TARGET_NAME} SHARED "")
+    set_target_properties(${SDK_TARGET_NAME} PROPERTIES SUFFIX ".so")
+else()
+    add_library(${SDK_TARGET_NAME} "")
+endif()
 
 # Download and include rapidjson, not optional
-configure_file(CMakeLists-rapidjson.txt.in ${CMAKE_BINARY_DIR}/third_party/rapidjson/download/CMakeLists.txt)
+configure_file(CMakeLists-rapidjson.txt.in ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/rapidjson/download)
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download)
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/rapidjson/download)
-target_include_directories(${SDK_TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download)
+target_include_directories(${SDK_TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
 
 # Get Common SDK Sources
-file(GLOB_RECURSE SDK_SOURCES FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/src/*.cpp)
-target_include_directories(${SDK_TARGET_NAME} PRIVATE  ${CMAKE_SOURCE_DIR}/include)
+file(GLOB_RECURSE SDK_SOURCES FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/src/*.cpp)
+target_include_directories(${SDK_TARGET_NAME} PRIVATE  ${PROJECT_SOURCE_DIR}/include)
 target_sources(${SDK_TARGET_NAME} PRIVATE ${SDK_SOURCES})
 
 # Configure Threading library
 find_package(Threads REQUIRED)
-set(THREAD_LIBRARY_LINK_STRING "Threads::Threads")
-target_link_libraries(${SDK_TARGET_NAME} "Threads::Threads")
+set(THREAD_LIBRARY_LINK_STRING "Threads::Threads" -ldl)
+target_link_libraries(${SDK_TARGET_NAME} "Threads::Threads" -ldl)
 
 if(BUILD_DOCS)
 	find_package(Doxygen REQUIRED)
-	file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/docs)
-	set(DOC_BINARY_DIR ${CMAKE_BINARY_DIR}/docs)
-	set(DOC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/.)
+	file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/docs)
+	set(DOC_BINARY_DIR ${PROJECT_BINARY_DIR}/docs)
+	set(DOC_SOURCE_DIR ${PROJECT_SOURCE_DIR}/.)
 
-	set(doxygen_conf_in ${CMAKE_SOURCE_DIR}/doxygen/doxygen.conf.in)
-	set(doxygen_conf ${CMAKE_BINARY_DIR}/doxygen/doxygen.conf)
+	set(doxygen_conf_in ${PROJECT_SOURCE_DIR}/doxygen/doxygen.conf.in)
+	set(doxygen_conf ${PROJECT_BINARY_DIR}/doxygen/doxygen.conf)
 
 	configure_file(${doxygen_conf_in} ${doxygen_conf} @ONLY)
 
 	add_custom_target(generate-sdk-docs
 			COMMAND ${DOXYGEN_EXECUTABLE} ${doxygen_conf}
-			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/docs
+			WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/docs
 			COMMENT "Generating SDK docs"
 			VERBATIM)
 endif()
@@ -83,23 +93,23 @@ endif()
 ################################################
 # TODO : Figure out a better way of handling Visual Studio solutions
 if(MSVC)
-	file(GLOB SDK_COMMON_HEADERS "${CMAKE_SOURCE_DIR}/include/*.hpp")
-	file(GLOB SDK_UTIL_COMMON_HEADERS "${CMAKE_SOURCE_DIR}/include/util/*.hpp")
-	file(GLOB SDK_UTIL_LOGGING_HEADERS "${CMAKE_SOURCE_DIR}/include/util/logging/*.hpp")
-	file(GLOB SDK_UTIL_MEMORY_STL_HEADERS "${CMAKE_SOURCE_DIR}/include/util/memory/stl/*.hpp")
-	file(GLOB SDK_UTIL_THREADING_HEADERS "${CMAKE_SOURCE_DIR}/include/util/threading/*.hpp")
-	file(GLOB SDK_MQTT_HEADERS "${CMAKE_SOURCE_DIR}/include/mqtt/*.hpp")
-	file(GLOB SDK_SHADOW_HEADERS "${CMAKE_SOURCE_DIR}/include/shadow/*.hpp")
+	file(GLOB SDK_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
+	file(GLOB SDK_UTIL_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/util/*.hpp")
+	file(GLOB SDK_UTIL_LOGGING_HEADERS "${PROJECT_SOURCE_DIR}/include/util/logging/*.hpp")
+	file(GLOB SDK_UTIL_MEMORY_STL_HEADERS "${PROJECT_SOURCE_DIR}/include/util/memory/stl/*.hpp")
+	file(GLOB SDK_UTIL_THREADING_HEADERS "${PROJECT_SOURCE_DIR}/include/util/threading/*.hpp")
+	file(GLOB SDK_MQTT_HEADERS "${PROJECT_SOURCE_DIR}/include/mqtt/*.hpp")
+	file(GLOB SDK_SHADOW_HEADERS "${PROJECT_SOURCE_DIR}/include/shadow/*.hpp")
 
-	file(GLOB SDK_COMMON_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
-	file(GLOB SDK_UTIL_COMMON_SOURCES "${CMAKE_SOURCE_DIR}/src/util/*.cpp")
-	file(GLOB SDK_UTIL_LOGGING_SOURCES "${CMAKE_SOURCE_DIR}/src/util/logging/*.cpp")
-	file(GLOB SDK_UTIL_THREADING_SOURCES "${CMAKE_SOURCE_DIR}/src/util/threading/*.cpp")
-	file(GLOB SDK_MQTT_SOURCES "${CMAKE_SOURCE_DIR}/src/mqtt/*.cpp")
-	file(GLOB SDK_SHADOW_SOURCES "${CMAKE_SOURCE_DIR}/src/shadow/*.cpp")
+	file(GLOB SDK_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+	file(GLOB SDK_UTIL_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/util/*.cpp")
+	file(GLOB SDK_UTIL_LOGGING_SOURCES "${PROJECT_SOURCE_DIR}/src/util/logging/*.cpp")
+	file(GLOB SDK_UTIL_THREADING_SOURCES "${PROJECT_SOURCE_DIR}/src/util/threading/*.cpp")
+	file(GLOB SDK_MQTT_SOURCES "${PROJECT_SOURCE_DIR}/src/mqtt/*.cpp")
+	file(GLOB SDK_SHADOW_SOURCES "${PROJECT_SOURCE_DIR}/src/shadow/*.cpp")
 
 	# Required to make Header files visible in Visual Studio
-	file(GLOB_RECURSE SDKHeaders FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/include/*.hpp)
+	file(GLOB_RECURSE SDKHeaders FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/include/*.hpp)
 	target_sources(${SDK_TARGET_NAME} PUBLIC ${SDKHeaders})
 
 	source_group("Header Files\\aws-iot" FILES ${SDK_COMMON_HEADERS})
@@ -133,3 +143,17 @@ add_subdirectory(tests/unit)
 add_subdirectory(samples/PubSub)
 
 add_subdirectory(samples/ShadowDelta)
+
+add_subdirectory(samples/Discovery EXCLUDE_FROM_ALL)
+
+add_subdirectory(samples/StoryRobotArm EXCLUDE_FROM_ALL)
+
+add_subdirectory(samples/StorySwitch EXCLUDE_FROM_ALL)
+
+##################################
+# Section: Define Install Target #
+##################################
+if(NOT MSVC)
+    install(TARGETS aws-iot-sdk-cpp DESTINATION lib)
+    install(DIRECTORY include/ DESTINATION include)
+endif()

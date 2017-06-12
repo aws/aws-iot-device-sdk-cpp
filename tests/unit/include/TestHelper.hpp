@@ -68,33 +68,38 @@
 #define PUBACK_PACKET_REM_LEN_VAL 2
 
 namespace awsiotsdk {
-	namespace tests {
-		enum class ConnackTestReturnCode {
-			CONNECTION_ACCEPTED = 0,
-			UNACCEPTABLE_PROTOCOL_VERSION_ERROR = 1,
-			IDENTIFIER_REJECTED_ERROR = 2,
-			SERVER_UNAVAILABLE_ERROR = 3,
-			BAD_USERDATA_ERROR = 4,
-			NOT_AUTHORIZED_ERROR = 5,
-			INVALID_VALUE_ERROR = 6
-		};
+    namespace tests {
+        enum class ConnackTestReturnCode {
+            CONNECTION_ACCEPTED = 0,
+            UNACCEPTABLE_PROTOCOL_VERSION_ERROR = 1,
+            IDENTIFIER_REJECTED_ERROR = 2,
+            SERVER_UNAVAILABLE_ERROR = 3,
+            BAD_USERDATA_ERROR = 4,
+            NOT_AUTHORIZED_ERROR = 5,
+            INVALID_VALUE_ERROR = 6
+        };
 
-		class TestHelper {
-		public:
-			static void WriteCharToBuffer(unsigned char **p_buf, unsigned char value);
-			static void WriteUint16ToBuffer(unsigned char **p_buf, uint16_t value);
-			static unsigned char ReadCharFromBuffer(unsigned char **p_buf);
-			static uint16_t ReadUint16FromBuffer(unsigned char **p_buf);
-			static std::unique_ptr<Utf8String> ReadUtf8StringFromBuffer(unsigned char **p_buf);
-			static size_t ParseRemLenFromBuffer(unsigned char **p_buf);
-			static util::String GetEncodedRemLen(size_t rem_len);
-			static util::String GetSerializedPublishMessage(util::String topic_name, uint16_t packet_id, mqtt::QoS qos, bool is_duplicate, bool is_retained, util::String payload);
-			static util::String GetSerializedSubAckMessage(uint16_t packet_id, std::vector<uint8_t> suback_list_);
-			static util::String GetSerializedUnsubAckMessage(uint16_t packet_id);
-			static util::String GetSerializedPubAckMessage(uint16_t packet_id);
-			static util::String GetSerializedConnAckMessage(bool is_session_present, ConnackTestReturnCode connack_rc);
-		};
-	}
+        class TestHelper {
+        public:
+            static void WriteCharToBuffer(unsigned char **p_buf, unsigned char value);
+            static void WriteUint16ToBuffer(unsigned char **p_buf, uint16_t value);
+            static unsigned char ReadCharFromBuffer(unsigned char **p_buf);
+            static uint16_t ReadUint16FromBuffer(unsigned char **p_buf);
+            static std::unique_ptr<Utf8String> ReadUtf8StringFromBuffer(unsigned char **p_buf);
+            static size_t ParseRemLenFromBuffer(unsigned char **p_buf);
+            static util::String GetEncodedRemLen(size_t rem_len);
+            static util::String GetSerializedPublishMessage(util::String topic_name,
+                                                            uint16_t packet_id,
+                                                            mqtt::QoS qos,
+                                                            bool is_duplicate,
+                                                            bool is_retained,
+                                                            util::String payload);
+            static util::String GetSerializedSubAckMessage(uint16_t packet_id, std::vector<uint8_t> suback_list_);
+            static util::String GetSerializedUnsubAckMessage(uint16_t packet_id);
+            static util::String GetSerializedPubAckMessage(uint16_t packet_id);
+            static util::String GetSerializedConnAckMessage(bool is_session_present, ConnackTestReturnCode connack_rc);
+        };
+    }
 }
 
 

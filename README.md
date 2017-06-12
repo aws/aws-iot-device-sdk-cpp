@@ -61,6 +61,11 @@ Build Targets:
  * Sample - `pub-sub-sample`
  * Sample - `shadow-delta-sample`
 
+ This following sample targets are generated only if OpenSSL is being used:
+ * Sample - `discovery-sample`. 
+ * Sample - `robot-arm-sample`. 
+ * Sample - `switch-sample`
+ 
 Steps:
 
  * Clone the SDK from the github repository
@@ -78,11 +83,14 @@ We provide the following reference implementations for the Network layer:
 
  * OpenSSL - MQTT over TLS using OpenSSL v1.0.2. Tested on Windows (VS 2015) and Linux
  	* The provided implementation requires OpenSSL to be pre-installed on the device
+ 	* Use the mqtt port setting from the config file while setting up the network instance
  * MbedTLS - MQTT over TLS using MbedTLS. Tested on Linux
- 	* The provided implementation will download MbedTLS v2.3.0 from the github repo and build and link to the libraries. Please be warned that the default configuration of MbedTLS limits packet sizes to 16K  
+ 	* The provided implementation will download MbedTLS v2.3.0 from the github repo and build and link to the libraries. Please be warned that the default configuration of MbedTLS limits packet sizes to 16K
+ 	* Use the mqtt port setting from the config file while setting up the network instance
  * WebSocket - MQTT over WebSocket. Tested on both Windows (VS 2015) and Linux. Uses OpenSSL 1.0.2 as the underlying TLS layer
  	* The provided implementation requires OpenSSL to be pre-installed on the device
  	* Please be aware that while the provided reference implementation allows initialization of credentials from any source, the recommended way to do so is to use the aws cli to generate credential files and read the generated files
+ 	* Use the https port setting from the config file while setting up the network instance
 
 <a name="quicklinks"></a>
 ## Quick Links
@@ -90,6 +98,7 @@ We provide the following reference implementations for the Network layer:
  * [SDK Documentation](http://aws-iot-device-sdk-cpp-docs.s3-website-us-east-1.amazonaws.com/v1.0.0/index.html) - API documentation for the SDK
  * [Platform Guide](./Platform.md) - This file lists the steps needed to set up the pre-requisites on some popular platforms
  * [Developers Guide](./DevGuide.md) - Provides a guide on how the SDK can be included in custom code
+ * [Greengrass Discovery Support Guide](./GreengrassDiscovery.md) - Provides information on support for AWS Greengrass Discovery Service
  * [Network Layer Implementation Guide](./network/README.md) - Detailed description about the Network Layer and how to implement a custom wrapper class
  * [Sample Guide](./samples/README.md) - Details about the included samples
  * [Test Information](./tests/README.md) - Details about the included unit and integration tests

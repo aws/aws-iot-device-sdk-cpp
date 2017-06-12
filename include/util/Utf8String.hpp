@@ -25,35 +25,35 @@
 #include "util/memory/stl/String.hpp"
 
 namespace awsiotsdk {
-	class Utf8String {
-	protected:
-		util::String data;
-		std::size_t length;
+    class Utf8String {
+    protected:
+        util::String data;
+        std::size_t length;
 
-		Utf8String(util::String str);
+        Utf8String(util::String str);
 
-		Utf8String(const char *str, std::size_t length);
+        Utf8String(const char *str, std::size_t length);
 
-		static bool IsValidInput(util::String str);
+        static bool IsValidInput(util::String str);
 
-		static bool IsValidInput(const char *str, std::size_t length);
+        static bool IsValidInput(const char *str, std::size_t length);
 
-	public:
-		// Rule of 5 stuff
-		// Disabling default constructor while keeping defaults for the rest
-		Utf8String() = delete;									// Delete Default constructor
-		Utf8String(const Utf8String&) = default;				// Copy constructor
-		Utf8String(Utf8String&&) = default;						// Move constructor
-		Utf8String& operator=(const Utf8String&) & = default;	// Copy assignment operator
-		Utf8String& operator=(Utf8String&&) & = default;		// Move assignment operator
-		~Utf8String() = default;								// Default destructor
+    public:
+        // Rule of 5 stuff
+        // Disabling default constructor while keeping defaults for the rest
+        Utf8String() = delete;                                  // Delete Default constructor
+        Utf8String(const Utf8String &) = default;               // Copy constructor
+        Utf8String(Utf8String &&) = default;                    // Move constructor
+        Utf8String &operator=(const Utf8String &) & = default;  // Copy assignment operator
+        Utf8String &operator=(Utf8String &&) & = default;       // Move assignment operator
+        ~Utf8String() = default;                                // Default destructor
 
-		static std::unique_ptr<Utf8String> Create(util::String str);
+        static std::unique_ptr<Utf8String> Create(util::String str);
 
-		static std::unique_ptr<Utf8String> Create(const char *str, std::size_t length);
+        static std::unique_ptr<Utf8String> Create(const char *str, std::size_t length);
 
-		std::size_t Length();
+        std::size_t Length();
 
-		util::String ToStdString();
-	};
+        util::String ToStdString();
+    };
 }

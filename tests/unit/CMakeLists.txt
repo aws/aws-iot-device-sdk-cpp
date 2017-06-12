@@ -5,9 +5,9 @@ project(aws-iot-cpp-unit-tests CXX)
 # Section : Disable in-source builds #
 ######################################
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
-endif()
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder.")
+endif ()
 
 ########################################
 # Section : Common SDK Build setttings #
@@ -23,15 +23,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Configure Compiler flags
-if(UNIX AND NOT APPLE)
-	# Prefer pthread if found
-	set(THREADS_PREFER_PTHREAD_FLAG ON)
-	set(CUSTOM_COMPILER_FLAGS "-fno-exceptions -Wall -Werror")
-elseif(APPLE)
-	set(CUSTOM_COMPILER_FLAGS "-fno-exceptions")
-elseif(WIN32)
-	set(CUSTOM_COMPILER_FLAGS "/W4")
-endif()
+if (UNIX AND NOT APPLE)
+    # Prefer pthread if found
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    set(CUSTOM_COMPILER_FLAGS "-fno-exceptions -Wall -Werror")
+elseif (APPLE)
+    set(CUSTOM_COMPILER_FLAGS "-fno-exceptions -Wall -Werror")
+elseif (WIN32)
+    set(CUSTOM_COMPILER_FLAGS "/W4")
+endif ()
 
 #############################
 # Add SDK Testing Target #
@@ -49,20 +49,20 @@ target_link_libraries(${UNIT_TEST_TARGET_NAME} "Threads::Threads")
 
 # Download and unpack googletest at configure time
 configure_file(${CMAKE_CURRENT_LIST_DIR}/CMakeLists-gtest.txt.in
-		${CMAKE_BINARY_DIR}/third_party/googletest/download/CMakeLists.txt)
+        ${CMAKE_BINARY_DIR}/third_party/googletest/download/CMakeLists.txt)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/third_party/googletest/download)
 
 # Prevent GoogleTest from overriding compiler/linker options
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # This adds the following targets: gtest, gtest_main, gmock and gmock_main
 add_subdirectory(${CMAKE_BINARY_DIR}/third_party/googletest/src
-		${CMAKE_BINARY_DIR}/third_party/googletest/build)
+        ${CMAKE_BINARY_DIR}/third_party/googletest/build EXCLUDE_FROM_ALL)
 
 file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/tests/unit/src/*.cpp)
 target_sources(${UNIT_TEST_TARGET_NAME} PUBLIC ${SDK_UNIT_TEST_SOURCES})
@@ -75,43 +75,43 @@ find_program(GCOV gcov)
 find_program(LCOV lcov)
 find_program(GENHTML genhtml)
 
-if(GCOV AND LCOV AND GENHTML)
-	set(UNIT_TEST_COVERAGE_TARGET_NAME "${UNIT_TEST_TARGET_NAME}-coverage")
-	target_link_libraries(${UNIT_TEST_TARGET_NAME} -fprofile-arcs)
-	target_link_libraries(${UNIT_TEST_TARGET_NAME} -ftest-coverage)
+if (GCOV AND LCOV AND GENHTML)
+    set(UNIT_TEST_COVERAGE_TARGET_NAME "${UNIT_TEST_TARGET_NAME}-coverage")
+    target_link_libraries(${UNIT_TEST_TARGET_NAME} -fprofile-arcs)
+    target_link_libraries(${UNIT_TEST_TARGET_NAME} -ftest-coverage)
 
-	set(UNIT_TEST_OUTPUT_DIR_PATH ${CMAKE_BINARY_DIR}/unit_test_results)
-	set(UNIT_TEST_OUTPUT_NAME unit_test)
+    set(UNIT_TEST_OUTPUT_DIR_PATH ${CMAKE_BINARY_DIR}/unit_test_results)
+    set(UNIT_TEST_OUTPUT_NAME unit_test)
 
-	file(MAKE_DIRECTORY ${UNIT_TEST_OUTPUT_DIR_PATH})
+    file(MAKE_DIRECTORY ${UNIT_TEST_OUTPUT_DIR_PATH})
 
-	set(CUSTOM_COMPILER_FLAGS "${CUSTOM_COMPILER_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+    set(CUSTOM_COMPILER_FLAGS "${CUSTOM_COMPILER_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 
-	set(LCOV_INFO "${UNIT_TEST_OUTPUT_DIR_PATH}/${UNIT_TEST_OUTPUT_NAME}.info")
-	set(LCOV_CLEAN "${LCOV_INFO}.clean")
+    set(LCOV_INFO "${UNIT_TEST_OUTPUT_DIR_PATH}/${UNIT_TEST_OUTPUT_NAME}.info")
+    set(LCOV_CLEAN "${LCOV_INFO}.clean")
 
-	# Setup target
-	add_custom_target(${UNIT_TEST_COVERAGE_TARGET_NAME}
-		DEPENDS ${UNIT_TEST_TARGET_NAME}
-		WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-		# Cleanup old lcov runs
-		COMMAND ${LCOV} --directory ${UNIT_TEST_OUTPUT_DIR_PATH} --zerocounters --rc lcov_branch_coverage=1
+    # Setup target
+    add_custom_target(${UNIT_TEST_COVERAGE_TARGET_NAME}
+            DEPENDS ${UNIT_TEST_TARGET_NAME}
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            # Cleanup old lcov runs
+            COMMAND ${LCOV} --directory ${UNIT_TEST_OUTPUT_DIR_PATH} --zerocounters --rc lcov_branch_coverage=1
 
-		# Run tests
-		COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${UNIT_TEST_TARGET_NAME}
+            # Run tests
+            COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${UNIT_TEST_TARGET_NAME}
 
-		# Capturing lcov counters and generating report
-		COMMAND ${LCOV} --rc lcov_branch_coverage=1 --directory ${CMAKE_BINARY_DIR} --capture --output-file ${LCOV_INFO}
-		COMMAND ${LCOV} --rc lcov_branch_coverage=1 --remove ${LCOV_INFO} 'tests/*' 'build/*' '/usr/*' '*logging/*' --output-file ${LCOV_CLEAN}
-		COMMAND ${GENHTML} -o ${UNIT_TEST_OUTPUT_NAME} ${LCOV_CLEAN}
-		COMMAND ${CMAKE_COMMAND} -E remove ${LCOV_INFO} ${LCOV_CLEAN}
-		COMMENT "Open ${CMAKE_BINARY_DIR}/${UNIT_TEST_OUTPUT_NAME}/index.html in your browser to view the coverage report."
-	)
-endif()
+            # Capturing lcov counters and generating report
+            COMMAND ${LCOV} --rc lcov_branch_coverage=1 --directory ${CMAKE_BINARY_DIR} --capture --output-file ${LCOV_INFO}
+            COMMAND ${LCOV} --rc lcov_branch_coverage=1 --remove ${LCOV_INFO} 'tests/*' 'build/*' '/usr/*' '*logging/*' --output-file ${LCOV_CLEAN}
+            COMMAND ${GENHTML} -o ${UNIT_TEST_OUTPUT_NAME} ${LCOV_CLEAN}
+            COMMAND ${CMAKE_COMMAND} -E remove ${LCOV_INFO} ${LCOV_CLEAN}
+            COMMENT "Open ${CMAKE_BINARY_DIR}/${UNIT_TEST_OUTPUT_NAME}/index.html in your browser to view the coverage report."
+            )
+endif ()
 
 add_custom_command(TARGET ${UNIT_TEST_TARGET_NAME} PRE_BUILD
-		COMMAND ${CMAKE_COMMAND} -E
-		copy ${CMAKE_SOURCE_DIR}/tests/unit/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
+        COMMAND ${CMAKE_COMMAND} -E
+        copy ${CMAKE_SOURCE_DIR}/tests/unit/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
 
 set_property(TARGET ${UNIT_TEST_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CUSTOM_COMPILER_FLAGS})
 

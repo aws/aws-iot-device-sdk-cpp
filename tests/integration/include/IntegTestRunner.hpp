@@ -28,16 +28,16 @@
 #include "ResponseCode.hpp"
 
 namespace awsiotsdk {
-	namespace tests {
-		namespace integration {
-			class IntegTestRunner {
-			protected:
-				ResponseCode InitializeSdkTestConfig();
-			public:
-				ResponseCode Initialize();
+    namespace tests {
+        namespace integration {
+            class IntegTestRunner {
+            protected:
+                ResponseCode InitializeSdkTestConfig();
+            public:
+                ResponseCode Initialize();
 
-				ResponseCode RunAllTests();
-			};
-		}
-	}
+                ResponseCode RunAllTests();
+            };
+        }
+    }
 }

@@ -480,3 +480,4 @@ gen### Gcov template
 
 #Output Folder for cmake
 build/
+cmake-build-debug/

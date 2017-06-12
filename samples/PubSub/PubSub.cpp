@@ -44,7 +44,9 @@
 namespace awsiotsdk {
 	namespace samples {
 		ResponseCode PubSub::RunPublish(int msg_count) {
-			std::cout<<std::endl<<"******************************Entering Publish with no queuing delay unless queue is full!!**************************"<<std::endl;
+            std::cout << std::endl
+                      << "******************************Entering Publish with no queuing delay unless queue is full!!**************************"
+                      << std::endl;
 			ResponseCode rc;
 			uint16_t packet_id = 0;
 			int itr = 1;
@@ -72,7 +74,9 @@ namespace awsiotsdk {
 			return rc;
 		}
 
-		ResponseCode PubSub::SubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data) {
+        ResponseCode PubSub::SubscribeCallback(util::String topic_name,
+                                               util::String payload,
+                                               std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data) {
 			std::cout<<std::endl<<"************"<<std::endl;
 			std::cout<<"Received message on topic : "<<topic_name<<std::endl;
 			std::cout<<"Payload Length : "<<payload.length()<<std::endl;
@@ -84,11 +88,24 @@ namespace awsiotsdk {
 			return ResponseCode::SUCCESS;
 		}
 
+        ResponseCode PubSub::DisconnectCallback(util::String client_id,
+                                                std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data) {
+            std::cout << "*******************************************" << std::endl
+                      << client_id << " Disconnected!" << std::endl
+                      << "*******************************************" << std::endl;
+            return ResponseCode::SUCCESS;
+        }
+
 		ResponseCode PubSub::Subscribe() {
 			util::String p_topic_name_str = SDK_SAMPLE_TOPIC;
 			std::unique_ptr<Utf8String> p_topic_name = Utf8String::Create(p_topic_name_str);
-			mqtt::Subscription::ApplicationCallbackHandlerPtr p_sub_handler = std::bind(&PubSub::SubscribeCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-			std::shared_ptr<mqtt::Subscription> p_subscription = mqtt::Subscription::Create(std::move(p_topic_name), mqtt::QoS::QOS0, p_sub_handler, nullptr);
+            mqtt::Subscription::ApplicationCallbackHandlerPtr p_sub_handler = std::bind(&PubSub::SubscribeCallback,
+                                                                                        this,
+                                                                                        std::placeholders::_1,
+                                                                                        std::placeholders::_2,
+                                                                                        std::placeholders::_3);
+            std::shared_ptr<mqtt::Subscription> p_subscription =
+                mqtt::Subscription::Create(std::move(p_topic_name), mqtt::QoS::QOS0, p_sub_handler, nullptr);
 			util::Vector<std::shared_ptr<mqtt::Subscription>> topic_vector;
 			topic_vector.push_back(p_subscription);
 
@@ -114,7 +131,7 @@ namespace awsiotsdk {
 #ifdef USE_WEBSOCKETS
 			if(ConfigCommon::proxy_ == ""){
 				p_network_connection_ = std::shared_ptr<NetworkConnection>(
-				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
+                new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_https_port_,
 												 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
 												 ConfigCommon::aws_access_key_id_,
 												 ConfigCommon::aws_secret_access_key_,
@@ -124,7 +141,7 @@ namespace awsiotsdk {
 												 ConfigCommon::tls_write_timeout_, true));
 			}else{
 				p_network_connection_ = std::shared_ptr<NetworkConnection>(
-				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
+				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_https_port_,
 												 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
 												 ConfigCommon::aws_access_key_id_,
 												 ConfigCommon::aws_secret_access_key_,
@@ -135,25 +152,29 @@ namespace awsiotsdk {
 												 ConfigCommon::proxy_, ConfigCommon::proxy_port_, ProxyType::HTTP));
 			}
 			if(nullptr == p_network_connection_) {
-				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection with rc : %d", static_cast<int>(rc));
+                AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection. %s",
+                              ResponseHelper::ToString(rc).c_str());
 				rc = ResponseCode::FAILURE;
 			}
 #elif defined USE_MBEDTLS
 			p_network_connection_ = std::make_shared<network::MbedTLSConnection>(ConfigCommon::endpoint_,
-																			 ConfigCommon::endpoint_port_,
+                                                                                 ConfigCommon::endpoint_mqtt_port_,
 																			 ConfigCommon::root_ca_path_,
 																			 ConfigCommon::client_cert_path_,
 																			 ConfigCommon::client_key_path_,
 																			 ConfigCommon::tls_handshake_timeout_,
 																			 ConfigCommon::tls_read_timeout_,
-																			 ConfigCommon::tls_write_timeout_, true);
+                                                                                 ConfigCommon::tls_write_timeout_,
+                                                                                 true);
 			if(nullptr == p_network_connection_) {
-				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection with rc : %d", static_cast<int>(rc));
+                AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection. %s",
+                              ResponseHelper::ToString(rc).c_str());
 				rc = ResponseCode::FAILURE;
 			}
 #else
 			std::shared_ptr<network::OpenSSLConnection> p_network_connection =
-					std::make_shared<network::OpenSSLConnection>(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
+                std::make_shared<network::OpenSSLConnection>(ConfigCommon::endpoint_,
+                                                             ConfigCommon::endpoint_mqtt_port_,
 																 ConfigCommon::root_ca_path_,
 																 ConfigCommon::client_cert_path_,
 																 ConfigCommon::client_key_path_,
@@ -163,7 +184,9 @@ namespace awsiotsdk {
 			rc = p_network_connection->Initialize();
 
 			if(ResponseCode::SUCCESS != rc) {
-				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Failed to initialize Network Connection with rc : %d", static_cast<int>(rc));
+                AWS_LOG_ERROR(LOG_TAG_PUBSUB,
+                              "Failed to initialize Network Connection. %s",
+                              ResponseHelper::ToString(rc).c_str());
 				rc = ResponseCode::FAILURE;
 			} else {
 				p_network_connection_ = std::dynamic_pointer_cast<NetworkConnection>(p_network_connection);
@@ -181,7 +204,12 @@ namespace awsiotsdk {
 				return rc;
 			}
 
-			p_iot_client_ = std::shared_ptr<MqttClient>(MqttClient::Create(p_network_connection_, ConfigCommon::mqtt_command_timeout_));
+            ClientCoreState::ApplicationDisconnectCallbackPtr p_disconnect_handler =
+                std::bind(&PubSub::DisconnectCallback, this, std::placeholders::_1, std::placeholders::_2);
+
+            p_iot_client_ = std::shared_ptr<MqttClient>(MqttClient::Create(p_network_connection_,
+                                                                           ConfigCommon::mqtt_command_timeout_,
+                                                                           p_disconnect_handler, nullptr));
 			if(nullptr == p_iot_client_) {
 				return ResponseCode::FAILURE;
 			}
@@ -200,18 +228,18 @@ namespace awsiotsdk {
 
 			rc = Subscribe();
 			if(ResponseCode::SUCCESS != rc) {
-				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Subscribe failed with return code : %d", static_cast<int>(rc));
+                AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Subscribe failed. %s", ResponseHelper::ToString(rc).c_str());
 			} else {
 				// Test with delay between each action being queued up
 				rc = RunPublish(MESSAGE_COUNT);
 				if(ResponseCode::SUCCESS != rc) {
-					std::cout<<std::endl<<"Publish runner failed with return code : "<<static_cast<int>(rc)<<std::endl;
-					AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Publish runner failed with return code : %d",
-								  static_cast<int>(rc));
+                    std::cout << std::endl << "Publish runner failed. " << ResponseHelper::ToString(rc) << std::endl;
+                    AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Publish runner failed. %s",
+                                  ResponseHelper::ToString(rc).c_str());
 					p_iot_client_->Disconnect(ConfigCommon::mqtt_command_timeout_);
 				}
 
-				std::cout<<"RC: "<<static_cast<int>(rc)<<std::endl;
+                std::cout << ResponseHelper::ToString(rc) << std::endl;
 				if(ResponseCode::SUCCESS == rc) {
 					//Sleep for 10 seconds and wait for all messages to be received
 					int cur_sleep_sec_count = 0;
@@ -233,14 +261,14 @@ namespace awsiotsdk {
 					}
 				} while(ResponseCode::ACTION_QUEUE_FULL == rc);
 				if(ResponseCode::SUCCESS != rc) {
-					AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Unsubscribe failed with return code : %d",
-								  static_cast<int>(rc));
+                    AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Unsubscribe failed. %s",
+                                  ResponseHelper::ToString(rc).c_str());
 				}
 			}
 
 			rc = p_iot_client_->Disconnect(ConfigCommon::mqtt_command_timeout_);
 			if(ResponseCode::SUCCESS != rc) {
-				AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Disconnect failed with return code : %d", static_cast<int>(rc));
+                AWS_LOG_ERROR(LOG_TAG_PUBSUB, "Disconnect failed. %s", ResponseHelper::ToString(rc).c_str());
 			}
 
 			std::cout<<std::endl<<"*************************Results**************************"<<std::endl;
@@ -253,10 +281,12 @@ namespace awsiotsdk {
 }
 
 int main(int argc, char **argv) {
-	std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system = std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
+    std::shared_ptr<awsiotsdk::util::Logging::ConsoleLogSystem> p_log_system =
+        std::make_shared<awsiotsdk::util::Logging::ConsoleLogSystem>(awsiotsdk::util::Logging::LogLevel::Info);
 	awsiotsdk::util::Logging::InitializeAWSLogging(p_log_system);
 
-	std::unique_ptr<awsiotsdk::samples::PubSub> pub_sub = std::unique_ptr<awsiotsdk::samples::PubSub>(new awsiotsdk::samples::PubSub());
+    std::unique_ptr<awsiotsdk::samples::PubSub>
+        pub_sub = std::unique_ptr<awsiotsdk::samples::PubSub>(new awsiotsdk::samples::PubSub());
 
 	awsiotsdk::ResponseCode rc = awsiotsdk::ConfigCommon::InitializeCommon("config/SampleConfig.json");
 	if(awsiotsdk::ResponseCode::SUCCESS == rc) {

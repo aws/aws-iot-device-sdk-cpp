@@ -25,22 +25,22 @@
 #include "util/memory/stl/String.hpp"
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Logging {
-			/**
-			 * LogLevel used to control verbosity of logging system.
-			 */
-			enum class LogLevel : int {
-				Off = 0,
-				Fatal = 1,
-				Error = 2,
-				Warn = 3,
-				Info = 4,
-				Debug = 5,
-				Trace = 6
-			};
+    namespace util {
+        namespace Logging {
+            /**
+             * LogLevel used to control verbosity of logging system.
+             */
+            enum class LogLevel : int {
+                Off = 0,
+                Fatal = 1,
+                Error = 2,
+                Warn = 3,
+                Info = 4,
+                Debug = 5,
+                Trace = 6
+            };
 
-			AWS_API_EXPORT util::String GetLogLevelName(LogLevel logLevel);
-		} // namespace Logging
-	} // namespace util
+            AWS_API_EXPORT util::String GetLogLevelName(LogLevel logLevel);
+        } // namespace Logging
+    } // namespace util
 } // namespace awsiotsdk

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -103,174 +103,176 @@
 "}"
 
 namespace awsiotsdk {
-	namespace tests {
-		namespace unit {
-			class JsonParserTester : public ::testing::Test {
-			protected:
-				util::JsonDocument json_doc_file_;
-				util::JsonDocument json_doc_str_;
-				static const util::String test_json_;
+    namespace tests {
+        namespace unit {
+            class JsonParserTester : public ::testing::Test {
+            protected:
+                util::JsonDocument json_doc_file_;
+                util::JsonDocument json_doc_str_;
+                static const util::String test_json_;
 
-				JsonParserTester() { }
-			};
+                JsonParserTester() {}
+            };
 
-			const util::String JsonParserTester::test_json_ = "{"
-					"  \"test_string\":\"json_parser_test_string\","
-					"  \"test_cstr\":\"json_parser_test_cstring\","
-					"  \"test_uint16_t\":16,"
-					"  \"test_uin32_t\":32,"
-					"  \"test_size_t\":64,"
-					"  \"test_int\":-128,"
-					"  \"test_bool_true\":true,"
-					"  \"test_bool_false\":false"
-					"}";
+            const util::String JsonParserTester::test_json_ = "{"
+                "  \"test_string\":\"json_parser_test_string\","
+                "  \"test_cstr\":\"json_parser_test_cstring\","
+                "  \"test_uint16_t\":16,"
+                "  \"test_uin32_t\":32,"
+                "  \"test_size_t\":64,"
+                "  \"test_int\":-128,"
+                "  \"test_bool_true\":true,"
+                "  \"test_bool_false\":false"
+                "}";
 
-			TEST_F(JsonParserTester, RunTests) {
-				/* Test invalid file path */
-				ResponseCode rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, "");
-				EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
-				rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, KEY_INVALID);
-				EXPECT_EQ(ResponseCode::FILE_OPEN_ERROR, rc);
+            TEST_F(JsonParserTester, RunTests) {
+                /* Test invalid file path */
+                ResponseCode rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, "");
+                EXPECT_EQ(ResponseCode::FILE_NAME_INVALID, rc);
+                rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, KEY_INVALID);
+                EXPECT_EQ(ResponseCode::FILE_OPEN_ERROR, rc);
 
-				/* Test invalid json */
-				rc = util::JsonParser::InitializeFromJsonString(json_doc_file_, "{,,,}");
-				EXPECT_EQ(ResponseCode::JSON_PARSING_ERROR, rc);
+                /* Test invalid json */
+                rc = util::JsonParser::InitializeFromJsonString(json_doc_file_, "{,,,}");
+                EXPECT_EQ(ResponseCode::JSON_PARSING_ERROR, rc);
 
-				rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, JSON_TEST_FILE_PATH);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				rc = util::JsonParser::InitializeFromJsonString(json_doc_str_, test_json_);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonFile(json_doc_file_, JSON_TEST_FILE_PATH);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonString(json_doc_str_, test_json_);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
 
-				util::String expected_string = EXPECTED_VALUE_STRING;
-				util::String parsed_string;
-				rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_STRING, parsed_string);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(expected_string, parsed_string);
-				rc = util::JsonParser::GetStringValue(json_doc_file_, KEY_STRING, parsed_string);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(expected_string, parsed_string);
-				rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_INVALID, parsed_string);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_INT, parsed_string);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                util::String expected_string = EXPECTED_VALUE_STRING;
+                util::String parsed_string;
+                rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_STRING, parsed_string);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(expected_string, parsed_string);
+                rc = util::JsonParser::GetStringValue(json_doc_file_, KEY_STRING, parsed_string);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(expected_string, parsed_string);
+                rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_INVALID, parsed_string);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetStringValue(json_doc_str_, KEY_INT, parsed_string);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				util::String expected_cstring = EXPECTED_VALUE_CSTRING;
-				char buf[100];
-				rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_CSTRING, buf, 100);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(expected_cstring, buf);
-				rc = util::JsonParser::GetCStringValue(json_doc_file_, KEY_CSTRING, buf, 100);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(expected_cstring, buf);
-				rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_CSTRING, nullptr, 100);
-				EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
-				rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_INVALID, buf, 100);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_INT, buf, 100);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                util::String expected_cstring = EXPECTED_VALUE_CSTRING;
+                char buf[100];
+                rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_CSTRING, buf, 100);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(expected_cstring, buf);
+                rc = util::JsonParser::GetCStringValue(json_doc_file_, KEY_CSTRING, buf, 100);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(expected_cstring, buf);
+                rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_CSTRING, nullptr, 100);
+                EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+                rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_INVALID, buf, 100);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetCStringValue(json_doc_str_, KEY_INT, buf, 100);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				int parsed_int = 0;
-				rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_INT, parsed_int);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(EXPECTED_VALUE_INT, parsed_int);
-				parsed_int = 0;
-				rc = util::JsonParser::GetIntValue(json_doc_file_, KEY_INT, parsed_int);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(EXPECTED_VALUE_INT, parsed_int);
-				rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_INVALID, parsed_int);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_STRING, parsed_int);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                int parsed_int = 0;
+                rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_INT, parsed_int);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(EXPECTED_VALUE_INT, parsed_int);
+                parsed_int = 0;
+                rc = util::JsonParser::GetIntValue(json_doc_file_, KEY_INT, parsed_int);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(EXPECTED_VALUE_INT, parsed_int);
+                rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_INVALID, parsed_int);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetIntValue(json_doc_str_, KEY_STRING, parsed_int);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				uint16_t parsed_uint16t = 0;
-				rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_UINT16, parsed_uint16t);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(EXPECTED_VALUE_UINT16, parsed_uint16t);
-				parsed_uint16t = 0;
-				rc = util::JsonParser::GetUint16Value(json_doc_file_, KEY_UINT16, parsed_uint16t);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(EXPECTED_VALUE_UINT16, parsed_uint16t);
-				rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_INVALID, parsed_uint16t);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_STRING, parsed_uint16t);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                uint16_t parsed_uint16t = 0;
+                rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_UINT16, parsed_uint16t);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(EXPECTED_VALUE_UINT16, parsed_uint16t);
+                parsed_uint16t = 0;
+                rc = util::JsonParser::GetUint16Value(json_doc_file_, KEY_UINT16, parsed_uint16t);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(EXPECTED_VALUE_UINT16, parsed_uint16t);
+                rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_INVALID, parsed_uint16t);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetUint16Value(json_doc_str_, KEY_STRING, parsed_uint16t);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				uint32_t parsed_uint32t = 0;
-				rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_UINT32, parsed_uint32t);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(static_cast<uint32_t>(EXPECTED_VALUE_UINT32), parsed_uint32t);
-				parsed_uint32t = 0;
-				rc = util::JsonParser::GetUint32Value(json_doc_file_, KEY_UINT32, parsed_uint32t);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(static_cast<uint32_t>(EXPECTED_VALUE_UINT32), parsed_uint32t);
-				rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_INVALID, parsed_uint32t);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_STRING, parsed_uint32t);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                uint32_t parsed_uint32t = 0;
+                rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_UINT32, parsed_uint32t);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(static_cast<uint32_t>(EXPECTED_VALUE_UINT32), parsed_uint32t);
+                parsed_uint32t = 0;
+                rc = util::JsonParser::GetUint32Value(json_doc_file_, KEY_UINT32, parsed_uint32t);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(static_cast<uint32_t>(EXPECTED_VALUE_UINT32), parsed_uint32t);
+                rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_INVALID, parsed_uint32t);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetUint32Value(json_doc_str_, KEY_STRING, parsed_uint32t);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				size_t parsed_sizet = 0;
-				rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_SIZET, parsed_sizet);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(static_cast<size_t>(EXPECTED_VALUE_SIZET), parsed_sizet);
-				parsed_uint16t = 0;
-				rc = util::JsonParser::GetSizeTValue(json_doc_file_, KEY_SIZET, parsed_sizet);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_EQ(static_cast<size_t>(EXPECTED_VALUE_SIZET), parsed_sizet);
-				rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_INVALID, parsed_sizet);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_STRING, parsed_sizet);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+                size_t parsed_sizet = 0;
+                rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_SIZET, parsed_sizet);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(static_cast<size_t>(EXPECTED_VALUE_SIZET), parsed_sizet);
+                parsed_uint16t = 0;
+                rc = util::JsonParser::GetSizeTValue(json_doc_file_, KEY_SIZET, parsed_sizet);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_EQ(static_cast<size_t>(EXPECTED_VALUE_SIZET), parsed_sizet);
+                rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_INVALID, parsed_sizet);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetSizeTValue(json_doc_str_, KEY_STRING, parsed_sizet);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
 
-				bool parsed_bool = false;
-				rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_BOOL_TRUE, parsed_bool);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_TRUE(parsed_bool);
-				parsed_bool = true;
-				rc = util::JsonParser::GetBoolValue(json_doc_file_, KEY_BOOL_FALSE, parsed_bool);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				EXPECT_FALSE(parsed_bool);
-				rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_INVALID, parsed_bool);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
-				rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_STRING, parsed_bool);
-				EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
-			}
+                bool parsed_bool = false;
+                rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_BOOL_TRUE, parsed_bool);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_TRUE(parsed_bool);
+                parsed_bool = true;
+                rc = util::JsonParser::GetBoolValue(json_doc_file_, KEY_BOOL_FALSE, parsed_bool);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                EXPECT_FALSE(parsed_bool);
+                rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_INVALID, parsed_bool);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR, rc);
+                rc = util::JsonParser::GetBoolValue(json_doc_str_, KEY_STRING, parsed_bool);
+                EXPECT_EQ(ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR, rc);
+            }
 
-			TEST_F(JsonParserTester, RunMergeTest) {
-				util::JsonDocument source_doc;
-				util::JsonDocument target_doc;
-				util::JsonDocument expected_doc;
-				ResponseCode rc = util::JsonParser::InitializeFromJsonString(source_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				rc = util::JsonParser::InitializeFromJsonString(target_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				rc = util::JsonParser::InitializeFromJsonString(expected_doc, JSON_MERGE_TEST_MERGED_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
+            TEST_F(JsonParserTester, RunMergeTest) {
+                util::JsonDocument source_doc;
+                util::JsonDocument target_doc;
+                util::JsonDocument expected_doc;
+                ResponseCode
+                    rc = util::JsonParser::InitializeFromJsonString(source_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonString(target_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonString(expected_doc, JSON_MERGE_TEST_MERGED_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
 
-				rc = util::JsonParser::MergeValues(target_doc, source_doc, target_doc.GetAllocator());
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::MergeValues(target_doc, source_doc, target_doc.GetAllocator());
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
 
-				// Json library has overloaded == operator
-				EXPECT_TRUE(target_doc == expected_doc);
-			}
+                // Json library has overloaded == operator
+                EXPECT_TRUE(target_doc == expected_doc);
+            }
 
-			TEST_F(JsonParserTester, RunDiffTest) {
-				util::JsonDocument old_doc;
-				util::JsonDocument new_doc;
-				util::JsonDocument target_doc;
-				util::JsonDocument expected_doc;
-				ResponseCode rc = util::JsonParser::InitializeFromJsonString(old_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				rc = util::JsonParser::InitializeFromJsonString(new_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
-				rc = util::JsonParser::InitializeFromJsonString(expected_doc, JSON_MERGE_TEST_DIFF_DOCUMENT_STRING);
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
+            TEST_F(JsonParserTester, RunDiffTest) {
+                util::JsonDocument old_doc;
+                util::JsonDocument new_doc;
+                util::JsonDocument target_doc;
+                util::JsonDocument expected_doc;
+                ResponseCode
+                    rc = util::JsonParser::InitializeFromJsonString(old_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonString(new_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::InitializeFromJsonString(expected_doc, JSON_MERGE_TEST_DIFF_DOCUMENT_STRING);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
 
-				rc = util::JsonParser::DiffValues(target_doc, old_doc, new_doc, target_doc.GetAllocator());
-				EXPECT_EQ(ResponseCode::SUCCESS, rc);
+                rc = util::JsonParser::DiffValues(target_doc, old_doc, new_doc, target_doc.GetAllocator());
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
 
-				// Json library has overloaded == operator
-				EXPECT_TRUE(target_doc == expected_doc);
-			}
-		}
-	}
+                // Json library has overloaded == operator
+                EXPECT_TRUE(target_doc == expected_doc);
+            }
+        }
+    }
 }

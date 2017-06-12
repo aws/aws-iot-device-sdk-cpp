@@ -35,25 +35,25 @@
 
 #ifdef DISABLE_AWS_LOGGING
 
-    #define AWS_LOG(level, tag, ...) 
-    #define AWS_LOG_FATAL(tag, ...) 
-    #define AWS_LOG_ERROR(tag, ...) 
-    #define AWS_LOG_WARN(tag, ...) 
-    #define AWS_LOG_INFO(tag, ...) 
-    #define AWS_LOG_DEBUG(tag, ...) 
-    #define AWS_LOG_TRACE(tag, ...) 
+#define AWS_LOG(level, tag, ...)
+#define AWS_LOG_FATAL(tag, ...)
+#define AWS_LOG_ERROR(tag, ...)
+#define AWS_LOG_WARN(tag, ...)
+#define AWS_LOG_INFO(tag, ...)
+#define AWS_LOG_DEBUG(tag, ...)
+#define AWS_LOG_TRACE(tag, ...)
 
-    #define AWS_LOGSTREAM(level, tag, streamExpression) 
-    #define AWS_LOGSTREAM_FATAL(tag, streamExpression)
-    #define AWS_LOGSTREAM_ERROR(tag, streamExpression)
-    #define AWS_LOGSTREAM_WARN(tag, streamExpression)
-    #define AWS_LOGSTREAM_INFO(tag, streamExpression)
-    #define AWS_LOGSTREAM_DEBUG(tag, streamExpression)
-    #define AWS_LOGSTREAM_TRACE(tag, streamExpression)
+#define AWS_LOGSTREAM(level, tag, streamExpression)
+#define AWS_LOGSTREAM_FATAL(tag, streamExpression)
+#define AWS_LOGSTREAM_ERROR(tag, streamExpression)
+#define AWS_LOGSTREAM_WARN(tag, streamExpression)
+#define AWS_LOGSTREAM_INFO(tag, streamExpression)
+#define AWS_LOGSTREAM_DEBUG(tag, streamExpression)
+#define AWS_LOGSTREAM_TRACE(tag, streamExpression)
 
 #else
 
-    #define AWS_LOG(level, tag, ...) \
+#define AWS_LOG(level, tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= level ) \
@@ -62,7 +62,7 @@
             } \
         }
 
-    #define AWS_LOG_FATAL(tag, ...) \
+#define AWS_LOG_FATAL(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Fatal ) \
@@ -71,7 +71,7 @@
             } \
         }
 
-    #define AWS_LOG_ERROR(tag, ...) \
+#define AWS_LOG_ERROR(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Error ) \
@@ -80,7 +80,7 @@
             } \
         }
 
-    #define AWS_LOG_WARN(tag, ...) \
+#define AWS_LOG_WARN(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Warn ) \
@@ -89,7 +89,7 @@
             } \
         }
 
-    #define AWS_LOG_INFO(tag, ...) \
+#define AWS_LOG_INFO(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Info ) \
@@ -98,7 +98,7 @@
             } \
         }
 
-    #define AWS_LOG_DEBUG(tag, ...) \
+#define AWS_LOG_DEBUG(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Debug ) \
@@ -107,7 +107,7 @@
             } \
         }
 
-    #define AWS_LOG_TRACE(tag, ...) \
+#define AWS_LOG_TRACE(tag, ...) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Trace ) \
@@ -116,7 +116,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM(level, tag, streamExpression) \
+#define AWS_LOGSTREAM(level, tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= level ) \
@@ -127,7 +127,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_FATAL(tag, streamExpression) \
+#define AWS_LOGSTREAM_FATAL(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Fatal ) \
@@ -138,7 +138,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_ERROR(tag, streamExpression) \
+#define AWS_LOGSTREAM_ERROR(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Error ) \
@@ -149,7 +149,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_WARN(tag, streamExpression) \
+#define AWS_LOGSTREAM_WARN(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Warn ) \
@@ -160,7 +160,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_INFO(tag, streamExpression) \
+#define AWS_LOGSTREAM_INFO(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Info ) \
@@ -171,7 +171,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_DEBUG(tag, streamExpression) \
+#define AWS_LOGSTREAM_DEBUG(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Debug ) \
@@ -182,7 +182,7 @@
             } \
         }
 
-    #define AWS_LOGSTREAM_TRACE(tag, streamExpression) \
+#define AWS_LOGSTREAM_TRACE(tag, streamExpression) \
         { \
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Trace ) \

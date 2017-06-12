@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
  * @file ResponseCode.hpp
  * @brief Strongly typed enumeration of return values from functions within the SDK.
  *
- * Contains the return codes used by the SDK
+ * Contains the return codes used by the SDK and helper functions to convert the ResponseCode into human readable strings
  */
+
+#include "util/memory/stl/String.hpp"
 
 #pragma once
 
@@ -37,6 +39,11 @@ namespace awsiotsdk {
 	 * Values have been grouped based on source or type of code
 	 */
 	enum class ResponseCode {
+        // Discovery Success Codes
+
+        DISCOVER_ACTION_NO_INFORMATION_PRESENT = 401,           ///< Discover Action response showed no discovery information is present for this thing name
+        DISCOVER_ACTION_SUCCESS = 400,                          ///< Discover Action found connectivity information for this thing name
+
 		// Shadow Success Codes
 
 		SHADOW_RECEIVED_DELTA = 301,	///< Returned when a delta update is received
@@ -63,6 +70,7 @@ namespace awsiotsdk {
 		// I/O Error Codes
 
 		FILE_OPEN_ERROR = -100,        ///< Unable to open the requested file
+        FILE_NAME_INVALID = -101,                                  ///< File name is invalid or of zero length
 
 		// Threading Error Codes
 
@@ -133,11 +141,11 @@ namespace awsiotsdk {
 		MQTT_CONNACK_NOT_AUTHORIZED_ERROR = -714,            ///< Connect request failed with the server failing to authenticate the request.
 		MQTT_NO_SUBSCRIPTION_FOUND = -715,					///< No subscription exists for requested topic
 		MQTT_SUBSCRIPTION_NOT_ACTIVE = -716,				///< Subscription exists but is not active, waiting for Suback or Ack not received
-		MQTT_UNEXPECTED_PACKET_FORMAT_ERROR = -715,			///< Deserialization failed because packet data was in an unexpected format
-		MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST = -716,		///< Too many subscriptions were provided in the Subscribe/Unsubscribe request
-		MQTT_INVALID_DATA_ERROR = -717,						///< Provided data is invalid/not sufficient for the request
-		MQTT_SUBSCRIBE_PARTIALLY_FAILED = -718,				///< Failed to subscribe to atleast one of the topics in the subscribe request
-		MQTT_SUBSCRIBE_FAILED = -719,						///< Unable to subscribe to any of the topics in the subscribe request
+        MQTT_UNEXPECTED_PACKET_FORMAT_ERROR = -717,                ///< Deserialization failed because packet data was in an unexpected format
+        MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST = -718,             ///< Too many subscriptions were provided in the Subscribe/Unsubscribe request
+        MQTT_INVALID_DATA_ERROR = -719,                            ///< Provided data is invalid/not sufficient for the request
+        MQTT_SUBSCRIBE_PARTIALLY_FAILED = -720,                    ///< Failed to subscribe to atleast one of the topics in the subscribe request
+        MQTT_SUBSCRIBE_FAILED = -721,                              ///< Unable to subscribe to any of the topics in the subscribe request
 
 		// JSON Parsing Error Codes
 
@@ -177,6 +185,40 @@ namespace awsiotsdk {
 		WEBSOCKET_PROTOCOL_VIOLATION = -1009,		///< WebSocket protocol violation detected in receiving frames
 		WEBSOCKET_MAX_LIFETIME_REACHED = -1010,		///< WebSocket connection max life time window reached
 		WEBSOCKET_DISCONNECT_ERROR = -1011,			///< WebSocket disconnect error
-		WEBSOCKET_GET_UTC_TIME_FAILED = -1012		///< Returned when the WebSocket wrapper cannot get UTC time
+        WEBSOCKET_GET_UTC_TIME_FAILED = -1012,                     ///< Returned when the WebSocket wrapper cannot get UTC time
+
+        // Discovery Error Codes
+
+        DISCOVER_ACTION_REQUEST_FAILED_ERROR = -1100,              ///< Discover Action request failed
+        DISCOVER_ACTION_REQUEST_TIMED_OUT_ERROR = -1101,           ///< Discover Action request timed out
+        DISCOVER_ACTION_UNAUTHORIZED = -1102,                      ///< Discover Action repsonse showed that this device does not have authorization to query the server
+        DISCOVER_ACTION_SERVER_ERROR = -1103,                      ///< Discover Action failed due to some server side error
+        DISCOVER_ACTION_REQUEST_OVERLOAD = -1104,                  ///< Discover Action failed due to too many requests, try again after some time
+
+        // Discovery Response Parsing Error Codes
+
+        DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR = -1200  ///< Discover Response Json is missing expected keys
 	};
+
+    /**
+         * Overloading the << stream operator for ResponseCode
+         *
+         * @param os ostream being filled
+         * @param rc ResponseCode
+         * @return ostream&
+         */
+    std::ostream &operator<<(std::ostream &os, ResponseCode rc);
+
+    /**
+     * @brief Response Helper for converting ResponseCode into Strings
+     */
+    namespace ResponseHelper {
+        /**
+         * Takes in a Response Code and returns the appropriate error/success string
+         * @param rc Response Code to be converted
+         * @return char* Response String
+         */
+        util::String ToString(ResponseCode rc);
+
+    };
 }

@@ -173,7 +173,9 @@ namespace awsiotsdk {
 
 			ResponseCode GenerateClientKey(char* res_buf, size_t* res_len);
 
-			ResponseCode VerifyHandshakeResponse(const util::Vector<unsigned char> &resp, size_t resp_len, const char* client_key);
+            ResponseCode VerifyHandshakeResponse(const util::Vector<unsigned char> &resp,
+                                                 size_t resp_len,
+                                                 const char *client_key);
 
 			int VerifyWssAcceptKey(const char* accept_key, const char* client_key);
 
@@ -207,7 +209,7 @@ namespace awsiotsdk {
 								std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
 								bool server_verification_flag);
 								
-						/**
+            /**
 			* @brief Constructor for the WebSocket for MQTT implementation
 			*
 			* Performs any initialization required by the WebSocket layer.

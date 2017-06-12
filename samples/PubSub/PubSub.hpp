@@ -26,25 +26,29 @@
 #include "NetworkConnection.hpp"
 
 namespace awsiotsdk {
-	namespace samples {
-		class PubSub {
-		protected:
-			std::shared_ptr<NetworkConnection> p_network_connection_;
-			std::shared_ptr<mqtt::ConnectPacket> p_connect_packet_;
-			std::atomic_int cur_pending_messages_;
-			std::atomic_int total_published_messages_;
-			std::shared_ptr<MqttClient> p_iot_client_;
+    namespace samples {
+        class PubSub {
+        protected:
+            std::shared_ptr<NetworkConnection> p_network_connection_;
+            std::shared_ptr<mqtt::ConnectPacket> p_connect_packet_;
+            std::atomic_int cur_pending_messages_;
+            std::atomic_int total_published_messages_;
+            std::shared_ptr<MqttClient> p_iot_client_;
 
-			ResponseCode RunPublish(int msg_count);
-			ResponseCode SubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
-			ResponseCode Subscribe();
-			ResponseCode Unsubscribe();
-			ResponseCode InitializeTLS();
+            ResponseCode RunPublish(int msg_count);
+            ResponseCode SubscribeCallback(util::String topic_name,
+                                           util::String payload,
+                                           std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+            ResponseCode DisconnectCallback(util::String topic_name,
+                                            std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+            ResponseCode Subscribe();
+            ResponseCode Unsubscribe();
+            ResponseCode InitializeTLS();
 
-		public:
-			ResponseCode RunSample();
-		};
-	}
+        public:
+            ResponseCode RunSample();
+        };
+    }
 }
 
 

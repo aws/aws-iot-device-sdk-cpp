@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ namespace awsiotsdk {
 
 		static void logParseError(const ResponseCode& response_code, const util::JsonDocument& config);
 	public:
-		static uint16_t endpoint_port_;
+        static uint16_t endpoint_mqtt_port_;
+        static uint16_t endpoint_https_port_;
+        static uint16_t endpoint_greengrass_discovery_port_;
 
 		static util::String endpoint_;
 
@@ -57,6 +59,7 @@ namespace awsiotsdk {
 		static std::chrono::milliseconds tls_handshake_timeout_;
 		static std::chrono::milliseconds tls_read_timeout_;
 		static std::chrono::milliseconds tls_write_timeout_;
+        static std::chrono::milliseconds discover_action_timeout_;
 		static std::chrono::seconds keep_alive_timeout_secs_;
 
 		static bool is_clean_session_;
@@ -67,6 +70,7 @@ namespace awsiotsdk {
 		static uint32_t action_processing_rate_hz_;
 
 		static ResponseCode InitializeCommon(const util::String &config_file_path);
+        static util::String GetCurrentPath();
 	};
 }
 

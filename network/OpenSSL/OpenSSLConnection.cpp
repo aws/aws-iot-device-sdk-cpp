@@ -30,6 +30,7 @@
 #include <direct.h>
 #define getcwd _getcwd // avoid MSFT "deprecation" warning
 #else
+#include <arpa/inet.h>
 #include <limits>
 #define MAX_PATH_LENGTH_ PATH_MAX
 #endif
@@ -60,8 +61,11 @@ namespace awsiotsdk {
 			is_connected_ = false;
 		}
 
-		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
-											 util::String device_cert_location, util::String device_private_key_location,
+        OpenSSLConnection::OpenSSLConnection(util::String endpoint,
+                                             uint16_t endpoint_port,
+                                             util::String root_ca_location,
+                                             util::String device_cert_location,
+                                             util::String device_private_key_location,
 											 std::chrono::milliseconds tls_handshake_timeout,
 											 std::chrono::milliseconds tls_read_timeout,
 											 std::chrono::milliseconds tls_write_timeout,
@@ -75,7 +79,9 @@ namespace awsiotsdk {
 			proxy_type_ = ProxyType::NONE;
 		}
 
-		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+        OpenSSLConnection::OpenSSLConnection(util::String endpoint,
+                                             uint16_t endpoint_port,
+                                             util::String root_ca_location,
 											 std::chrono::milliseconds tls_handshake_timeout,
 											 std::chrono::milliseconds tls_read_timeout,
 											 std::chrono::milliseconds tls_write_timeout,
@@ -341,7 +347,9 @@ namespace awsiotsdk {
 						AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL Connect time out while waiting for write");
 						ret_val = ResponseCode::NETWORK_SSL_CONNECT_TIMEOUT_ERROR;
 					} else if(-1 == select_retCode) { // -1 == SELECT_ERROR
-						AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL Connect Select error for write %d", select_retCode);
+                        AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG,
+                                      " SSL Connect Select error for write %d",
+                                      select_retCode);
 						ret_val = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
 					}
 				} else {
@@ -392,8 +400,17 @@ namespace awsiotsdk {
 				param = SSL_get0_param(p_ssl_handle_);
 				// Enable automatic hostname checks
 				X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+
+                // Check if it is an IPv4 or an IPv6 address to enable ip checking
+                // Enable host name check otherwise
+                char dst[INET6_ADDRSTRLEN];
+                if (inet_pton(AF_INET, endpoint_.c_str(), (void *) dst) ||
+                    inet_pton(AF_INET6, endpoint_.c_str(), (void *) dst)) {
+                    X509_VERIFY_PARAM_set1_ip_asc(param, endpoint_.c_str());
+                } else {
 				X509_VERIFY_PARAM_set1_host(param, endpoint_.c_str(), 0);
 			}
+            }
 
 			// Configure a non-zero callback if desired
 			SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
@@ -429,7 +446,7 @@ namespace awsiotsdk {
 
 			networkResponse = AttemptConnect();
 			if(X509_V_OK != SSL_get_verify_result(p_ssl_handle_)) {
-				AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Server Certificate Verification failed");
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Server Certificate Verification failed.");
 				networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
 			} else {
 				// ensure you have a valid certificate returned, otherwise no certificate exchange happened

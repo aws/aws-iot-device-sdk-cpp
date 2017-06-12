@@ -71,7 +71,7 @@ namespace awsiotsdk {
 
 #ifdef USE_WEBSOCKETS
 			p_network_connection_ = std::shared_ptr<NetworkConnection>(
-				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_port_,
+				new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_https_port_,
 												 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
 												 ConfigCommon::aws_access_key_id_,
 												 ConfigCommon::aws_secret_access_key_,
@@ -253,6 +253,7 @@ namespace awsiotsdk {
 									  static_cast<int>(rc));
 						break;
 					}
+
 					//Sleep for 1 second and wait for all messages to be received
 					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -199,9 +199,35 @@ namespace awsiotsdk {
 							bool server_verification_flag,
 							util::String proxy, uint16_t proxy_port, util::String proxy_user_name, util::String proxy_password, ProxyType proxy_type);
 
+            /**
+             * @brief Initialize the OpenSSL object
+             *
+             * Initializes the OpenSSL object
+             */
 			ResponseCode Initialize();
 
 			/**
+             * @brief sets the path to the root CA
+             *
+             * Called to change the location of the root CA after the constructor has initialized the OpenSSL object.
+             *
+             * @param root_ca_location
+             */
+            void SetRootCAPath(util::String root_ca_location) { root_ca_location_ = root_ca_location; }
+
+            /**
+             * @brief sets the endpoint and the port
+             *
+             * Called to change the endpoint and the port after the constructor has initialized the OpenSSL object.
+             * @param endpoint
+             * @param endpoint_port
+             */
+            void SetEndpointAndPort(util::String endpoint, uint16_t endpoint_port) {
+                endpoint_ = endpoint;
+                endpoint_port_ = endpoint_port;
+            }
+
+            /**
 			 * @brief Check if TLS layer is still connected
 			 *
 			 * Called to check if the TLS layer is still connected or not.
