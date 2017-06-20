@@ -123,7 +123,7 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_SSL_INIT_ERROR;
             }
 
-            method = TLSv1_2_method();
+            method = TLS_method();
 
             if ((p_ssl_context_ = SSL_CTX_new(method)) == NULL) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL INIT Failed - Unable to create SSL Context");
