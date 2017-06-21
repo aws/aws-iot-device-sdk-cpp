@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "mqtt/Client.hpp"
-#include "NetworkConnection.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
 
 namespace awsiotsdk {
     namespace samples {

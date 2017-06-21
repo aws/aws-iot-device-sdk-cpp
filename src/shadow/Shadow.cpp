@@ -22,8 +22,8 @@
 
 #include <chrono>
 
-#include "shadow/Shadow.hpp"
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/shadow/Shadow.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
 #define SUBSCRIPTION_SETTING_TIME_SECS 2
 

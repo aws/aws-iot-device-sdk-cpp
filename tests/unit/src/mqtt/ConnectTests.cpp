@@ -26,9 +26,9 @@
 #include "TestHelper.hpp"
 #include "MockNetworkConnection.hpp"
 
-#include "mqtt/Connect.hpp"
-#include "mqtt/ClientState.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/mqtt/Connect.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
 #define CONNECT_FIXED_HEADER_VAL 0x10
 #define DISCONNECT_FIXED_HEADER_VAL 0xE0

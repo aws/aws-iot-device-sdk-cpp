@@ -93,13 +93,13 @@ endif()
 ################################################
 # TODO : Figure out a better way of handling Visual Studio solutions
 if(MSVC)
-	file(GLOB SDK_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
-	file(GLOB SDK_UTIL_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/util/*.hpp")
-	file(GLOB SDK_UTIL_LOGGING_HEADERS "${PROJECT_SOURCE_DIR}/include/util/logging/*.hpp")
-	file(GLOB SDK_UTIL_MEMORY_STL_HEADERS "${PROJECT_SOURCE_DIR}/include/util/memory/stl/*.hpp")
-	file(GLOB SDK_UTIL_THREADING_HEADERS "${PROJECT_SOURCE_DIR}/include/util/threading/*.hpp")
-	file(GLOB SDK_MQTT_HEADERS "${PROJECT_SOURCE_DIR}/include/mqtt/*.hpp")
-	file(GLOB SDK_SHADOW_HEADERS "${PROJECT_SOURCE_DIR}/include/shadow/*.hpp")
+	file(GLOB SDK_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/*.hpp")
+	file(GLOB SDK_UTIL_COMMON_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/util/*.hpp")
+	file(GLOB SDK_UTIL_LOGGING_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/util/logging/*.hpp")
+	file(GLOB SDK_UTIL_MEMORY_STL_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/util/memory/stl/*.hpp")
+	file(GLOB SDK_UTIL_THREADING_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/util/threading/*.hpp")
+	file(GLOB SDK_MQTT_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/mqtt/*.hpp")
+	file(GLOB SDK_SHADOW_HEADERS "${PROJECT_SOURCE_DIR}/include/awsiotsdk/shadow/*.hpp")
 
 	file(GLOB SDK_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 	file(GLOB SDK_UTIL_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/util/*.cpp")
@@ -109,7 +109,7 @@ if(MSVC)
 	file(GLOB SDK_SHADOW_SOURCES "${PROJECT_SOURCE_DIR}/src/shadow/*.cpp")
 
 	# Required to make Header files visible in Visual Studio
-	file(GLOB_RECURSE SDKHeaders FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/include/*.hpp)
+	file(GLOB_RECURSE SDKHeaders FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/include/awsiotsdk/*.hpp)
 	target_sources(${SDK_TARGET_NAME} PUBLIC ${SDKHeaders})
 
 	source_group("Header Files\\aws-iot" FILES ${SDK_COMMON_HEADERS})

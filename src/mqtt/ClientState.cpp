@@ -21,7 +21,7 @@
 
 #include <regex>
 
-#include "mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
 
 #define MIN_RECONNECT_BACKOFF_DEFAULT_SEC 1
 #define MAX_RECONNECT_BACKOFF_DEFAULT_SEC 128

@@ -25,7 +25,7 @@
 #include <cstring>
 #include <chrono>
 
-#include "ResponseCode.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
 
 namespace awsiotsdk {
     namespace tests {

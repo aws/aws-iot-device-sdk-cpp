@@ -19,7 +19,7 @@
  *
  */
 
-#include "util/threading/ThreadTask.hpp"
+#include "awsiotsdk/util/threading/ThreadTask.hpp"
 
 namespace awsiotsdk {
     namespace util {

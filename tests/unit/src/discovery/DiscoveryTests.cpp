@@ -23,13 +23,13 @@
 
 #include <gtest/gtest.h>
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
 #include "TestHelper.hpp"
 #include "MockNetworkConnection.hpp"
 
-#include "discovery/Discovery.hpp"
-#include "mqtt/ClientState.hpp"
+#include "awsiotsdk/discovery/Discovery.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
 
 #define DISCOVERY_TEST_LOG_TAG "[Discovery Unit Test]"
 

@@ -22,7 +22,7 @@
 #include <rapidjson/encodings.h>
 #include <rapidjson/stream.h>
 #include <rapidjson/stringbuffer.h>
-#include "util/Utf8String.hpp"
+#include "awsiotsdk/util/Utf8String.hpp"
 
 namespace awsiotsdk {
     namespace utf8 {

@@ -19,8 +19,8 @@
  *
  */
 
-#include "util/logging/Logging.hpp"
-#include "util/logging/LogSystemInterface.hpp"
+#include "awsiotsdk/util/logging/Logging.hpp"
+#include "awsiotsdk/util/logging/LogSystemInterface.hpp"
 
 #include <memory>
 

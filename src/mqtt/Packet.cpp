@@ -21,8 +21,8 @@
 
 #include <algorithm>
 
-#include "ResponseCode.hpp"
-#include "mqtt/Packet.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/mqtt/Packet.hpp"
 #include <cstdio>
 
 #define MAX_MQTT_PACKET_REM_LEN_BYTES 268435455

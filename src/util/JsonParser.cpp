@@ -27,7 +27,7 @@
 #include <iostream>
 #include <memory>
 
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 
 namespace awsiotsdk {
     namespace util {

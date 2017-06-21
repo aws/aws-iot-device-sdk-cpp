@@ -20,10 +20,10 @@
  */
 
 #include <iostream>
-#include <util/memory/stl/Vector.hpp>
+#include <awsiotsdk/util/memory/stl/Vector.hpp>
 
 #include "OpenSSLConnection.hpp"
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
 #ifdef WIN32
 #define MAX_PATH_LENGTH_ 260

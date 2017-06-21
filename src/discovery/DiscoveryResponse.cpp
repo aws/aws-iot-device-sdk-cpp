@@ -19,11 +19,11 @@
  *
  */
 
-#include "util/logging/Logging.hpp"
-#include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
+#include "awsiotsdk/util/logging/Logging.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/ConsoleLogSystem.hpp"
 
-#include "discovery/DiscoveryResponse.hpp"
+#include "awsiotsdk/discovery/DiscoveryResponse.hpp"
 
 #define LOG_TAG_DISCOVERY_RESPONSE "[Discovery Response]"
 
