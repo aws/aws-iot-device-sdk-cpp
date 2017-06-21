@@ -21,7 +21,7 @@
 
 #include <rapidjson/filereadstream.h>
 
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 #include "SdkTestConfig.hpp"
 
 namespace awsiotsdk {

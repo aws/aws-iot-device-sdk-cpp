@@ -21,8 +21,8 @@
  *
  */
 
-#include "ResponseCode.hpp"
-#include "util/logging/LogSystemInterface.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/util/logging/LogSystemInterface.hpp"
 #include <iostream>
 
 namespace awsiotsdk {

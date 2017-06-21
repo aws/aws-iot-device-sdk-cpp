@@ -30,9 +30,9 @@
 #include "OpenSSLConnection.hpp"
 #endif
 
-#include "util/logging/Logging.hpp"
-#include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
+#include "awsiotsdk/util/logging/Logging.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/ConsoleLogSystem.hpp"
 
 #include "ConfigCommon.hpp"
 #include "ShadowDelta.hpp"

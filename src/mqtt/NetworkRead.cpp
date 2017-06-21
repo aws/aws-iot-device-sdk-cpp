@@ -23,10 +23,10 @@
 #include <chrono>
 #include <thread>
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "mqtt/ClientState.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
 #define MAX_NO_OF_REMAINING_LENGTH_BYTES 4
 

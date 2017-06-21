@@ -24,9 +24,9 @@
 #include "MockNetworkConnection.hpp"
 #include "TestHelper.hpp"
 
-#include "mqtt/Publish.hpp"
-#include "mqtt/ClientState.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/mqtt/Publish.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
 #define PUBLISH_QOS0_FIXED_HEADER_RETAINED_FALSE_VAL 0x30
 #define PUBLISH_QOS0_FIXED_HEADER_RETAINED_TRUE_VAL 0x31

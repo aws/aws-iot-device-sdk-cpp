@@ -19,7 +19,7 @@
  *
  */
 
-#include "mqtt/Common.hpp"
+#include "awsiotsdk/mqtt/Common.hpp"
 #include <iostream>
 
 #define SINGLE_LEVEL_WILDCARD '+'

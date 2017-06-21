@@ -19,11 +19,11 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "mqtt/ClientState.hpp"
-#include "mqtt/NetworkRead.hpp"
-#include "mqtt/Connect.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
+#include "awsiotsdk/mqtt/Connect.hpp"
 
 #define CONNECT_ACTION_DESCRIPTION "MQTT Connect Action"
 #define DISCONNECT_ACTION_DESCRIPTION "MQTT Disconnect Action"

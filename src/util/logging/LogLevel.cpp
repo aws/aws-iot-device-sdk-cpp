@@ -19,9 +19,9 @@
  *
  */
 
-#include "util/logging/LogLevel.hpp"
+#include "awsiotsdk/util/logging/LogLevel.hpp"
 
-#include "util/memory/stl/String.hpp"
+#include "awsiotsdk/util/memory/stl/String.hpp"
 #include <cassert>
 
 using namespace awsiotsdk::util::Logging;

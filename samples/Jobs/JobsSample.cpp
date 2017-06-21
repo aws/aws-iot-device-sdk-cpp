@@ -42,12 +42,12 @@
 #include "OpenSSLConnection.hpp"
 #endif
 
-#include "util/logging/Logging.hpp"
-#include "util/logging/LogMacros.hpp"
-#include "util/logging/ConsoleLogSystem.hpp"
+#include "awsiotsdk/util/logging/Logging.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/ConsoleLogSystem.hpp"
 
 #include "ConfigCommon.hpp"
-#include "jobs/Jobs.hpp"
+#include "awsiotsdk/jobs/Jobs.hpp"
 #include "JobsSample.hpp"
 
 #define LOG_TAG_JOBS "[Sample - Jobs]"

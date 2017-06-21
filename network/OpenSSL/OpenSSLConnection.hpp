@@ -45,8 +45,8 @@
 #include <openssl/x509_vfy.h>
 #include <string.h>
 
-#include "NetworkConnection.hpp"
-#include "ResponseCode.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
 
 namespace awsiotsdk {
     namespace network {

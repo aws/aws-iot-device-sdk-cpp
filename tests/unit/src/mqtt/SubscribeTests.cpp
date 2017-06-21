@@ -25,8 +25,8 @@
 #include "MockNetworkConnection.hpp"
 #include "TestHelper.hpp"
 
-#include "mqtt/Subscribe.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/mqtt/Subscribe.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
 #define K 1024
 #define LARGE_PAYLOAD_SIZE 127 * K

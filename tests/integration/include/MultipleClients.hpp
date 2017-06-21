@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "mqtt/Client.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
 
 namespace awsiotsdk {
     namespace tests {

@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include "mqtt/Client.hpp"
-#include "NetworkConnection.hpp"
-#include "jobs/Jobs.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
+#include "awsiotsdk/jobs/Jobs.hpp"
 
 namespace awsiotsdk {
     namespace tests {

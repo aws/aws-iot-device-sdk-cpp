@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include "mqtt/Client.hpp"
-#include "NetworkConnection.hpp"
-#include "shadow/Shadow.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
+#include "awsiotsdk/shadow/Shadow.hpp"
 
 namespace awsiotsdk {
     namespace samples {

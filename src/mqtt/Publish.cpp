@@ -21,10 +21,10 @@
  * Also defines the packet types used by these actions.
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "mqtt/ClientState.hpp"
-#include "mqtt/Publish.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/Publish.hpp"
 
 #define PUBLISH_ACTION_DESCRIPTION "MQTT Publish Action"
 #define PUBACK_ACTION_DESCRIPTION "MQTT Puback Action"

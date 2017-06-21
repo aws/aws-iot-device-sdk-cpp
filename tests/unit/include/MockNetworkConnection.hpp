@@ -30,8 +30,8 @@
 #include <gmock/gmock.h>
 
 #include "TestHelper.hpp"
-#include "ResponseCode.hpp"
-#include "NetworkConnection.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
 
 namespace awsiotsdk {
     namespace tests {

@@ -19,7 +19,7 @@
  *
  */
 
-#include "util/logging/ConsoleLogSystem.hpp"
+#include "awsiotsdk/util/logging/ConsoleLogSystem.hpp"
 
 #include <iostream>
 

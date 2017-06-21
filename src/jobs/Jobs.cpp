@@ -19,9 +19,9 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "jobs/Jobs.hpp"
+#include "awsiotsdk/jobs/Jobs.hpp"
 
 #define BASE_THINGS_TOPIC "$aws/things/"
 

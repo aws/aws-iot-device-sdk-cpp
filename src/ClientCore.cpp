@@ -20,8 +20,8 @@
 
 #include <iostream>
 
-#include "util/logging/LogMacros.hpp"
-#include "ClientCore.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/ClientCore.hpp"
 
 #define LOG_TAG_CLIENT_CORE "[Client Core]"
 

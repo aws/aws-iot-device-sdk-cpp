@@ -30,13 +30,13 @@
 #define MAX_PATH_LENGTH_ PATH_MAX
 #endif
 
-#include "NetworkConnection.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
 
-#include "ResponseCode.hpp"
-#include "ClientCore.hpp"
-#include "mqtt/Client.hpp"
-#include "util/memory/stl/Vector.hpp"
-#include "util/Utf8String.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/ClientCore.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
+#include "awsiotsdk/util/memory/stl/Vector.hpp"
+#include "awsiotsdk/util/Utf8String.hpp"
 
 using namespace awsiotsdk;
 

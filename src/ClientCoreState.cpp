@@ -19,9 +19,9 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "ClientCoreState.hpp"
+#include "awsiotsdk/ClientCoreState.hpp"
 
 #ifndef MAX_CORE_ACTION_PROCESSING_RATE_HZ
 #define MAX_CORE_ACTION_PROCESSING_RATE_HZ 5

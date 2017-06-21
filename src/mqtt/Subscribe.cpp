@@ -21,11 +21,11 @@
  * Also defines the packet types used by these actions as well as the related Ack packet types.
  */
 
-#include "util/logging/LogMacros.hpp"
-#include "util/memory/stl/Vector.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/memory/stl/Vector.hpp"
 
-#include "mqtt/ClientState.hpp"
-#include "mqtt/Subscribe.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
+#include "awsiotsdk/mqtt/Subscribe.hpp"
 
 #define SUBSCRIBE_ACTION_DESCRIPTION "MQTT Subscribe Action"
 #define UNSUBSCRIBE_ACTION_DESCRIPTION "MQTT Unsubscribe Action"

@@ -23,7 +23,7 @@
 
 #include "TestHelper.hpp"
 
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 #include "ConfigCommon.hpp"
 
 #define NUMBER_OF_CONFIGURATION_FIELDS 25

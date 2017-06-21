@@ -23,13 +23,13 @@
 
 #include <gtest/gtest.h>
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
 #include "TestHelper.hpp"
 #include "MockNetworkConnection.hpp"
 
-#include "jobs/Jobs.hpp"
-#include "mqtt/ClientState.hpp"
+#include "awsiotsdk/jobs/Jobs.hpp"
+#include "awsiotsdk/mqtt/ClientState.hpp"
 
 #define JOBS_TEST_LOG_TAG "[Jobs Unit Test]"
 

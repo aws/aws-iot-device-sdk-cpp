@@ -19,7 +19,7 @@
  *
  */
 
-#include "util/logging/FormattedLogSystem.hpp"
+#include "awsiotsdk/util/logging/FormattedLogSystem.hpp"
 
 #include <chrono>
 #include <fstream>
