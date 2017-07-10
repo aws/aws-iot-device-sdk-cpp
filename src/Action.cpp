@@ -23,7 +23,7 @@
  *
  */
 
-#include "Action.hpp"
+#include "awsiotsdk/Action.hpp"
 
 namespace awsiotsdk {
     Action::Action(ActionType action_type, util::String action_info_string) {

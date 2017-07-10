@@ -19,13 +19,13 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "ResponseCode.hpp"
-#include "mqtt/GreengrassMqttClient.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/mqtt/GreengrassMqttClient.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
-#include "discovery/Discovery.hpp"
+#include "awsiotsdk/discovery/Discovery.hpp"
 
 #define MQTT_ACTION_TIMEOUT_MS 2000
 

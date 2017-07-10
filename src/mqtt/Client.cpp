@@ -19,11 +19,11 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "ResponseCode.hpp"
-#include "mqtt/Client.hpp"
-#include "mqtt/NetworkRead.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
+#include "awsiotsdk/mqtt/NetworkRead.hpp"
 
 #define MQTT_ACTION_TIMEOUT_MS 2000
 

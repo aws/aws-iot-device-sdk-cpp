@@ -31,8 +31,8 @@
 #include "OpenSSLConnection.hpp"
 #endif
 
-#include "util/logging/LogMacros.hpp"
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 #include "cli.hpp"
 #include "ConfigCommon.hpp"
 

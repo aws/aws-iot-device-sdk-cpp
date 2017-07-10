@@ -19,9 +19,9 @@
  *
  */
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
-#include "discovery/Discovery.hpp"
+#include "awsiotsdk/discovery/Discovery.hpp"
 
 #define DISCOVER_ACTION_DESCRIPTION "AWS Greengrass Discover Action"
 

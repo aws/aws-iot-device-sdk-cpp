@@ -23,7 +23,7 @@
 
 #include "TestHelper.hpp"
 
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 
 #define KEY_INVALID "test_invalid_key"
 

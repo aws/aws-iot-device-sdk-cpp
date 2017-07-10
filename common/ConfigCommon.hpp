@@ -24,8 +24,8 @@
 
 #include <chrono>
 
-#include "util/memory/stl/String.hpp"
-#include "util/JsonParser.hpp"
+#include "awsiotsdk/util/memory/stl/String.hpp"
+#include "awsiotsdk/util/JsonParser.hpp"
 
 namespace awsiotsdk {
     class ConfigCommon {

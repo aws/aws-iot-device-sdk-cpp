@@ -20,7 +20,7 @@
  */
 
 #include "MultipleClients.hpp"
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 
 #include <cstring>
 #include <chrono>

@@ -24,7 +24,7 @@
 
 #include "MockNetworkConnection.hpp"
 
-#include "ClientCore.hpp"
+#include "awsiotsdk/ClientCore.hpp"
 
 namespace awsiotsdk {
     namespace tests {

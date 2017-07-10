@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include "util/Utf8String.hpp"
+#include "awsiotsdk/util/Utf8String.hpp"
 
-#include "mqtt/Client.hpp"
+#include "awsiotsdk/mqtt/Client.hpp"
 
 #define MAX_NO_OF_REMAINING_LENGTH_BYTES 4
 

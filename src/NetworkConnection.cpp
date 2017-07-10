@@ -22,8 +22,8 @@
  *
  */
 
-#include "util/memory/stl/String.hpp"
-#include "NetworkConnection.hpp"
+#include "awsiotsdk/util/memory/stl/String.hpp"
+#include "awsiotsdk/NetworkConnection.hpp"
 
 namespace awsiotsdk {
     ResponseCode NetworkConnection::Connect() {

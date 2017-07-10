@@ -28,7 +28,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
-#include "ResponseCode.hpp"
+#include "awsiotsdk/ResponseCode.hpp"
 
 // Network settings
 #define SDK_CONFIG_ENDPOINT_KEY "endpoint"

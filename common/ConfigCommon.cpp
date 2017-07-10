@@ -29,7 +29,7 @@
 #define MAX_PATH_LENGTH_ PATH_MAX
 #endif
 
-#include "util/logging/LogMacros.hpp"
+#include "awsiotsdk/util/logging/LogMacros.hpp"
 #include "ConfigCommon.hpp"
 
 #define LOG_TAG_SAMPLE_CONFIG_COMMON "[Sample Config]"
