@@ -72,6 +72,8 @@ namespace awsiotsdk {
             SSL *p_ssl_handle_;                         ///< SSL Handle
             int server_tcp_socket_fd_;                  ///< Server Socket descriptor
 
+            bool certificates_read_flag_;
+
 
             /**
              * @brief Set TLS socket to non-blocking mode
@@ -97,6 +99,15 @@ namespace awsiotsdk {
              * @return ResponseCode - successful connection or TLS error
              */
             ResponseCode AttemptConnect();
+
+            /**
+             * @brief Create a TLS socket and open the connection
+             *
+             * Creates an open socket connection including TLS handshake.
+             *
+             * @return ResponseCode - successful connection or TLS error
+             */
+            ResponseCode LoadCerts();
 
             /**
              * @brief Create a TLS socket and open the connection
@@ -183,7 +194,10 @@ namespace awsiotsdk {
              *
              * @param root_ca_location
              */
-            void SetRootCAPath(util::String root_ca_location) { root_ca_location_ = root_ca_location; }
+            void SetRootCAPath(util::String root_ca_location) {
+                root_ca_location_ = root_ca_location;
+                certificates_read_flag_ = false;
+            }
 
             /**
              * @brief sets the endpoint and the port

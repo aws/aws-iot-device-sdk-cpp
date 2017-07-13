@@ -35,8 +35,6 @@
 
 #define DISCOVER_ACTION_RETRY_COUNT 10
 
-#define THING_NAME_TO_UPDATE "RobotArm_Thing"
-
 #define LOG_TAG_SWITCH_SAMPLE "[Sample - Switch]"
 
 #define SHADOW_DOCUMENT_STATE_KEY "state"
@@ -50,21 +48,36 @@
 #define SHADOW_MYSTATE_VALUE_ON "on"
 #define SHADOW_MYSTATE_VALUE_OFF "off"
 
-#define SHADOW_DOCUMENT_EMPTY_STRING "{" \
-"    \"state\" : {" \
-"        \"desired\" : {" \
-"        	\"myState\" : \"off\"" \
-"        }" \
-"    }" \
-"}"
+#define SHADOW_DOCUMENT_EMPTY_STRING                                           \
+    "{"                                                                        \
+    "    \"state\" : {"                                                        \
+    "        \"desired\" : {"                                                  \
+    "           \"myState\" : \"off\""                                         \
+    "        }"                                                                \
+    "    }"                                                                    \
+    "}"
 
 namespace awsiotsdk {
     namespace samples {
-        bool SwitchThing::ConnectivitySortFunction(ConnectivityInfo info1, ConnectivityInfo info2) {
-            if (0 > info1.id_.compare(info2.id_)) {
-                return true;
-            }
-            return false;
+
+    util::String ThingTargetGet() {
+        util::JsonDocument configDocument;
+        util::JsonParser::InitializeFromJsonFile(configDocument,
+                                                 "config/SwitchConfig.json");
+
+        util::String result;
+        util::JsonParser::GetStringValue(configDocument, "switch_target_thing",
+                                         result);
+
+        return result;
+    }
+
+    bool SwitchThing::ConnectivitySortFunction(ConnectivityInfo info1,
+                                               ConnectivityInfo info2) {
+        if (0 > info1.id_.compare(info2.id_)) {
+            return true;
+        }
+        return false;
         }
 
         ResponseCode SwitchThing::RunSample() {
@@ -217,7 +230,8 @@ namespace awsiotsdk {
 
             // Build topic for publishing
             util::String update_topic = SHADOW_TOPIC_PREFIX;
-            update_topic.append(THING_NAME_TO_UPDATE);
+            util::String thingTarget  = ThingTargetGet();
+            update_topic.append(thingTarget);
             update_topic.append(SHADOW_TOPIC_MIDDLE);
             update_topic.append(SHADOW_REQUEST_TYPE_UPDATE_STRING);
             // Rapidjson uses move semantics, doc needs to be initialized again

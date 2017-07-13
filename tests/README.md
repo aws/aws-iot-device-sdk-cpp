@@ -6,6 +6,11 @@ Please note that while the test descriptions apply across all supported platform
 
 ## Integration Tests
 
+Prerequisites:
+* Create an AWS IoT thing on the IoT console and download the certificates. Make sure the certificates are activated
+* Note down the endpoint that you will use to interact with the thing (will be of the form <xxx>.iot.<region>.amazonaws.com).
+* Copy the certs into the <SDK Root>/certs folder along with the Symantec root CA.
+
 The SDK comes with the below Integration tests for various SDK features. All tests can be run for the provided reference Network wrappers. To build the tests for each provided wrapper, use the below cmake calls from the build directory:
  * OpenSSL (Default if no argument is provided)- `cmake <path_to_sdk>` OR `cmake <path_to_sdk> -DNETWORK_LIBRARY=OpenSSL`
  * MbedTLS - `cmake <path_to_sdk> -DNETWORK_LIBRARY=MbedTLS`
@@ -15,9 +20,10 @@ Followed by:
 
 `make aws-iot-integration-tests`
  
-To run the tests, switch to the generated `bin` folder and use the below command:
- 
-`./aws-iot-integration-tests`
+To run the tests, 
+* switch to the generated `bin` folder
+* modify the `config/IntegrationTestConfig.json` with the certificate names and the endpoint for your thing
+* run  `./aws-iot-integration-tests`
 
 ### Basic MQTT Publish Subscribe
 
@@ -44,4 +50,3 @@ NOTE - This test can fail if auto-reconnect happens while the test is in progres
 ### Multiple Subscription Auto Reconnect Test
 
 This test verifies that the SDK can be used in applications with varying number of subscriptions and that the auto-reconnect will not fail irrespective of number of subscriptions. It creates a client that connects and subscribes to multiple topics, ranging from 0 to 8. It publishes a few messages to verify connectivity. Then it proceeds to simulate a disconnect and waits for reconnect to occur. The connection is verified by messages on the subscribe lifecycle event topic. Once the connection is successfully restored, the client publishes messages again on the test topic to verify resubscribe worked as expected. 
-

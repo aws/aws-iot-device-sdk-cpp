@@ -218,6 +218,13 @@ namespace awsiotsdk {
                               ResponseHelper::ToString(rc).c_str());
             }
         }
+
+        // p_client_state_.action_map_ and p_client_state_.outbound_action_queue_ retains p_client_state_
+        // hence, calling p_client_state_->RegisterAction() or p_client_state_->EnqueueOutboundAction() introduces cyclic references inside p_client_state_
+        // make sure that p_client_state_.action_map_ and p_client_state_.outbound_action_queue_ are cleared prior to p_client_state_ destructor
+        // to break the cyclic references.
+        p_client_state_->ClearRegisteredActions();
+        p_client_state_->ClearOutboundActionQueue();
     }
 }
 

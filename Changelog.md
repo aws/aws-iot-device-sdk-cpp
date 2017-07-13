@@ -1,4 +1,22 @@
 # Change Log
+
+## [1.1.1](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.1) (July 13th, 2017)
+
+Features:
+  - N/A
+
+Bugfixes/Improvements:
+  - Fixed issues:
+    - [#10](https://github.com/aws/aws-iot-device-sdk-cpp/issues/10) - Fix just-in-time-registration of device certs when using OpenSSL
+    - [#12](https://github.com/aws/aws-iot-device-sdk-cpp/issues/12) - Stop receiving duplicate messages when using QoS 1 
+    - [#17](https://github.com/aws/aws-iot-device-sdk-cpp/issues/17) - Disconnect callback should be called even when auto-reconnect is disabled
+    - [#18](https://github.com/aws/aws-iot-device-sdk-cpp/issues/18) - Clear subscriptions on disconnect 
+    - [#20](https://github.com/aws/aws-iot-device-sdk-cpp/issues/20) - Resubscribe to previously subscribed topic should not cause crash 
+    - [#23](https://github.com/aws/aws-iot-device-sdk-cpp/issues/23) - Fix memory leaks
+  - Included pull requests:
+    - [#24](https://github.com/aws/aws-iot-device-sdk-cpp/pull/24) - Fix cyclic refences
+    - [#26](https://github.com/aws/aws-iot-device-sdk-cpp/pull/26) - Fix subscription API documentaion
+  
 ## [1.1.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.0) (May 8th, 2017)
  
 Features:

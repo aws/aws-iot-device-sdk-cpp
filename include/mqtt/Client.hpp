@@ -169,7 +169,7 @@ namespace awsiotsdk {
          * Performs a MQTT Subscribe operation in blocking mode. Action timeout here is the time for which
          * the client waits for a response AFTER the request is sent.
          *
-         * @param p_subscribe_packet - Subscribe packet to use for the operation
+         * @param subscription_list - A list of subscriptions to use for the operation
          * @param action_response_timeout - Timeout in milliseconds within which response should be obtained after request is sent
          *
          * @return ResponseCode indicating status of request
@@ -225,7 +225,7 @@ namespace awsiotsdk {
          * activates Subscription if successful SUBACK is received. If not, the assigned Ack handler will be called
          * with the corrosponding ResponseCode
          *
-         * @param p_subscribe_packet - Subscribe packet to use for the operation
+         * @param subscription_list - A list of subscriptions to use for the operation
          * @param p_async_ack_handler - AsyncAck notification handler to be called when response for this request is processed
          * @param packet_id_out - Packet ID assigned to outgoing packet
          *

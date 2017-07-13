@@ -50,6 +50,8 @@ namespace awsiotsdk {
             std::chrono::milliseconds mqtt_command_timeout_;
 
             std::shared_ptr<ActionData> p_connect_data_;
+
+            std::atomic_bool trigger_disconnect_callback_;
         public:
             util::Map<util::String, std::shared_ptr<Subscription>> subscription_map_;
 
@@ -85,6 +87,9 @@ namespace awsiotsdk {
 
             bool IsPingreqPending() { return is_pingreq_pending_; }
             void SetPingreqPending(bool value) { is_pingreq_pending_ = value; }
+
+            bool isDisconnectCallbackPending() { return trigger_disconnect_callback_; }
+            void setDisconnectCallbackPending(bool value) { trigger_disconnect_callback_ = value; }
 
             virtual uint16_t GetNextPacketId();
             virtual uint16_t GetNextActionId() { return GetNextPacketId(); }

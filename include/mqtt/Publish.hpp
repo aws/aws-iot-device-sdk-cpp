@@ -163,6 +163,8 @@ namespace awsiotsdk {
          * This class defines the Packet type used in MQTT to Acknowledge Publish requests
          */
         class PubackPacket : public Packet {
+        protected:
+            std::atomic_uint_fast16_t publish_packet_id_;
         public:
             // Ensure Default Constructor is deleted, default to move and copy constructors and assignment operators
             // Default virtual destructor
@@ -184,20 +186,23 @@ namespace awsiotsdk {
              *
              * @param packet_id Packet ID for this Puback
              */
-            PubackPacket(uint16_t packet_id);
+            PubackPacket(uint16_t publish_packet_id);
 
             /**
              * @brief Factory Create method
              * @param packet_id Packet ID for this Puback
              * @return nullptr on error, shared_ptr pointing to a created PubackPacket instance if successful
              */
-            static std::shared_ptr<PubackPacket> Create(uint16_t packet_id);
+            static std::shared_ptr<PubackPacket> Create(uint16_t publish_packet_id);
 
             /**
              * @brief Serialize this packet into a String
              * @return String containing serialized packet
              */
             util::String ToString();
+
+            uint16_t GetPublishPacketId() { return publish_packet_id_; }
+            void SetPublishPacketId(uint16_t publish_packet_id) { publish_packet_id_ = publish_packet_id; }
         };
 
         /**

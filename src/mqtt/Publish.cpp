@@ -141,9 +141,9 @@ namespace awsiotsdk {
         /*******************************************
          * PubackPacket class function definitions *
          ******************************************/
-        PubackPacket::PubackPacket(uint16_t packet_id) {
+        PubackPacket::PubackPacket(uint16_t publish_packet_id) {
             packet_size_ = 2; // Packet ID requires 2 bytes in case of QoS1 and QoS2
-            packet_id_ = packet_id;
+            publish_packet_id_ = publish_packet_id;
             fixed_header_.Initialize(MessageTypes::PUBACK, false, QoS::QOS0, false, packet_size_);
             serialized_packet_length_ = packet_size_ + fixed_header_.Length();
         }
@@ -156,7 +156,7 @@ namespace awsiotsdk {
             util::String buf;
             buf.reserve(serialized_packet_length_);
             fixed_header_.AppendToBuffer(buf);
-            AppendUInt16ToBuffer(buf, packet_id_);
+            AppendUInt16ToBuffer(buf, publish_packet_id_);
 
             return buf;
         }

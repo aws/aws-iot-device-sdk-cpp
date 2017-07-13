@@ -31,6 +31,8 @@ namespace awsiotsdk {
     class ConfigCommon {
     protected:
         static util::JsonDocument sdk_config_json_;
+
+        static void LogParseError(const ResponseCode& response_code, const util::JsonDocument& config, util::String key);
     public:
         static uint16_t endpoint_mqtt_port_;
         static uint16_t endpoint_https_port_;

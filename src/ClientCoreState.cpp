@@ -231,4 +231,12 @@ namespace awsiotsdk {
             pending_ack_map_.erase(itr);
         }
     }
+
+    void ClientCoreState::ClearRegisteredActions() {
+        action_map_.clear();
+    }
+
+    void ClientCoreState::ClearOutboundActionQueue() {
+        util::Queue<std::pair<ActionType, std::shared_ptr<ActionData>>>().swap(outbound_action_queue_);
+    }
 }

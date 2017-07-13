@@ -280,6 +280,8 @@ namespace awsiotsdk {
                 }
                 AWS_LOG_ERROR(CONNECT_LOG_TAG, "Connect Write to Network Failed. %s",
                               ResponseHelper::ToString(rc).c_str());
+            } else {
+                p_client_state_->setDisconnectCallbackPending(true);
             }
 
             return rc;
@@ -329,6 +331,12 @@ namespace awsiotsdk {
                 }
             }
 
+            /* convert all subscriptions to inactive */
+            for (auto itr = p_client_state_->subscription_map_.begin(); itr != p_client_state_->subscription_map_.end();
+                 ++itr) {
+                itr->second->SetActive(false);
+            }
+
             rc = p_network_connection->Disconnect();
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_WARN(DISCONNECT_LOG_TAG, "Network disconnect. %s", ResponseHelper::ToString(rc).c_str());
@@ -371,7 +379,7 @@ namespace awsiotsdk {
             }
 
             ResponseCode rc = ResponseCode::SUCCESS;
-            bool do_once = true;
+            p_client_state_->setDisconnectCallbackPending(true);
 
             std::chrono::seconds reconnect_backoff_timer = p_client_state_->GetMinReconnectBackoffTimeout();
             std::chrono::seconds max_backoff_value = p_client_state_->GetMaxReconnectBackoffTimeout();
@@ -381,7 +389,7 @@ namespace awsiotsdk {
             do {
                 if (p_client_state_->IsAutoReconnectEnabled() && p_client_state_->IsAutoReconnectRequired()) {
                     p_client_state_->SetPingreqPending(false);
-                    if (do_once) {
+                    if (p_client_state_->isDisconnectCallbackPending()) {
 
                         std::shared_ptr<ConnectPacket> p_connect_packet =
                             std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
@@ -402,8 +410,6 @@ namespace awsiotsdk {
                                                         p_client_state_->GetAutoReconnectData(),
                                                         p_client_state_->GetMqttCommandTimeout());
                     if (ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED == rc) {
-                        do_once = true;
-
                         // if no subscriptions, skip resubscribe
                         if (p_client_state_->subscription_map_.empty()) {
                             p_client_state_->SetAutoReconnectRequired(false);
@@ -439,7 +445,7 @@ namespace awsiotsdk {
                         }
                     }
 
-                    do_once = false;
+                    p_client_state_->setDisconnectCallbackPending(false);
                     AWS_LOG_ERROR(KEEPALIVE_LOG_TAG, "Reconnect failed. %s", ResponseHelper::ToString(rc).c_str());
 
                     AWS_LOG_INFO(KEEPALIVE_LOG_TAG,
@@ -454,6 +460,17 @@ namespace awsiotsdk {
                                  reconnect_backoff_timer.count());
                     std::this_thread::sleep_for(reconnect_backoff_timer);
                     continue;
+                } else if (p_client_state_->IsAutoReconnectRequired()) {
+                    if (p_client_state_->isDisconnectCallbackPending()) {
+                        std::shared_ptr<ConnectPacket> p_connect_packet =
+                            std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
+
+                        if (nullptr != p_client_state_->p_disconnect_handler_ && nullptr != p_connect_packet) {
+                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), nullptr);
+                        }
+
+                        p_client_state_->setDisconnectCallbackPending(false);
+                    }
                 }
 
                 if (std::chrono::system_clock::now() > next) {

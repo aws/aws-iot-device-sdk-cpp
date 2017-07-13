@@ -51,6 +51,7 @@ namespace awsiotsdk {
             flags_ = 0;
 
             is_connected_ = false;
+            requires_free_ = false;
         }
 
         bool MbedTLSConnection::IsPhysicalLayerConnected() {
@@ -96,6 +97,8 @@ namespace awsiotsdk {
             mbedtls_x509_crt_init(&clicert_);
             mbedtls_pk_init(&pkey_);
 
+            requires_free_ = true;
+
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "...............................%d", MBEDTLS_SSL_MAX_CONTENT_LEN);
 
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "....Seeding the random number generator...");
@@ -106,7 +109,7 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_SSL_INIT_ERROR;
             }
 
-            AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "....Loading the CA root certificate...");
+            AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "....Loading the CA root certificate... %s", root_ca_location_.c_str());
             ret = mbedtls_x509_crt_parse_file(&cacert_, root_ca_location_.c_str());
             if (ret < 0) {
                 AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG,
@@ -181,11 +184,6 @@ namespace awsiotsdk {
             }
 
             mbedtls_ssl_conf_read_timeout(&conf_, static_cast<uint32_t>(tls_handshake_timeout_.count()));
-
-            if ((ret = mbedtls_ssl_setup(&ssl_, &conf_)) != 0) {
-                AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, "Failed!!! mbedtls_ssl_setup returned -0x%x\n\n", -ret);
-                return ResponseCode::NETWORK_SSL_UNKNOWN_ERROR;
-            }
             if ((ret = mbedtls_ssl_set_hostname(&ssl_, endpoint_.c_str())) != 0) {
                 AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, "Failed!!! mbedtls_ssl_set_hostname returned %d\n\n", ret);
                 return ResponseCode::NETWORK_SSL_UNKNOWN_ERROR;
@@ -193,6 +191,11 @@ namespace awsiotsdk {
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "\n\nSSL state connect : %d ", ssl_.state);
             mbedtls_ssl_set_bio(&ssl_, &server_fd_, mbedtls_net_send, NULL, mbedtls_net_recv_timeout);
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "Ok!");
+
+            if ((ret = mbedtls_ssl_setup(&ssl_, &conf_)) != 0) {
+                AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, "Failed!!! mbedtls_ssl_setup returned -0x%x\n\n", -ret);
+                return ResponseCode::NETWORK_SSL_UNKNOWN_ERROR;
+            }
 
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "\n\nSSL state connect : %d ", ssl_.state);
             AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "....Performing the SSL/TLS handshake...");
@@ -311,10 +314,25 @@ namespace awsiotsdk {
         }
 
         ResponseCode MbedTLSConnection::DisconnectInternal() {
-            int ret = 0;
-            do {
-                ret = mbedtls_ssl_close_notify(&ssl_);
-            } while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
+            if (is_connected_) {
+                int ret = 0;
+                do {
+                    ret = mbedtls_ssl_close_notify(&ssl_);
+                } while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
+            }
+
+            if(requires_free_) {
+                mbedtls_net_free(&server_fd_);
+
+                mbedtls_x509_crt_free(&clicert_);
+                mbedtls_x509_crt_free(&cacert_);
+                mbedtls_pk_free(&pkey_);
+                mbedtls_ssl_free(&ssl_);
+                mbedtls_ssl_config_free(&conf_);
+                mbedtls_ctr_drbg_free(&ctr_drbg_);
+                mbedtls_entropy_free(&entropy_);
+                requires_free_ = false;
+            }
 
             is_connected_ = false;
 
@@ -324,19 +342,7 @@ namespace awsiotsdk {
         }
 
         MbedTLSConnection::~MbedTLSConnection() {
-            if (is_connected_) {
-                Disconnect();
-            }
-
-            mbedtls_net_free(&server_fd_);
-
-            mbedtls_x509_crt_free(&clicert_);
-            mbedtls_x509_crt_free(&cacert_);
-            mbedtls_pk_free(&pkey_);
-            mbedtls_ssl_free(&ssl_);
-            mbedtls_ssl_config_free(&conf_);
-            mbedtls_ctr_drbg_free(&ctr_drbg_);
-            mbedtls_entropy_free(&entropy_);
+            Disconnect();
         }
     }
 }
