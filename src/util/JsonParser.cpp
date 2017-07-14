@@ -348,7 +348,7 @@ namespace awsiotsdk {
             }
 
             std::unique_ptr<FILE, int (*)(FILE *)>
-                output_file = std::unique_ptr<FILE, int (*)(FILE *)>(fopen(output_file_path.c_str(), "rwb"), fclose);
+                output_file = std::unique_ptr<FILE, int (*)(FILE *)>(fopen(output_file_path.c_str(), "wb"), fclose);
             if (nullptr == output_file) {
                 return ResponseCode::FILE_OPEN_ERROR;
             }

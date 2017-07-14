@@ -253,6 +253,11 @@ namespace awsiotsdk {
                 if (p_client_state_->subscription_map_.end() != existing_itr) {
                     if (existing_itr->second->IsActive()) {
                         itr = p_subscribe_packet->subscription_list_.erase(itr);
+                        // TODO: This needs to be reworked
+                        continue;
+                    } else {
+                        p_client_state_->subscription_map_.erase(existing_itr);
+                        p_client_state_->subscription_map_.insert(std::make_pair(topic_name, (*itr)));
                     }
                 } else {
                     p_client_state_->subscription_map_.insert(std::make_pair(topic_name, (*itr)));

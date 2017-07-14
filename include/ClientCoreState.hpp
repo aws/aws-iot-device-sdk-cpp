@@ -272,6 +272,22 @@ namespace awsiotsdk {
         void DeleteExpiredAcks();
 
         /**
+         * @brief Clears all registered Actions
+         *
+         * Utility method to remove all registered actions by the client.
+         * Also helps in breaking out of cyclic reference introduced when ::RegisterAction is called.
+         */
+        void ClearRegisteredActions();
+
+        /**
+         * @brief Clears all pending outbound Actions.
+         *
+         * Utility method to remove all pending outbound actions registered by the client.
+         * Also helps in breaking out of cyclic reference introduced when ::EnqueueOutboundAction is called.
+         */
+        void ClearOutboundActionQueue();
+
+        /**
          * @brief Default Constructor
          */
         ClientCoreState();

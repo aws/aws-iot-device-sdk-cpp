@@ -69,7 +69,7 @@ void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *for
 #endif
     va_end(tmp_args);
 
-    std::unique_ptr<char> outputBuff_uptr = std::unique_ptr<char>(new char[requiredLength]);
+    std::unique_ptr<char[]> outputBuff_uptr = std::unique_ptr<char[]>(new char[requiredLength]);
     char *outputBuff = outputBuff_uptr.get();
 #ifdef WIN32
     vsnprintf_s(outputBuff, requiredLength, _TRUNCATE, formatStr, args);

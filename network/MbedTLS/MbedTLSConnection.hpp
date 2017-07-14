@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "mbedtls/config.h"
 
 #include "mbedtls/platform.h"
@@ -48,8 +50,8 @@ namespace awsiotsdk {
             util::String root_ca_location_;                    ///< Pointer to string containing the filename (including path) of the root CA file.
             util::String device_cert_location_;                ///< Pointer to string containing the filename (including path) of the device certificate.
             util::String device_private_key_location_;         ///< Pointer to string containing the filename (including path) of the device private key file.
-            bool server_verification_flag_;                    ///< Boolean.  True = perform server certificate hostname validation.  False = skip validation \b NOT recommended.
-            bool is_connected_;                                ///< Boolean indicating connection status
+            std::atomic_bool server_verification_flag_;                    ///< Boolean.  True = perform server certificate hostname validation.  False = skip validation \b NOT recommended.
+            std::atomic_bool is_connected_;                                ///< Boolean indicating connection status
             std::chrono::milliseconds tls_handshake_timeout_;  ///< Timeout for TLS handshake command
             std::chrono::milliseconds tls_read_timeout_;       ///< Timeout for the TLS Read command
             std::chrono::milliseconds tls_write_timeout_;      ///< Timeout for the TLS Write command
@@ -67,6 +69,9 @@ namespace awsiotsdk {
             mbedtls_x509_crt clicert_;
             mbedtls_pk_context pkey_;
             mbedtls_net_context server_fd_;
+
+            // TODO: This is a Hotfix, requires a better approach
+            std::atomic_bool requires_free_;                               ///< Boolean indicating whether the mbedtls struct variables have been allocated or not
 
             /**
              * @brief Create a TLS socket and open the connection

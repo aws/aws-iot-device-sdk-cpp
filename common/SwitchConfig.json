@@ -23,5 +23,6 @@
   "maximum_acks_to_wait_for": 32,
   "action_processing_rate_hz": 5,
   "maximum_outgoing_action_queue_length": 32,
-  "discover_action_timeout_msecs": 300000
+  "discover_action_timeout_msecs": 300000,
+  "switch_target_thing": "RobotArm_Thing"
 }

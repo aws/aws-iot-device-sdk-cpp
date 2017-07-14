@@ -1,5 +1,5 @@
 # Known Issues/Limitations
-## [1.1.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.0) (May 8th, 2017)
+## [1.1.1](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.1) (July 13th, 2017)
 
 ### Common
 
@@ -7,6 +7,7 @@
   - Network Read - Add recovery options for out of sync buffers
   - Network Layer, Common - Currently, vector resize is called before the vector is passed for reading in data. Determine if a more flexible solution is possible with fewer allocations
   - Network Layer, OpenSSL - error handling for library API calls
+  - Network Layer, OpenSSL - memory leak 
   - Network Layer, WebSocket - Refactor WSLay and merge it with the WebSocket wrapper, improve testing
   - Network Layer, WebSocket - TLS Read and Write are highly inefficient in current implementation, improvements required
   - Network Layer, Common - Add support for IPv6, remove deprecated system API calls

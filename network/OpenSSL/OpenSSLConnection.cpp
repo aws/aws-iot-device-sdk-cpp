@@ -59,6 +59,7 @@ namespace awsiotsdk {
 			tls_write_timeout_ = { timeout_ms / 1000, (timeout_ms % 1000) * 1000};
 
 			is_connected_ = false;
+            certificates_read_flag_ = false;
 		}
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -362,16 +363,7 @@ namespace awsiotsdk {
 			return ret_val;
 		}
 
-		ResponseCode OpenSSLConnection::ConnectInternal() {
-			ResponseCode networkResponse = ResponseCode::SUCCESS;
-
-			X509_VERIFY_PARAM *param = nullptr;
-
-			server_tcp_socket_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-			if(-1 == server_tcp_socket_fd_) {
-				return ResponseCode::NETWORK_TCP_SETUP_ERROR;
-			}
-
+        ResponseCode OpenSSLConnection::LoadCerts() {
 			AWS_LOG_DEBUG(OPENSSL_WRAPPER_LOG_TAG, "Root CA : %s", root_ca_location_.c_str());
 			if(!SSL_CTX_load_verify_locations(p_ssl_context_, root_ca_location_.c_str(), NULL)) {
 				AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Root CA Loading error");
@@ -380,7 +372,7 @@ namespace awsiotsdk {
 
 			if(0 < device_cert_location_.length() && 0 < device_private_key_location_.length()) {
 				AWS_LOG_DEBUG(OPENSSL_WRAPPER_LOG_TAG, "Device crt : %s", device_cert_location_.c_str());
-				if (!SSL_CTX_use_certificate_file(p_ssl_context_, device_cert_location_.c_str(), SSL_FILETYPE_PEM)) {
+                if (!SSL_CTX_use_certificate_chain_file(p_ssl_context_, device_cert_location_.c_str())) {
 					AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Device Certificate Loading error");
 					return ResponseCode::NETWORK_SSL_DEVICE_CRT_PARSE_ERROR;
 				}
@@ -392,6 +384,27 @@ namespace awsiotsdk {
 					return ResponseCode::NETWORK_SSL_KEY_PARSE_ERROR;
 				}
 			}
+
+            certificates_read_flag_ = true;
+            return ResponseCode::SUCCESS;
+        }
+
+        ResponseCode OpenSSLConnection::ConnectInternal() {
+            ResponseCode networkResponse = ResponseCode::SUCCESS;
+
+            X509_VERIFY_PARAM *param = nullptr;
+
+            server_tcp_socket_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+            if (-1 == server_tcp_socket_fd_) {
+                return ResponseCode::NETWORK_TCP_SETUP_ERROR;
+            }
+
+            if(!certificates_read_flag_) {
+                networkResponse = LoadCerts();
+                if (ResponseCode::SUCCESS != networkResponse) {
+                    return networkResponse;
+                }
+            }
 
 			p_ssl_handle_ = SSL_new(p_ssl_context_);
 
@@ -556,8 +569,14 @@ namespace awsiotsdk {
 		}
 
 		ResponseCode OpenSSLConnection::DisconnectInternal() {
+            if(!is_connected_) {
+                return ResponseCode::SUCCESS;
+            }
 			is_connected_ = false;
 			SSL_shutdown(p_ssl_handle_);
+            SSL_free(p_ssl_handle_);
+
+            certificates_read_flag_ = false;
 #ifdef WIN32
 			closesocket(server_tcp_socket_fd_);
 #else
@@ -570,7 +589,6 @@ namespace awsiotsdk {
 			if(is_connected_) {
 				Disconnect();
 			}
-			SSL_free(p_ssl_handle_);
 			SSL_CTX_free(p_ssl_context_);
 #ifdef WIN32
 			WSACleanup();
