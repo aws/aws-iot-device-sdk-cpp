@@ -116,7 +116,8 @@ namespace awsiotsdk {
         util::String current_working_directory;
         {
             char CurrentWD[MAX_PATH_LENGTH_ + 1];
-            getcwd(CurrentWD, sizeof(CurrentWD));
+            if (getcwd(CurrentWD, sizeof(CurrentWD)) == NULL)
+                CurrentWD[0] = 0;
             current_working_directory.append(CurrentWD, strlen(CurrentWD));
         }
         return current_working_directory;
