@@ -115,7 +115,6 @@ namespace awsiotsdk {
         class DiscoverAction : public Action {
         protected:
             std::shared_ptr<mqtt::ClientState> p_client_state_;        ///< Shared Client State instance
-            std::shared_ptr<NetworkConnection> p_network_connection_;  ///< Shared Network Connection instance
 
             /**
              * @brief Parses the discovery response to get the header and response data.
@@ -128,8 +127,37 @@ namespace awsiotsdk {
              * @param max_response_wait_time
              * @return ResponseCode
              */
-            ResponseCode ReadResponseFromNetwork(util::String &sent_packet, util::String &read_payload,
+            ResponseCode ReadResponseFromNetwork(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                 util::String &sent_packet,
+                                                 util::String &read_payload,
                                                  std::chrono::milliseconds max_response_wait_time);
+
+            /**
+             * @brief Make the discovery request
+             *
+             * Writes the discovery request to the network. Returns a SUCCESS when it is able to write to the network
+             * correctly. Returns error code otherwise.
+             *
+             * @param p_network_connection
+             * @param p_discover_packet
+             * @return ResponseCode
+             */
+            ResponseCode MakeDiscoveryRequest(std::shared_ptr<NetworkConnection> p_network_connection,
+                                              const util::String packet_data);
+
+            /**
+             * @brief Initialize the discovery response json
+             *
+             * Convert the received discovery response and insert it into the discover packet. Returns a SUCCESS if it
+             * able to covert it into a Json successfully. Returns error code otherwise.
+             *
+             * @param received_response
+             * @param discover_packet
+             * @return ResponseCode
+             */
+            ResponseCode InitializeDiscoveryResponseJson(const util::String received_response,
+                                                         std::shared_ptr<DiscoverRequestData> discover_packet);
+
         public:
             // Disabling default, move and copy constructors to match Action parent
             // Default virtual destructor

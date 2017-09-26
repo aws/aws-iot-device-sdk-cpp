@@ -37,6 +37,8 @@
 
 #define MQTT_FIXED_HEADER_BYTE_PINGREQ 0xC0
 
+#define SDK_USAGE_METRICS_STRING "%3fUser-Agent%3dCpp%2f"
+
 namespace awsiotsdk {
     namespace tests {
         namespace unit {
@@ -49,6 +51,7 @@ namespace awsiotsdk {
                 static const uint16_t test_packet_id_;
                 static const util::String test_payload_;
                 static const util::String test_client_id_;
+                static const util::String test_user_name_;
                 static const util::String test_topic_name_;
                 static const std::chrono::seconds keep_alive_timeout_;
 
@@ -63,6 +66,7 @@ namespace awsiotsdk {
             const util::String ConnectDisconnectActionTester::test_payload_ = "Test Payload";
             const util::String ConnectDisconnectActionTester::test_client_id_ = "CppSdkTestClient";
             const util::String ConnectDisconnectActionTester::test_topic_name_ = "SdkTest";
+            const util::String ConnectDisconnectActionTester::test_user_name_ = SDK_USAGE_METRICS_STRING;
             const std::chrono::seconds
                 ConnectDisconnectActionTester::keep_alive_timeout_ = std::chrono::seconds(KEEP_ALIVE_TIMEOUT_SECS);
 
@@ -81,7 +85,8 @@ namespace awsiotsdk {
                                                                                                         test_client_id_),
                                                                                                     nullptr,
                                                                                                     nullptr,
-                                                                                                    nullptr);
+                                                                                                    nullptr,
+                                                                                                    true);
 
                 EXPECT_CALL(*p_network_mock_, IsConnected()).WillRepeatedly(::testing::Return(true));
 
@@ -99,7 +104,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                size_t expected_rem_len = 10 + 2 + test_client_id_.length();
+                size_t expected_rem_len = 10 + 2 + test_client_id_.length() + 2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 size_t written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -111,7 +116,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x02, (int) p_last_msg[0]);
+                EXPECT_EQ(0x82, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 uint16_t keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);
@@ -136,7 +141,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                expected_rem_len = 10 + 2 + test_client_id_.length();
+                expected_rem_len = 10 + 2 + test_client_id_.length() + 2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -148,7 +153,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x02, (int) p_last_msg[0]);
+                EXPECT_EQ(0x82, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);
@@ -178,7 +183,8 @@ namespace awsiotsdk {
                                                                                                     nullptr,
                                                                                                     nullptr,
                                                                                                     std::move(
-                                                                                                        p_will_options));
+                                                                                                        p_will_options),
+                                                                                                    true);
 
                 EXPECT_CALL(*p_network_mock_, IsConnected()).WillRepeatedly(::testing::Return(true));
 
@@ -196,8 +202,8 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                size_t expected_rem_len =
-                    10 + 2 + test_client_id_.length() + 2 + test_topic_name_.length() + 2 + test_payload_.length();
+                size_t expected_rem_len = 10 + 2 + test_client_id_.length() + 2 + test_topic_name_.length() + 2 +
+                                          test_payload_.length() + 2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 size_t written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -209,7 +215,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x06, (int) p_last_msg[0]);
+                EXPECT_EQ(0x86, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 uint16_t keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);
@@ -234,8 +240,8 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                expected_rem_len =
-                    10 + 2 + test_client_id_.length() + 2 + test_topic_name_.length() + 2 + test_payload_.length();
+                expected_rem_len = 10 + 2 + test_client_id_.length() + 2 + test_topic_name_.length() +
+                                   2 + test_payload_.length() + 2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -247,7 +253,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x06, (int) p_last_msg[0]);
+                EXPECT_EQ(0x86, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);
@@ -616,7 +622,8 @@ namespace awsiotsdk {
                                                                                                     nullptr,
                                                                                                     nullptr,
                                                                                                     std::move(
-                                                                                                        p_will_options));
+                                                                                                        p_will_options),
+                                                                                                    true);
 
                 EXPECT_CALL(*p_network_mock_, IsConnected()).WillRepeatedly(::testing::Return(true));
 
@@ -634,8 +641,8 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                size_t expected_rem_len =
-                    10 + 2 + 2 + test_topic_name_.length() + 2 + test_payload_.length();
+                size_t expected_rem_len = 10 + 2 + 2 + test_topic_name_.length() + 2 + test_payload_.length()
+                                          + 2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 size_t written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -647,7 +654,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x06, (int) p_last_msg[0]);
+                EXPECT_EQ(0x86, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 uint16_t keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);
@@ -669,8 +676,8 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 //Rem len = Variable header (10 bytes) + 2 + test_client_id_ length
-                expected_rem_len =
-                    10 + 2 + 2 + test_topic_name_.length() + 2 + test_payload_.length();
+                expected_rem_len = 10 + 2 + 2 + test_topic_name_.length() + 2 + test_payload_.length() +
+                                   2 + test_user_name_.length() + strlen(SDK_VERSION_STRING);
                 written_rem_len = TestHelper::ParseRemLenFromBuffer(&p_last_msg);
                 EXPECT_EQ(expected_rem_len, written_rem_len);
 
@@ -682,7 +689,7 @@ namespace awsiotsdk {
                 p_last_msg++;
 
                 // Connect flags
-                EXPECT_EQ(0x06, (int) p_last_msg[0]);
+                EXPECT_EQ(0x86, (int) p_last_msg[0]);
                 p_last_msg++;
 
                 keep_alive_timeout = TestHelper::ReadUint16FromBuffer(&p_last_msg);

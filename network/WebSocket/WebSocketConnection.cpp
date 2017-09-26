@@ -271,6 +271,7 @@ namespace awsiotsdk {
 
         ResponseCode WebSocketConnection::DisconnectInternal() {
             is_connected_ = false;
+            ClearBuffer();
             ResponseCode rc = openssl_connection_.Disconnect();
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(WEBSOCKET_WRAPPER_LOG_TAG, "SSL Disconnect failed");

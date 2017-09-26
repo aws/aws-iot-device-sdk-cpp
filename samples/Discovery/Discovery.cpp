@@ -171,6 +171,9 @@ namespace awsiotsdk {
                 AWS_LOG_INFO(LOG_TAG_DISCOVERY_SAMPLE, "GGC connectivity information found for this Device!!\n");
 
                 util::String current_working_directory = ConfigCommon::GetCurrentPath();
+                if (0 == current_working_directory.length()) {
+                    return ResponseCode::FILE_OPEN_ERROR;
+                }
 #ifdef WIN32
                 current_working_directory.append("\\");
 #else

@@ -104,7 +104,9 @@ namespace awsiotsdk {
     size_t ConfigCommon::maximum_outgoing_action_queue_length_;
     uint32_t ConfigCommon::action_processing_rate_hz_;
 
-    void ConfigCommon::LogParseError(const ResponseCode &response_code, const util::JsonDocument &config, util::String key) {
+    void ConfigCommon::LogParseError(const ResponseCode &response_code,
+                                     const util::JsonDocument &config,
+                                     util::String key) {
         AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
                       "Error in Parsing Key: %s\n. %s\n parse error code : %d, offset : %d",
                       key.c_str(), ResponseHelper::ToString(response_code).c_str(),
@@ -113,17 +115,15 @@ namespace awsiotsdk {
     }
 
     util::String ConfigCommon::GetCurrentPath() {
-        util::String current_working_directory;
-        {
-            char CurrentWD[MAX_PATH_LENGTH_ + 1];
-            getcwd(CurrentWD, sizeof(CurrentWD));
-            current_working_directory.append(CurrentWD, strlen(CurrentWD));
-        }
-        return current_working_directory;
+        char current_wd[MAX_PATH_LENGTH_ + 1];
+        return (getcwd(current_wd, sizeof(current_wd)) ? std::string(current_wd) : std::string(""));
     }
 
     ResponseCode ConfigCommon::InitializeCommon(const util::String &config_file_relative_path) {
         util::String config_file_absolute_path = GetCurrentPath();
+        if (0 == config_file_absolute_path.length()) {
+            return ResponseCode::FILE_OPEN_ERROR;
+        }
 
 #ifdef WIN32
         config_file_absolute_path.append("\\");
@@ -176,6 +176,9 @@ namespace awsiotsdk {
             return rc;
         }
         root_ca_path_ = GetCurrentPath();
+        if (0 == root_ca_path_.length()) {
+            return ResponseCode::FILE_OPEN_ERROR;
+        }
         root_ca_path_.append("/");
         root_ca_path_.append(temp_str);
 
@@ -185,6 +188,9 @@ namespace awsiotsdk {
             return rc;
         }
         client_cert_path_ = GetCurrentPath();
+        if (0 == client_cert_path_.length()) {
+            return ResponseCode::FILE_OPEN_ERROR;
+        }
         client_cert_path_.append("/");
         client_cert_path_.append(temp_str);
 
@@ -194,6 +200,9 @@ namespace awsiotsdk {
             return rc;
         }
         client_key_path_ = GetCurrentPath();
+        if (0 == client_key_path_.length()) {
+            return ResponseCode::FILE_OPEN_ERROR;
+        }
         client_key_path_.append("/");
         client_key_path_.append(temp_str);
 

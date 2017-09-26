@@ -29,319 +29,319 @@ namespace awsiotsdk {
     std::ostream &operator<<(std::ostream &os, ResponseCode rc) {
         switch (rc) {
             case ResponseCode::DISCOVER_ACTION_NO_INFORMATION_PRESENT:
-                os << "No information found for device";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_NO_INFORMATION_PRESENT_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_SUCCESS:
-                os << "Discover action successful";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_SUCCESS_STRING;
                 break;
             case ResponseCode::SHADOW_RECEIVED_DELTA:
-                os << "Received the shadow delta";
+                os << awsiotsdk::ResponseHelper::SHADOW_RECEIVED_DELTA_STRING;
                 break;
             case ResponseCode::SHADOW_REQUEST_ACCEPTED:
-                os << "Shadow request accepted";
+                os << awsiotsdk::ResponseHelper::SHADOW_REQUEST_ACCEPTED_STRING;
                 break;
             case ResponseCode::NETWORK_PHYSICAL_LAYER_CONNECTED:
-                os << "Physical network layer connected";
+                os << awsiotsdk::ResponseHelper::NETWORK_PHYSICAL_LAYER_CONNECTED_STRING;
                 break;
             case ResponseCode::NETWORK_MANUALLY_DISCONNECTED:
-                os << "Network manually disconnected";
+                os << awsiotsdk::ResponseHelper::NETWORK_MANUALLY_DISCONNECTED_STRING;
                 break;
             case ResponseCode::NETWORK_ATTEMPTING_RECONNECT:
-                os << "Attempting to reconnect to the network";
+                os << awsiotsdk::ResponseHelper::NETWORK_ATTEMPTING_RECONNECT_STRING;
                 break;
             case ResponseCode::NETWORK_RECONNECTED:
-                os << "Network reconnected";
+                os << awsiotsdk::ResponseHelper::NETWORK_RECONNECTED_STRING;
                 break;
             case ResponseCode::MQTT_NOTHING_TO_READ:
-                os << "No MQTT packets received";
+                os << awsiotsdk::ResponseHelper::MQTT_NOTHING_TO_READ_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED:
-                os << "Successfully connected to MQTT server";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_CONNECTION_ACCEPTED_STRING;
                 break;
             case ResponseCode::SUCCESS:
-                os << "Success";
+                os << awsiotsdk::ResponseHelper::SUCCESS_STRING;
                 break;
             case ResponseCode::FAILURE:
-                os << "Failure";
+                os << awsiotsdk::ResponseHelper::FAILURE_STRING;
                 break;
             case ResponseCode::NULL_VALUE_ERROR:
-                os << "One or more parameters were null";
+                os << awsiotsdk::ResponseHelper::NULL_VALUE_ERROR_STRING;
                 break;
             case ResponseCode::FILE_OPEN_ERROR:
-                os << "Error occurred while trying to open the file";
+                os << awsiotsdk::ResponseHelper::FILE_OPEN_ERROR_STRING;
                 break;
             case ResponseCode::FILE_NAME_INVALID:
-                os << "File name provided is invalid or of zero length";
+                os << awsiotsdk::ResponseHelper::FILE_NAME_INVALID_STRING;
                 break;
             case ResponseCode::MUTEX_INIT_ERROR:
-                os << "Error occurred while initializing the mutex";
+                os << awsiotsdk::ResponseHelper::MUTEX_INIT_ERROR_STRING;
                 break;
             case ResponseCode::MUTEX_LOCK_ERROR:
-                os << "Error occurred while locking the mutex";
+                os << awsiotsdk::ResponseHelper::MUTEX_LOCK_ERROR_STRING;
                 break;
             case ResponseCode::MUTEX_UNLOCK_ERROR:
-                os << "Error occurred while unlocking the mutex";
+                os << awsiotsdk::ResponseHelper::MUTEX_UNLOCK_ERROR_STRING;
                 break;
             case ResponseCode::MUTEX_DESTROY_ERROR:
-                os << "Error occurred while destroying the mutex";
+                os << awsiotsdk::ResponseHelper::MUTEX_DESTROY_ERROR_STRING;
                 break;
             case ResponseCode::THREAD_EXITING:
-                os << "Thread is exiting";
+                os << awsiotsdk::ResponseHelper::THREAD_EXITING_STRING;
                 break;
             case ResponseCode::NETWORK_TCP_CONNECT_ERROR:
-                os << "TCP Error occurred while opening a socket";
+                os << awsiotsdk::ResponseHelper::NETWORK_TCP_CONNECT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_TCP_SETUP_ERROR:
-                os << "Error occurred while setting up the TCP socket";
+                os << awsiotsdk::ResponseHelper::NETWORK_TCP_SETUP_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_TCP_UNKNOWN_HOST:
-                os << "Unable to find host specified";
+                os << awsiotsdk::ResponseHelper::NETWORK_TCP_UNKNOWN_HOST_STRING;
                 break;
             case ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED:
-                os << "No endpoint specified";
+                os << awsiotsdk::ResponseHelper::NETWORK_TCP_NO_ENDPOINT_SPECIFIED_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_INIT_ERROR:
-                os << "Error occurred while initializing SSL";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_INIT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_ROOT_CRT_PARSE_ERROR:
-                os << "Error occurred while parsing the root CRT";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_ROOT_CRT_PARSE_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_DEVICE_CRT_PARSE_ERROR:
-                os << "Error occurred while parsing the device CRT";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_DEVICE_CRT_PARSE_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_KEY_PARSE_ERROR:
-                os << "Error occurred while parsing the private key";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_KEY_PARSE_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_TLS_HANDSHAKE_ERROR:
-                os << "Error occurred while performing the TLS handshake";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_TLS_HANDSHAKE_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_CONNECT_ERROR:
-                os << "Error occurred during the connect attempt";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_CONNECT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_CONNECT_TIMEOUT_ERROR:
-                os << "The connect attempt timed out";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_CONNECT_TIMEOUT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_CONNECTION_CLOSED_ERROR:
-                os << "The SSL connection was closed";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_CONNECTION_CLOSED_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_WRITE_ERROR:
-                os << "Error occurred during the SSL write operation";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_WRITE_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_WRITE_TIMEOUT_ERROR:
-                os << "The SSL write operation timed out";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_WRITE_TIMEOUT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_READ_ERROR:
-                os << "Error occurred during the SSL read operation";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_READ_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_READ_TIMEOUT_ERROR:
-                os << "The SSL read operation timed out";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_READ_TIMEOUT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_NOTHING_TO_READ:
-                os << "No SSL packets received";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_NOTHING_TO_READ_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_UNKNOWN_ERROR:
-                os << "Unknown error occurred during an SSL operation";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_UNKNOWN_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_SSL_SERVER_VERIFICATION_ERROR:
-                os << "Unable to verify server name";
+                os << awsiotsdk::ResponseHelper::NETWORK_SSL_SERVER_VERIFICATION_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_DISCONNECTED_ERROR:
-                os << "Network is disconnected";
+                os << awsiotsdk::ResponseHelper::NETWORK_DISCONNECTED_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_RECONNECT_TIMED_OUT_ERROR:
-                os << "Reconnect operation time out";
+                os << awsiotsdk::ResponseHelper::NETWORK_RECONNECT_TIMED_OUT_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_ALREADY_CONNECTED_ERROR:
-                os << "Network is already connected";
+                os << awsiotsdk::ResponseHelper::NETWORK_ALREADY_CONNECTED_ERROR_STRING;
                 break;
             case ResponseCode::NETWORK_PHYSICAL_LAYER_DISCONNECTED:
-                os << "Physical network layer is disconnected";
+                os << awsiotsdk::ResponseHelper::NETWORK_PHYSICAL_LAYER_DISCONNECTED_STRING;
                 break;
             case ResponseCode::NETWORK_NOTHING_TO_WRITE_ERROR:
-                os << "No packets to write to the network";
+                os << awsiotsdk::ResponseHelper::NETWORK_NOTHING_TO_WRITE_ERROR_STRING;
                 break;
             case ResponseCode::ACTION_NOT_REGISTERED_ERROR:
-                os << "The action attempted is not registered with the client";
+                os << awsiotsdk::ResponseHelper::ACTION_NOT_REGISTERED_ERROR_STRING;
                 break;
             case ResponseCode::ACTION_QUEUE_FULL:
-                os << "The client action queue is full";
+                os << awsiotsdk::ResponseHelper::ACTION_QUEUE_FULL_STRING;
                 break;
             case ResponseCode::ACTION_CREATE_FAILED:
-                os << "The client was unable to create the action";
+                os << awsiotsdk::ResponseHelper::ACTION_CREATE_FAILED_STRING;
                 break;
             case ResponseCode::MQTT_CONNECTION_ERROR:
-                os << "Unable to establish the MQTT connection";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNECTION_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNECT_TIMEOUT_ERROR:
-                os << "The MQTT connect operation timed out";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNECT_TIMEOUT_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_REQUEST_TIMEOUT_ERROR:
-                os << "The MQTT request timed out";
+                os << awsiotsdk::ResponseHelper::MQTT_REQUEST_TIMEOUT_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_UNEXPECTED_CLIENT_STATE_ERROR:
-                os << "The MQTT client is in an unexpected state";
+                os << awsiotsdk::ResponseHelper::MQTT_UNEXPECTED_CLIENT_STATE_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CLIENT_NOT_IDLE_ERROR:
-                os << "The MQTT client is not idle";
+                os << awsiotsdk::ResponseHelper::MQTT_CLIENT_NOT_IDLE_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_RX_MESSAGE_PACKET_TYPE_INVALID_ERROR:
-                os << "The MQTT message is of an invalid type";
+                os << awsiotsdk::ResponseHelper::MQTT_RX_MESSAGE_PACKET_TYPE_INVALID_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_MAX_SUBSCRIPTIONS_REACHED_ERROR:
-                os << "Reached maximum MQTT subscriptions";
+                os << awsiotsdk::ResponseHelper::MQTT_MAX_SUBSCRIPTIONS_REACHED_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_DECODE_REMAINING_LENGTH_ERROR:
-                os << "Error occurred while decoding the remaining length of the MQTT message";
+                os << awsiotsdk::ResponseHelper::MQTT_DECODE_REMAINING_LENGTH_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_UNKNOWN_ERROR:
-                os << "MQTT connect request failed with server returning an unknown error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_UNKNOWN_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_UNACCEPTABLE_PROTOCOL_VERSION_ERROR:
-                os << "MQTT connect request failed with server returning an unacceptable protocol error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_UNACCEPTABLE_PROTOCOL_VERSION_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_IDENTIFIER_REJECTED_ERROR:
-                os << "MQTT connect request failed with server returning an identifier rejected error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_IDENTIFIER_REJECTED_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_SERVER_UNAVAILABLE_ERROR:
-                os << "MQTT connect request failed with server returning an unavailable error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_SERVER_UNAVAILABLE_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_BAD_USERDATA_ERROR:
-                os << "MQTT connect request failed with server returning a bad userdata error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_BAD_USERDATA_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_CONNACK_NOT_AUTHORIZED_ERROR:
-                os << "MQTT connect request failed with server returning a  not authorized error";
+                os << awsiotsdk::ResponseHelper::MQTT_CONNACK_NOT_AUTHORIZED_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_NO_SUBSCRIPTION_FOUND:
-                os << "No MQTT subscriptions were found for the requested topic";
+                os << awsiotsdk::ResponseHelper::MQTT_NO_SUBSCRIPTION_FOUND_STRING;
                 break;
             case ResponseCode::MQTT_SUBSCRIPTION_NOT_ACTIVE:
-                os << "The MQTT subscription specified is not active";
+                os << awsiotsdk::ResponseHelper::MQTT_SUBSCRIPTION_NOT_ACTIVE_STRING;
                 break;
             case ResponseCode::MQTT_UNEXPECTED_PACKET_FORMAT_ERROR:
-                os << "Unable to serialize the MQTT packet as the format is unexpected";
+                os << awsiotsdk::ResponseHelper::MQTT_UNEXPECTED_PACKET_FORMAT_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST:
-                os << "Too many subscriptions were provided in the MQTT subscribe/unsubscribe request";
+                os << awsiotsdk::ResponseHelper::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST_STRING;
                 break;
             case ResponseCode::MQTT_INVALID_DATA_ERROR:
-                os << "Invalid/Insufficient data was provided in the MQTT request";
+                os << awsiotsdk::ResponseHelper::MQTT_INVALID_DATA_ERROR_STRING;
                 break;
             case ResponseCode::MQTT_SUBSCRIBE_PARTIALLY_FAILED:
-                os << "Failed to subscribe to atleast one of the topics in the subscribe request";
+                os << awsiotsdk::ResponseHelper::MQTT_SUBSCRIBE_PARTIALLY_FAILED_STRING;
                 break;
             case ResponseCode::MQTT_SUBSCRIBE_FAILED:
-                os << "Failed to subscribe to any of the topics in the subscribe request";
+                os << awsiotsdk::ResponseHelper::MQTT_SUBSCRIBE_FAILED_STRING;
                 break;
             case ResponseCode::JSON_PARSE_KEY_NOT_FOUND_ERROR:
-                os << "Unable to find the requested key in the JSON";
+                os << awsiotsdk::ResponseHelper::JSON_PARSE_KEY_NOT_FOUND_ERROR_STRING;
                 break;
             case ResponseCode::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR:
-                os << "The value for the JSON key was of an unexpected type";
+                os << awsiotsdk::ResponseHelper::JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR_STRING;
                 break;
             case ResponseCode::JSON_PARSING_ERROR:
-                os << "Error occurred while parsing the JSON";
+                os << awsiotsdk::ResponseHelper::JSON_PARSING_ERROR_STRING;
                 break;
             case ResponseCode::JSON_MERGE_FAILED:
-                os << "Failed to merge the JSON";
+                os << awsiotsdk::ResponseHelper::JSON_MERGE_FAILED_STRING;
                 break;
             case ResponseCode::JSON_DIFF_FAILED:
-                os << "Failed to diff the JSON";
+                os << awsiotsdk::ResponseHelper::JSON_DIFF_FAILED_STRING;
                 break;
             case ResponseCode::SHADOW_WAIT_FOR_PUBLISH:
-                os << "Waiting for previously published shadow updates";
+                os << awsiotsdk::ResponseHelper::SHADOW_WAIT_FOR_PUBLISH_STRING;
                 break;
             case ResponseCode::SHADOW_JSON_BUFFER_TRUNCATED:
-                os << "Shadow JSON is truncated as size specified is less than the size of the JSON";
+                os << awsiotsdk::ResponseHelper::SHADOW_JSON_BUFFER_TRUNCATED_STRING;
                 break;
             case ResponseCode::SHADOW_JSON_ERROR:
-                os << "Encoding error occurred while printing the shadow JSON";
+                os << awsiotsdk::ResponseHelper::SHADOW_JSON_ERROR_STRING;
                 break;
-            case ResponseCode::SHADOW_JSON_EMPTY_ERROR :
-                os << "The shadow JSON is empty";
+            case ResponseCode::SHADOW_JSON_EMPTY_ERROR:
+                os << awsiotsdk::ResponseHelper::SHADOW_JSON_EMPTY_ERROR_STRING;
                 break;
             case ResponseCode::SHADOW_REQUEST_MAP_EMPTY:
-                os << "The shadow request map is empty ";
+                os << awsiotsdk::ResponseHelper::SHADOW_REQUEST_MAP_EMPTY_STRING;
                 break;
             case ResponseCode::SHADOW_MQTT_DISCONNECTED_ERROR:
-                os << "The shadow's MQTT connection is inactive";
+                os << awsiotsdk::ResponseHelper::SHADOW_MQTT_DISCONNECTED_ERROR_STRING;
                 break;
             case ResponseCode::SHADOW_UNEXPECTED_RESPONSE_TYPE:
-                os << "The shadow response received is of an unexpected type";
+                os << awsiotsdk::ResponseHelper::SHADOW_UNEXPECTED_RESPONSE_TYPE_STRING;
                 break;
             case ResponseCode::SHADOW_UNEXPECTED_RESPONSE_TOPIC:
-                os << "The shadow response was received on an unexpected topic";
+                os << awsiotsdk::ResponseHelper::SHADOW_UNEXPECTED_RESPONSE_TOPIC_STRING;
                 break;
             case ResponseCode::SHADOW_REQUEST_REJECTED:
-                os << "The shadow request was rejected by the server";
+                os << awsiotsdk::ResponseHelper::SHADOW_REQUEST_REJECTED_STRING;
                 break;
             case ResponseCode::SHADOW_MQTT_CLIENT_NOT_SET_ERROR:
-                os << "There is no client set for this shadow";
+                os << awsiotsdk::ResponseHelper::SHADOW_MQTT_CLIENT_NOT_SET_ERROR_STRING;
                 break;
             case ResponseCode::SHADOW_NOTHING_TO_UPDATE:
-                os << "There are no shadow updates to be performed";
+                os << awsiotsdk::ResponseHelper::SHADOW_NOTHING_TO_UPDATE_STRING;
                 break;
             case ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD:
-                os << "The shadow response is in an unexpected format";
+                os << awsiotsdk::ResponseHelper::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD_STRING;
                 break;
             case ResponseCode::SHADOW_RECEIVED_OLD_VERSION_UPDATE:
-                os << "The received shadow version is older than the current one on the device";
+                os << awsiotsdk::ResponseHelper::SHADOW_RECEIVED_OLD_VERSION_UPDATE_STRING;
                 break;
             case ResponseCode::WEBSOCKET_SIGN_URL_NO_MEM:
-                os << "Internal buffer overflowed while signing WebSocket URL";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_SIGN_URL_NO_MEM_STRING;
                 break;
             case ResponseCode::WEBSOCKET_GEN_CLIENT_KEY_ERROR:
-                os << "Error occurred while generating WebSocket handshake client key";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_GEN_CLIENT_KEY_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_HANDSHAKE_ERROR:
-                os << "Unable to complete WebSocket handshake";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_HANDSHAKE_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_HANDSHAKE_WRITE:
-                os << "Unable to transmit WebSocket handshake request";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_HANDSHAKE_WRITE_STRING;
                 break;
             case ResponseCode::WEBSOCKET_HANDSHAKE_READ:
-                os << "Unable to receive WebSocket handshake request";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_HANDSHAKE_READ_STRING;
                 break;
             case ResponseCode::WEBSOCKET_HANDSHAKE_VERIFY_ERROR:
-                os << "Unable to verify handshake response from the server";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_HANDSHAKE_VERIFY_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_WSLAY_CONTEXT_INIT_ERROR:
-                os << "Erro occurred while initializing the WebSocket WSLay context";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_WSLAY_CONTEXT_INIT_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_FRAME_RECEIVE_ERROR:
-                os << "Error occurred while receiving WebSocket frame";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_FRAME_RECEIVE_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_FRAME_TRANSMIT_ERROR:
-                os << "Error occurred while transmitting WebSocket frame";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_FRAME_TRANSMIT_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_PROTOCOL_VIOLATION:
-                os << "Protocol violation was detected in the received WebSocket frames";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_PROTOCOL_VIOLATION_STRING;
                 break;
             case ResponseCode::WEBSOCKET_MAX_LIFETIME_REACHED:
-                os << "Max lifetime of the WebSocket connection was reached";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_MAX_LIFETIME_REACHED_STRING;
                 break;
             case ResponseCode::WEBSOCKET_DISCONNECT_ERROR:
-                os << "Error occurred while disconnecting the WebSocket";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_DISCONNECT_ERROR_STRING;
                 break;
             case ResponseCode::WEBSOCKET_GET_UTC_TIME_FAILED:
-                os << "WebSocket wrapper is unable to get the UTC ";
+                os << awsiotsdk::ResponseHelper::WEBSOCKET_GET_UTC_TIME_FAILED_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_REQUEST_FAILED_ERROR:
-                os << "Unable to perform the discover action";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_REQUEST_FAILED_ERROR_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_REQUEST_TIMED_OUT_ERROR:
-                os << "The discover action request timed out";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_REQUEST_TIMED_OUT_ERROR_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_UNAUTHORIZED:
-                os << "The device was unauthorized to perform the discovery action";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_UNAUTHORIZED_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_SERVER_ERROR:
-                os << "Server returned unknown error while performing the discovery action";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_SERVER_ERROR_STRING;
                 break;
             case ResponseCode::DISCOVER_ACTION_REQUEST_OVERLOAD:
-                os << "The discovery action is overloading the server, try again after some time";
+                os << awsiotsdk::ResponseHelper::DISCOVER_ACTION_REQUEST_OVERLOAD_STRING;
                 break;
             case ResponseCode::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR:
-                os << "The discover response JSON is incomplete ";
+                os << awsiotsdk::ResponseHelper::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR_STRING;
                 break;
         }
         os << " : SDK Code " << static_cast<int>(rc) << ".";

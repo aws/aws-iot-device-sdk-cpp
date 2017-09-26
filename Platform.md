@@ -25,7 +25,7 @@ This file contains instructions for installing dependencies on different platfor
     
  `sudo update-alternatives --config gcc`
  `sudo update-alternatives --config g++`
-  * Install Openssl 1.0.2 [OpenSSL Installation](http://www.linuxfromscratch.org/blfs/view/svn/postlfs/openssl.html)
+  * Install Openssl 1.0.2. Linux From Scratch has good guides on installing versions of OpenSSL from source. 
   * Build libssl-dev 1.0.2 or above.
     * Download libssl-dev_1.0.2 [libssl-dev_1.0.2](http://mirrors.manchester.m247.com/raspbian/pool/main/o/openssl/libssl-dev_1.0.2j-1_armhf.deb)
     * run `sudo dpkg -i libssl-dev_1.0.2j-1_armhf.deb`

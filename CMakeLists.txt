@@ -43,6 +43,8 @@ endif()
 #############################
 # Add SDK Target #
 #############################
+add_definitions(-DSDK_VERSION_STRING="1.2.0")
+
 # Create library file. The Client applications MUST link to below target if using this CMake file
 set(SDK_TARGET_NAME aws-iot-sdk-cpp)
 if (BUILD_SHARED_LIBRARY)
@@ -59,6 +61,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/download)
 target_include_directories(${SDK_TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/rapidjson/src/include)
+
+# Download sanitizers, optional
+if (SANITIZE_THREAD OR SANITIZE_ADDRESS OR SANITIZE_MEMORY OR SANITIZE_UNDEFINED)
+    configure_file(CMakeLists-sanitizers.txt.in ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/sanitizers/download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/sanitizers/download)
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/sanitizers/download)
+endif()
 
 # Get Common SDK Sources
 file(GLOB_RECURSE SDK_SOURCES FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/src/*.cpp)
@@ -100,6 +111,7 @@ if(MSVC)
 	file(GLOB SDK_UTIL_THREADING_HEADERS "${PROJECT_SOURCE_DIR}/include/util/threading/*.hpp")
 	file(GLOB SDK_MQTT_HEADERS "${PROJECT_SOURCE_DIR}/include/mqtt/*.hpp")
 	file(GLOB SDK_SHADOW_HEADERS "${PROJECT_SOURCE_DIR}/include/shadow/*.hpp")
+	file(GLOB SDK_DISCOVERY_HEADERS "${PROJECT_SOURCE_DIR}/include/discovery/*.hpp")
 
 	file(GLOB SDK_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 	file(GLOB SDK_UTIL_COMMON_SOURCES "${PROJECT_SOURCE_DIR}/src/util/*.cpp")
@@ -107,6 +119,7 @@ if(MSVC)
 	file(GLOB SDK_UTIL_THREADING_SOURCES "${PROJECT_SOURCE_DIR}/src/util/threading/*.cpp")
 	file(GLOB SDK_MQTT_SOURCES "${PROJECT_SOURCE_DIR}/src/mqtt/*.cpp")
 	file(GLOB SDK_SHADOW_SOURCES "${PROJECT_SOURCE_DIR}/src/shadow/*.cpp")
+	file(GLOB SDK_DISCOVERY_SOURCES "${PROJECT_SOURCE_DIR}/src/discovery/*.cpp")
 
 	# Required to make Header files visible in Visual Studio
 	file(GLOB_RECURSE SDKHeaders FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/include/*.hpp)
@@ -119,6 +132,7 @@ if(MSVC)
 	source_group("Header Files\\aws-iot\\util\\threading" FILES ${SDK_UTIL_THREADING_HEADERS})
 	source_group("Header Files\\aws-iot\\mqtt" FILES ${SDK_MQTT_HEADERS})
 	source_group("Header Files\\aws-iot\\shadow" FILES ${SDK_SHADOW_HEADERS})
+	source_group("Header Files\\aws-iot\\discovery" FILES ${SDK_DISCOVERY_HEADERS})
 
 	source_group("Source Files\\aws-iot" FILES ${SDK_COMMON_SOURCES})
 	source_group("Source Files\\aws-iot\\util" FILES ${SDK_UTIL_COMMON_SOURCES})
@@ -126,6 +140,7 @@ if(MSVC)
 	source_group("Source Files\\aws-iot\\util\\threading" FILES ${SDK_UTIL_THREADING_SOURCES})
 	source_group("Source Files\\aws-iot\\mqtt" FILES ${SDK_MQTT_SOURCES})
 	source_group("Source Files\\aws-iot\\shadow" FILES ${SDK_SHADOW_SOURCES})
+	source_group("Source Files\\aws-iot\\discovery" FILES ${SDK_DISCOVERY_SOURCES})
 endif()
 
 #####################################

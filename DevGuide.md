@@ -114,6 +114,16 @@ The SDK uses [RapidJson](https://github.com/miloyip/rapidjson) to provide Json p
 
 Please note that while RapidJson supports nested Json parsing and the SDK itself also supports it, operations such as merge and diff are very expensive. The server supports a nested Json depth of up to 5. But the SDK uses recursion to perform nested Json operations which might cause issues on devices with limited resources. The recommended approach is to keep the Json depth as low as possible. Code for the merge and diff operations can be seen in [here](./src/util/JsonParser.cpp). 
 
+<a name="logging"></a>
+### Logging
+The ConsoleLogSystem class is used to provide logging capabilities. To enable logging in your application, using the PubSub sample as an example:
+* [Create](./samples/PubSub/PubSub.cpp#L271) an instance of the ConsoleLogSystem 
+* [Initialize](./samples/PubSub/PubSub.cpp#L273) the instance
+* Define a [log tag](./samples/PubSub/PubSub.cpp#L40) for use in the application 
+* Use [AWS_LOG_INFO](./src/mqtt/Connect.cpp#L74) for logging information
+* Use [AWS_LOG_ERROR](./samples/PubSub/PubSub.cpp#142) for logging errors
+
+
 <a name="advancedguide"></a>
 ## Advanced Usage Guidelines
 The SDK can also be used to create custom clients for different use cases. The SDK is structured around a Core Client and Actions that are executed by this client. The provided MQTT Client referenced above, is simply one implementation that uses all the supported Actions. Custom Clients can be created using only some of the Actions which perform only a subset of MQTT functionality.

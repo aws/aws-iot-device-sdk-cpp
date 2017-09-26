@@ -31,7 +31,7 @@
 using namespace awsiotsdk;
 using namespace awsiotsdk::util::Logging;
 
-static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag) {
+static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag, const char *function, unsigned int line) {
     util::StringStream ss;
 
     ss << "[" << GetLogLevelName(logLevel) << "] ";
@@ -45,7 +45,9 @@ static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag) {
         ss << time << ":" << now_ms.count() % 1000 << " ";
     }
     ss << tag << " [" << std::this_thread::get_id() << "] ";
-
+    if (line && function) {
+        ss << "[" << function << ":L"<< line << "] : ";
+    }
     return ss.str();
 }
 
@@ -53,9 +55,9 @@ FormattedLogSystem::FormattedLogSystem(LogLevel logLevel) :
     m_logLevel(logLevel) {
 }
 
-void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *formatStr, ...) {
+void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *function, unsigned int line, const char *formatStr, ...) {
     util::StringStream ss;
-    ss << CreateLogPrefixLine(logLevel, tag);
+    ss << CreateLogPrefixLine(logLevel, tag, function, line);
 
     std::va_list args;
     va_start(args, formatStr);
@@ -86,7 +88,7 @@ void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *for
 
 void FormattedLogSystem::LogStream(LogLevel logLevel, const char *tag, const util::OStringStream &message_stream) {
     util::StringStream ss;
-    ss << CreateLogPrefixLine(logLevel, tag) << message_stream.rdbuf()->str() << std::endl;
+    ss << CreateLogPrefixLine(logLevel, tag, NULL, 0) << message_stream.rdbuf()->str() << std::endl;
 
     ProcessFormattedStatement(ss.str());
 }

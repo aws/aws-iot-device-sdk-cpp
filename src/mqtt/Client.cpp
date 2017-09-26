@@ -99,6 +99,22 @@ namespace awsiotsdk {
         return p_client_core_->PerformAction(ActionType::CONNECT, p_connect_packet, action_response_timeout);
     }
 
+    ResponseCode MqttClient::Connect(std::chrono::milliseconds action_response_timeout, bool is_clean_session,
+                                     mqtt::Version mqtt_version, std::chrono::seconds keep_alive_timeout,
+                                     std::unique_ptr<Utf8String> p_client_id, std::unique_ptr<Utf8String> p_username,
+                                     std::unique_ptr<Utf8String> p_password,
+                                     std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                                     bool is_metrics_enabled) {
+        p_client_core_->CreateActionRunner(ActionType::READ_INCOMING, nullptr);
+        p_client_core_->CreateActionRunner(ActionType::KEEP_ALIVE, nullptr);
+
+        std::shared_ptr<mqtt::ConnectPacket> p_connect_packet
+            = std::make_shared<mqtt::ConnectPacket>(is_clean_session, mqtt_version, keep_alive_timeout,
+                                                    std::move(p_client_id), std::move(p_username),
+                                                    std::move(p_password), std::move(p_will_msg), is_metrics_enabled);
+        return p_client_core_->PerformAction(ActionType::CONNECT, p_connect_packet, action_response_timeout);
+    }
+
     ResponseCode MqttClient::Disconnect(std::chrono::milliseconds action_response_timeout) {
         std::shared_ptr<mqtt::DisconnectPacket> p_disconnect_packet = std::make_shared<mqtt::DisconnectPacket>();
         return p_client_core_->PerformAction(ActionType::DISCONNECT, p_disconnect_packet, action_response_timeout);

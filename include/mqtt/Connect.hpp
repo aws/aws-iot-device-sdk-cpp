@@ -55,7 +55,7 @@ namespace awsiotsdk {
             std::unique_ptr<WillOptions> p_will_msg_;    ///< MQTT LWT parameters
 
             // Currently not supported by AWS IoT. Kept for future use
-            //std::unique_ptr<Utf8String> p_username_;   ///< MQTT Username
+            std::unique_ptr<Utf8String> p_username_;   ///< MQTT Username
             //std::unique_ptr<Utf8String> p_password_;   ///< MQTT Password
 
         public:
@@ -87,6 +87,30 @@ namespace awsiotsdk {
              * @param p_username - Username, currently unused in AWS IoT and will be ignored
              * @param p_password - Password, currently unused in AWS IoT and will be ignored
              * @param p_will_msg - MQTT Last Will and Testament message
+             * @param is_metrics_enabled - enable SDK metrics in username string
+             */
+            ConnectPacket(bool is_clean_session,
+                          mqtt::Version mqtt_version,
+                          std::chrono::seconds keep_alive_timeout,
+                          std::unique_ptr<Utf8String> p_client_id,
+                          std::unique_ptr<Utf8String> p_username,
+                          std::unique_ptr<Utf8String> p_password,
+                          std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                          bool is_metrics_enabled);
+
+            /**
+             * @brief Constructor
+             *
+             * @warning This constructor can throw exceptions, it is recommended to use Factory create method
+             * Constructor is kept public to not restrict usage possibilities (eg. make_shared). SDK metrics are
+             * enabled by default
+             *
+             * @param is_clean_session - Is this a clean session? Currently we do not support setting this to false
+             * @param mqtt_version - Which version of the MQTT protocol to use. Currently the only allowed value is 3.1.1
+             * @param p_client_id - Client ID to use to make the connection
+             * @param p_username - Username, currently unused in AWS IoT and will be ignored
+             * @param p_password - Password, currently unused in AWS IoT and will be ignored
+             * @param p_will_msg - MQTT Last Will and Testament message
              */
             ConnectPacket(bool is_clean_session,
                           mqtt::Version mqtt_version,
@@ -95,9 +119,29 @@ namespace awsiotsdk {
                           std::unique_ptr<Utf8String> p_username,
                           std::unique_ptr<Utf8String> p_password,
                           std::unique_ptr<mqtt::WillOptions> p_will_msg);
-
             /**
              * @brief Create Factory method
+             *
+             * @param is_clean_session - Is this a clean session? Currently we do not support setting this to false
+             * @param mqtt_version - Which version of the MQTT protocol to use. Currently the only allowed value is 3.1.1
+             * @param p_client_id - Client ID to use to make the connection
+             * @param p_username - Username, currently unused in AWS IoT
+             * @param p_password - Password, currently unused in AWS IoT
+             * @param p_will_msg - MQTT Last Will and Testament message
+             * @param is_metrics_enabled - enable SDK metrics in username string
+             * @return nullptr on error, shared_ptr pointing to a created ConnectPacket instance if successful
+             */
+            static std::shared_ptr<ConnectPacket> Create(bool is_clean_session,
+                                                         mqtt::Version mqtt_version,
+                                                         std::chrono::seconds keep_alive_timeout,
+                                                         std::unique_ptr<Utf8String> p_client_id,
+                                                         std::unique_ptr<Utf8String> p_username,
+                                                         std::unique_ptr<Utf8String> p_password,
+                                                         std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                                                         bool is_metrics_enabled);
+
+            /**
+             * @brief Create Factory method, SDK metrics enabled by default
              *
              * @param is_clean_session - Is this a clean session? Currently we do not support setting this to false
              * @param mqtt_version - Which version of the MQTT protocol to use. Currently the only allowed value is 3.1.1
@@ -131,7 +175,7 @@ namespace awsiotsdk {
              * @brief get the client ID from the connect packet
              * @return String containing the client ID
              */
-            util::String GetClientID() { return p_client_id_->ToStdString(); }
+            util::String GetClientID() { return p_client_id_ ? p_client_id_->ToStdString() : ""; }
         };
 
         /**
