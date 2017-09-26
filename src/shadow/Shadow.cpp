@@ -160,7 +160,7 @@ namespace awsiotsdk {
         }
     }
 
-    util::JsonDocument GetEmptyShadowDocument() {
+    util::JsonDocument Shadow::GetEmptyShadowDocument() {
         util::JsonDocument empty_shadow_json_document;
         util::JsonParser::InitializeFromJsonString(empty_shadow_json_document, SHADOW_DOCUMENT_EMPTY_STRING);
         return std::move(empty_shadow_json_document);
