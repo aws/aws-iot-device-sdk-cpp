@@ -254,8 +254,8 @@ namespace awsiotsdk {
             bool isErrorFlag = false;
             int ret;
 
-            auto timeout = std::chrono::system_clock::now() + tls_write_timeout_;
-            auto now = std::chrono::system_clock::now();
+            const auto start = std::chrono::system_clock::now();
+            auto elapsed_time = std::chrono::duration<double>();
 
             do {
                 ret = mbedtls_ssl_write(&ssl_, buf_cstr + total_written_length, bytes_to_write - total_written_length);
@@ -268,14 +268,16 @@ namespace awsiotsdk {
                     isErrorFlag = true;
                     break;
                 }
-                now = std::chrono::system_clock::now();
-            } while (now < timeout && total_written_length < bytes_to_write);
+                elapsed_time = std::chrono::system_clock::now() - start;
+            } while (tls_write_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time) &&
+                    total_written_length < bytes_to_write);
 
             size_written_bytes_out = total_written_length;
 
             if (isErrorFlag) {
                 rc = ResponseCode::NETWORK_SSL_WRITE_ERROR;
-            } else if (now < timeout && total_written_length != bytes_to_write) {
+            } else if (tls_write_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time) &&
+                    total_written_length != bytes_to_write) {
                 return ResponseCode::NETWORK_SSL_WRITE_TIMEOUT_ERROR;
             }
 
@@ -287,7 +289,8 @@ namespace awsiotsdk {
             int ret;
             size_t total_read_length = 0;
             size_t remaining_bytes_to_read = size_bytes_to_read;
-            auto timeout = std::chrono::system_clock::now() + tls_read_timeout_;
+            const auto start = std::chrono::system_clock::now();
+            auto elapsed_time = std::chrono::duration<double>();
             do {
                 // This read will timeout after IOT_SSL_READ_TIMEOUT if there's no data to be read
                 ret = mbedtls_ssl_read(&ssl_, &buf[buf_read_offset], remaining_bytes_to_read);
@@ -300,7 +303,9 @@ namespace awsiotsdk {
                     && ret != MBEDTLS_ERR_SSL_TIMEOUT) {
                     return ResponseCode::NETWORK_SSL_READ_ERROR;
                 }
-            } while (remaining_bytes_to_read > 0 && timeout < std::chrono::system_clock::now());
+                elapsed_time = std::chrono::system_clock::now() - start;
+            } while (remaining_bytes_to_read > 0 &&
+                    tls_read_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time));
 
             if (0 == total_read_length) {
                 return ResponseCode::NETWORK_SSL_NOTHING_TO_READ;
