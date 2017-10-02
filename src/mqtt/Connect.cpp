@@ -38,6 +38,8 @@
 
 #define CONNACK_RESERVED_PACKET_ID 0
 
+#define SDK_USAGE_METRICS_STRING "%3fUser-Agent%3dCpp%2f"
+
 namespace awsiotsdk {
     namespace mqtt {
         /********************************************
@@ -49,7 +51,8 @@ namespace awsiotsdk {
                                      std::unique_ptr<Utf8String> p_client_id,
                                      std::unique_ptr<Utf8String> p_username,
                                      std::unique_ptr<Utf8String> p_password,
-                                     std::unique_ptr<mqtt::WillOptions> p_will_msg) {
+                                     std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                                     bool is_metrics_enabled) {
             connect_flags_ = 0;
             packet_size_ = 10; // Len = 10 for MQTT_3_1_1
 
@@ -66,16 +69,16 @@ namespace awsiotsdk {
             if (nullptr != p_client_id) {
                 packet_size_ = packet_size_ + p_client_id->Length();
                 p_client_id_ = std::move(p_client_id);
-            }
-            else {
+            } else {
                 if (false == is_clean_session_) {
-                    AWS_LOG_INFO(CONNECT_LOG_TAG, "Clean session value must be true when no client ID is provided. Forcing it to true");
+                    AWS_LOG_INFO(CONNECT_LOG_TAG,
+                                 "Clean session value must be true when no client ID is provided. Forcing it to true");
                     is_clean_session_ = true;
                 }
             }
 
             packet_size_ = packet_size_ + 2;  // +2 for writing length
-        
+
 
             // username is not supported by the service
             /*p_username_ = nullptr;
@@ -84,6 +87,15 @@ namespace awsiotsdk {
                 p_username_ = std::move(p_username);
                 connect_flags_ |= 0x80; // Username is Left-to-Right bit 1 in the flag byte
             }*/
+
+            // username used for sending usage metrics
+            if (is_metrics_enabled) {
+                util::String p_username_string = SDK_USAGE_METRICS_STRING;
+                p_username_string.append(SDK_VERSION_STRING);
+                p_username_ = Utf8String::Create(p_username_string);
+                packet_size_ = packet_size_ + p_username_->Length() + 2;
+                connect_flags_ |= 0x80;
+            }
 
             // password is not supported by the service
             /*p_password_ = nullptr;
@@ -105,6 +117,49 @@ namespace awsiotsdk {
             fixed_header_.Initialize(MessageTypes::CONNECT, false, QoS::QOS0, false, packet_size_);
 
             serialized_packet_length_ = packet_size_ + fixed_header_.Length();
+        }
+
+        ConnectPacket::ConnectPacket(bool is_clean_session,
+                                     mqtt::Version mqtt_version,
+                                     std::chrono::seconds keep_alive_timeout,
+                                     std::unique_ptr<Utf8String> p_client_id,
+                                     std::unique_ptr<Utf8String> p_username,
+                                     std::unique_ptr<Utf8String> p_password,
+                                     std::unique_ptr<mqtt::WillOptions> p_will_msg) : ConnectPacket(is_clean_session,
+                                                                                                    mqtt_version,
+                                                                                                    keep_alive_timeout,
+                                                                                                    std::move(p_client_id),
+                                                                                                    std::move(p_username),
+                                                                                                    std::move(p_password),
+                                                                                                    std::move(p_will_msg),
+                                                                                                    true) {
+        }
+
+        std::shared_ptr<ConnectPacket> ConnectPacket::Create(bool is_clean_session,
+                                                             mqtt::Version mqtt_version,
+                                                             std::chrono::seconds keep_alive_timeout,
+                                                             std::unique_ptr<Utf8String> p_client_id,
+                                                             std::unique_ptr<Utf8String> p_username,
+                                                             std::unique_ptr<Utf8String> p_password,
+                                                             std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                                                             bool is_metrics_enabled) {
+            if (UINT16_MAX < static_cast<uint16_t>(keep_alive_timeout.count())) {
+                return nullptr;
+            }
+
+            if (nullptr == p_client_id && false == is_clean_session) {
+                AWS_LOG_ERROR(CONNECT_LOG_TAG, "Clean session value must be true when no client ID is provided");
+                return nullptr;
+            }
+
+            return std::make_shared<ConnectPacket>(is_clean_session,
+                                                   mqtt_version,
+                                                   keep_alive_timeout,
+                                                   std::move(p_client_id),
+                                                   std::move(p_username),
+                                                   std::move(p_password),
+                                                   std::move(p_will_msg),
+                                                   is_metrics_enabled);
         }
 
         std::shared_ptr<ConnectPacket> ConnectPacket::Create(bool is_clean_session,
@@ -129,7 +184,8 @@ namespace awsiotsdk {
                                                    std::move(p_client_id),
                                                    std::move(p_username),
                                                    std::move(p_password),
-                                                   std::move(p_will_msg));
+                                                   std::move(p_will_msg),
+                                                   true);
         }
 
         util::String ConnectPacket::ToString() {
@@ -164,11 +220,11 @@ namespace awsiotsdk {
                 p_will_msg_->WriteToBuffer(buf);
             }
 
-            /*if(nullptr != p_username_) {
+            if (nullptr != p_username_) {
                 AppendUtf8StringToBuffer(buf, p_username_);
             }
 
-            if(nullptr != p_password_) {
+            /*if(nullptr != p_password_) {
                 AppendUtf8StringToBuffer(buf, p_password_);;
             }*/
 
@@ -417,7 +473,8 @@ namespace awsiotsdk {
                         } else {
                             util::Vector<std::shared_ptr<mqtt::Subscription>> topic_vector;
 
-                            util::Map<util::String, std::shared_ptr<Subscription>>::const_iterator itr = p_client_state_->subscription_map_.begin();
+                            util::Map<util::String, std::shared_ptr<Subscription>>::const_iterator
+                                itr = p_client_state_->subscription_map_.begin();
                             while (itr != p_client_state_->subscription_map_.end()) {
                                 topic_vector.push_back(itr->second);
                                 itr++;
@@ -475,13 +532,15 @@ namespace awsiotsdk {
 
                 if (std::chrono::system_clock::now() > next) {
                     if (p_client_state_->IsPingreqPending()) {
-                        rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
-                                                            DisconnectPacket::Create(),
-                                                            p_client_state_->GetMqttCommandTimeout());
-                        if (ResponseCode::SUCCESS != rc) {
-                            AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
-                                          "Network Disconnect attempt returned unhandled error. \n%s",
-                                          ResponseHelper::ToString(rc).c_str());
+                        if (p_client_state_->IsConnected()) {
+                            rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
+                                                                DisconnectPacket::Create(),
+                                                                p_client_state_->GetMqttCommandTimeout());
+                            if (ResponseCode::SUCCESS != rc && ResponseCode::NETWORK_DISCONNECTED_ERROR != rc) {
+                                AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
+                                              "Network Disconnect attempt returned unhandled error. \n%s",
+                                              ResponseHelper::ToString(rc).c_str());
+                            }
                         }
                         p_client_state_->SetAutoReconnectRequired(true);
                         continue;

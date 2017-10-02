@@ -58,7 +58,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= level ) \
             { \
-                logSystem->Log(level, tag, __VA_ARGS__); \
+                logSystem->Log(level, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -67,7 +67,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Fatal ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Fatal, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Fatal, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -76,7 +76,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Error ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Error, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Error, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -85,7 +85,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Warn ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Warn, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Warn, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -94,7 +94,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Info ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Info, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Info, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -103,7 +103,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Debug ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Debug, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Debug, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 
@@ -112,7 +112,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Trace ) \
             { \
-                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Trace, tag, __VA_ARGS__); \
+                logSystem->Log(awsiotsdk::util::Logging::LogLevel::Trace, tag, __FUNCTION__, __LINE__, __VA_ARGS__); \
             } \
         }
 

@@ -64,6 +64,9 @@ namespace awsiotsdk {
 
     ResponseCode NetworkConnection::Disconnect() {
         // Disconnect irrespective of state of other requests
+        std::lock(read_mutex, write_mutex);
+        std::lock_guard<std::mutex> read_guard(read_mutex, std::adopt_lock);
+        std::lock_guard<std::mutex> write_guard(write_mutex, std::adopt_lock);
         return DisconnectInternal();
     }
 }

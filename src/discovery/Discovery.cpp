@@ -77,7 +77,9 @@ namespace awsiotsdk {
             return std::unique_ptr<DiscoverAction>(new DiscoverAction(p_client_state));
         }
 
-        ResponseCode DiscoverAction::ReadResponseFromNetwork(util::String &sent_packet, util::String &read_payload,
+        ResponseCode DiscoverAction::ReadResponseFromNetwork(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                             util::String &sent_packet,
+                                                             util::String &read_payload,
                                                              std::chrono::milliseconds max_response_wait_time) {
             ResponseCode rc;
 
@@ -89,7 +91,7 @@ namespace awsiotsdk {
 
             auto max_wait = std::chrono::steady_clock::now() + max_response_wait_time;
             do {
-                rc = ReadFromNetworkBuffer(p_network_connection_, temp_buf, 1);
+                rc = ReadFromNetworkBuffer(p_network_connection, temp_buf, 1);
 
                 if (ResponseCode::SUCCESS == rc) {
                     read_bytes++;
@@ -132,7 +134,7 @@ namespace awsiotsdk {
             size_t content_length_index = std::string::npos;
             read_buf.clear();
             do {
-                rc = ReadFromNetworkBuffer(p_network_connection_, temp_buf, 1);
+                rc = ReadFromNetworkBuffer(p_network_connection, temp_buf, 1);
                 if (ResponseCode::SUCCESS != rc) {
                     break;
                 }
@@ -176,7 +178,7 @@ namespace awsiotsdk {
             // Skip the rest of the header
             received_crlf = false;
             do {
-                rc = ReadFromNetworkBuffer(p_network_connection_, temp_buf, 1);
+                rc = ReadFromNetworkBuffer(p_network_connection, temp_buf, 1);
                 if (ResponseCode::SUCCESS != rc) {
                     break;
                 }
@@ -198,7 +200,7 @@ namespace awsiotsdk {
             read_buf.clear();
 
             if (0 < content_length) {
-                rc = ReadFromNetworkBuffer(p_network_connection_, read_buf, content_length);
+                rc = ReadFromNetworkBuffer(p_network_connection, read_buf, content_length);
                 if (ResponseCode::SUCCESS == rc) {
                     read_payload.append(read_buf.begin(), read_buf.end());
                     size_t received_len = read_payload.length();
@@ -212,10 +214,37 @@ namespace awsiotsdk {
             return rc;
         }
 
+        ResponseCode DiscoverAction::MakeDiscoveryRequest(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                          const util::String packet_data) {
+            util::String get_request(DISCOVER_ACTION_REQUEST_TYPE_PREFIX);
+            get_request.append(packet_data);
+            ResponseCode rc = WriteToNetworkBuffer(p_network_connection, get_request);
+            if (ResponseCode::SUCCESS != rc) {
+                AWS_LOG_ERROR(DISCOVER_LOG_TAG, "Discover Write to Network failed. %s",
+                              ResponseHelper::ToString(rc).c_str());
+            }
+            return rc;
+        }
+
+        ResponseCode DiscoverAction::InitializeDiscoveryResponseJson(const util::String received_response,
+                                                                     std::shared_ptr<DiscoverRequestData> discover_packet) {
+            util::JsonDocument received_response_json;
+            ResponseCode rc = util::JsonParser::InitializeFromJsonString(received_response_json, received_response);
+
+            if (ResponseCode::SUCCESS == rc) {
+                discover_packet->discovery_response_.SetResponseDocument(std::move(received_response_json));
+                rc = ResponseCode::DISCOVER_ACTION_SUCCESS;
+            }
+
+            return rc;
+        }
+
         ResponseCode DiscoverAction::PerformAction(std::shared_ptr<NetworkConnection> p_network_connection,
                                                    std::shared_ptr<ActionData> p_action_data) {
             std::shared_ptr<DiscoverRequestData>
                 p_discover_packet = std::dynamic_pointer_cast<DiscoverRequestData>(p_action_data);
+            util::String packet_data = p_discover_packet->ToString();
+
             if (nullptr == p_discover_packet) {
                 return ResponseCode::NULL_VALUE_ERROR;
             }
@@ -225,37 +254,29 @@ namespace awsiotsdk {
                 return rc;
             }
 
-            util::String packet_data = p_discover_packet->ToString();
-            util::String get_request(DISCOVER_ACTION_REQUEST_TYPE_PREFIX);
-            get_request.append(packet_data);
-            rc = WriteToNetworkBuffer(p_network_connection, get_request);
+            rc = MakeDiscoveryRequest(p_network_connection, packet_data);
             if (ResponseCode::SUCCESS != rc) {
-                AWS_LOG_ERROR(DISCOVER_LOG_TAG, "Discover Write to Network failed. %s",
-                              ResponseHelper::ToString(rc).c_str());
+                p_network_connection->Disconnect();
                 return rc;
             }
 
-            p_network_connection_ = p_network_connection;
             util::String received_response;
-
-            rc = ReadResponseFromNetwork(packet_data, received_response, p_discover_packet->GetMaxResponseWaitTime());
+            rc = ReadResponseFromNetwork(p_network_connection,
+                                         packet_data,
+                                         received_response,
+                                         p_discover_packet->GetMaxResponseWaitTime());
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(DISCOVER_LOG_TAG, "Discover Read from Network failed. %s",
                               ResponseHelper::ToString(rc).c_str());
+                p_network_connection->Disconnect();
                 return rc;
             }
-            util::JsonDocument received_response_json;
-            rc = util::JsonParser::InitializeFromJsonString(received_response_json, received_response);
 
-            if (ResponseCode::SUCCESS != rc) {
+            rc = InitializeDiscoveryResponseJson(received_response, p_discover_packet);
+            if (ResponseCode::DISCOVER_ACTION_SUCCESS != rc) {
                 AWS_LOG_ERROR(DISCOVER_LOG_TAG, "Discover Read Parse failed. %s",
                               ResponseHelper::ToString(rc).c_str());
-            } else {
-                p_discover_packet->discovery_response_.SetResponseDocument(std::move(received_response_json));
-                rc = ResponseCode::DISCOVER_ACTION_SUCCESS;
-                AWS_LOG_INFO(DISCOVER_LOG_TAG, "Discover Read from Network Succeeded!");
             }
-
             p_network_connection->Disconnect();
             return rc;
         }

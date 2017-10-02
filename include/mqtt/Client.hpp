@@ -113,7 +113,7 @@ namespace awsiotsdk {
          * @brief Perform Sync Connect
          *
          * Performs a Network and MQTT Connect operation in blocking mode. Action timeout here is the time for which
-         * the client waits for a response AFTER the request is sent.
+         * the client waits for a response AFTER the request is sent. SDK metrics enabled by default
          *
          * @param action_response_timeout Timeout in milliseconds within which response should be obtained after request is sent
          * @param is_clean_session
@@ -131,6 +131,31 @@ namespace awsiotsdk {
                                      std::unique_ptr<Utf8String> p_client_id, std::unique_ptr<Utf8String> p_username,
                                      std::unique_ptr<Utf8String> p_password,
                                      std::unique_ptr<mqtt::WillOptions> p_will_msg);
+
+        /**
+         * @brief Perform Sync Connect
+         *
+         * Performs a Network and MQTT Connect operation in blocking mode. Action timeout here is the time for which
+         * the client waits for a response AFTER the request is sent.
+         *
+         * @param action_response_timeout Timeout in milliseconds within which response should be obtained after request is sent
+         * @param is_clean_session
+         * @param mqtt_version
+         * @param keep_alive_timeout
+         * @param p_client_id
+         * @param p_username
+         * @param p_password
+         * @param p_will_msg Last Will and Testament message
+         * @param is_metrics_enabled
+         *
+         * @return ResponseCode indicating status of request
+         */
+        virtual ResponseCode Connect(std::chrono::milliseconds action_response_timeout, bool is_clean_session,
+                                     mqtt::Version mqtt_version, std::chrono::seconds keep_alive_timeout,
+                                     std::unique_ptr<Utf8String> p_client_id, std::unique_ptr<Utf8String> p_username,
+                                     std::unique_ptr<Utf8String> p_password,
+                                     std::unique_ptr<mqtt::WillOptions> p_will_msg,
+                                     bool is_metrics_enabled);
 
         /**
          * @brief Perform Sync Disconnect

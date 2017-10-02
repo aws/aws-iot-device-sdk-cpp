@@ -213,12 +213,118 @@ namespace awsiotsdk {
      * @brief Response Helper for converting ResponseCode into Strings
      */
     namespace ResponseHelper {
+        const util::String DISCOVER_ACTION_NO_INFORMATION_PRESENT_STRING("No information found for device");
+        const util::String DISCOVER_ACTION_SUCCESS_STRING("Discover action successful");
+        const util::String SHADOW_RECEIVED_DELTA_STRING("Received the shadow delta");
+        const util::String SHADOW_REQUEST_ACCEPTED_STRING("Shadow request accepted");
+        const util::String NETWORK_PHYSICAL_LAYER_CONNECTED_STRING("Physical network layer connected");
+        const util::String NETWORK_MANUALLY_DISCONNECTED_STRING("Network manually disconnected");
+        const util::String NETWORK_ATTEMPTING_RECONNECT_STRING("Attempting to reconnect to the network");
+        const util::String NETWORK_RECONNECTED_STRING("Network reconnected");
+        const util::String MQTT_NOTHING_TO_READ_STRING("No MQTT packets received");
+        const util::String MQTT_CONNACK_CONNECTION_ACCEPTED_STRING("Successfully connected to MQTT server");
+        const util::String SUCCESS_STRING("Success");
+        const util::String FAILURE_STRING("Failure");
+        const util::String NULL_VALUE_ERROR_STRING("One or more parameters were null");
+        const util::String FILE_OPEN_ERROR_STRING("Error occurred while trying to open the file");
+        const util::String FILE_NAME_INVALID_STRING("File name provided is invalid or of zero length");
+        const util::String MUTEX_INIT_ERROR_STRING("Error occurred while initializing the mutex");
+        const util::String MUTEX_LOCK_ERROR_STRING("Error occurred while locking the mutex");
+        const util::String MUTEX_UNLOCK_ERROR_STRING("Error occurred while unlocking the mutex");
+        const util::String MUTEX_DESTROY_ERROR_STRING("Error occurred while destroying the mutex");
+        const util::String THREAD_EXITING_STRING("Thread is exiting");
+        const util::String NETWORK_TCP_CONNECT_ERROR_STRING("TCP Error occurred while opening a socket");
+        const util::String NETWORK_TCP_SETUP_ERROR_STRING("Error occurred while setting up the TCP socket");
+        const util::String NETWORK_TCP_UNKNOWN_HOST_STRING("Unable to find host specified");
+        const util::String NETWORK_TCP_NO_ENDPOINT_SPECIFIED_STRING("No endpoint specified");
+        const util::String NETWORK_SSL_INIT_ERROR_STRING("Error occurred while initializing SSL");
+        const util::String NETWORK_SSL_ROOT_CRT_PARSE_ERROR_STRING("Error occurred while parsing the root CRT");
+        const util::String NETWORK_SSL_DEVICE_CRT_PARSE_ERROR_STRING("Error occurred while parsing the device CRT");
+        const util::String NETWORK_SSL_KEY_PARSE_ERROR_STRING("Error occurred while parsing the private key");
+        const util::String NETWORK_SSL_TLS_HANDSHAKE_ERROR_STRING("Error occurred while performing the TLS handshake");
+        const util::String NETWORK_SSL_CONNECT_ERROR_STRING("Error occurred during the connect attempt");
+        const util::String NETWORK_SSL_CONNECT_TIMEOUT_ERROR_STRING("The connect attempt timed out");
+        const util::String NETWORK_SSL_CONNECTION_CLOSED_ERROR_STRING("The SSL connection was closed");
+        const util::String NETWORK_SSL_WRITE_ERROR_STRING("Error occurred during the SSL write operation");
+        const util::String NETWORK_SSL_WRITE_TIMEOUT_ERROR_STRING("The SSL write operation timed out");
+        const util::String NETWORK_SSL_READ_ERROR_STRING("Error occurred during the SSL read operation");
+        const util::String NETWORK_SSL_READ_TIMEOUT_ERROR_STRING("The SSL read operation timed out");
+        const util::String NETWORK_SSL_NOTHING_TO_READ_STRING("No SSL packets received");
+        const util::String NETWORK_SSL_UNKNOWN_ERROR_STRING("Unknown error occurred during an SSL operation");
+        const util::String NETWORK_SSL_SERVER_VERIFICATION_ERROR_STRING("Unable to verify server name");
+        const util::String NETWORK_DISCONNECTED_ERROR_STRING("Network is disconnected");
+        const util::String NETWORK_RECONNECT_TIMED_OUT_ERROR_STRING("Reconnect operation time out");
+        const util::String NETWORK_ALREADY_CONNECTED_ERROR_STRING("Network is already connected");
+        const util::String NETWORK_PHYSICAL_LAYER_DISCONNECTED_STRING("Physical network layer is disconnected");
+        const util::String NETWORK_NOTHING_TO_WRITE_ERROR_STRING("No packets to write to the network");
+        const util::String ACTION_NOT_REGISTERED_ERROR_STRING("The action attempted is not registered with the client");
+        const util::String ACTION_QUEUE_FULL_STRING("The client action queue is full");
+        const util::String ACTION_CREATE_FAILED_STRING("The client was unable to create the action");
+        const util::String MQTT_CONNECTION_ERROR_STRING("Unable to establish the MQTT connection");
+        const util::String MQTT_CONNECT_TIMEOUT_ERROR_STRING("The MQTT connect operation timed out");
+        const util::String MQTT_REQUEST_TIMEOUT_ERROR_STRING("The MQTT request timed out");
+        const util::String MQTT_UNEXPECTED_CLIENT_STATE_ERROR_STRING("The MQTT client is in an unexpected state");
+        const util::String MQTT_CLIENT_NOT_IDLE_ERROR_STRING("The MQTT client is not idle");
+        const util::String MQTT_RX_MESSAGE_PACKET_TYPE_INVALID_ERROR_STRING("The MQTT message is of an invalid type");
+        const util::String MQTT_MAX_SUBSCRIPTIONS_REACHED_ERROR_STRING("Reached maximum MQTT subscriptions");
+        const util::String MQTT_DECODE_REMAINING_LENGTH_ERROR_STRING("Error occurred while decoding the remaining length of the MQTT message");
+        const util::String MQTT_CONNACK_UNKNOWN_ERROR_STRING("MQTT connect request failed with server returning an unknown error");
+        const util::String MQTT_CONNACK_UNACCEPTABLE_PROTOCOL_VERSION_ERROR_STRING("MQTT connect request failed with server returning an unacceptable protocol error");
+        const util::String MQTT_CONNACK_IDENTIFIER_REJECTED_ERROR_STRING("MQTT connect request failed with server returning an identifier rejected error");
+        const util::String MQTT_CONNACK_SERVER_UNAVAILABLE_ERROR_STRING("MQTT connect request failed with server returning an unavailable error");
+        const util::String MQTT_CONNACK_BAD_USERDATA_ERROR_STRING("MQTT connect request failed with server returning a bad userdata error");
+        const util::String MQTT_CONNACK_NOT_AUTHORIZED_ERROR_STRING("MQTT connect request failed with server returning a  not authorized error");
+        const util::String MQTT_NO_SUBSCRIPTION_FOUND_STRING("No MQTT subscriptions were found for the requested topic");
+        const util::String MQTT_SUBSCRIPTION_NOT_ACTIVE_STRING("The MQTT subscription specified is not active");
+        const util::String MQTT_UNEXPECTED_PACKET_FORMAT_ERROR_STRING("Unable to serialize the MQTT packet as the format is unexpected");
+        const util::String MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST_STRING("Too many subscriptions were provided in the MQTT subscribe/unsubscribe request");
+        const util::String MQTT_INVALID_DATA_ERROR_STRING("Invalid/Insufficient data was provided in the MQTT request");
+        const util::String MQTT_SUBSCRIBE_PARTIALLY_FAILED_STRING("Failed to subscribe to atleast one of the topics in the subscribe request");
+        const util::String MQTT_SUBSCRIBE_FAILED_STRING("Failed to subscribe to any of the topics in the subscribe request");
+        const util::String JSON_PARSE_KEY_NOT_FOUND_ERROR_STRING("Unable to find the requested key in the JSON");
+        const util::String JSON_PARSE_KEY_UNEXPECTED_TYPE_ERROR_STRING("The value for the JSON key was of an unexpected type");
+        const util::String JSON_PARSING_ERROR_STRING("Error occurred while parsing the JSON");
+        const util::String JSON_MERGE_FAILED_STRING("Failed to merge the JSON");
+        const util::String JSON_DIFF_FAILED_STRING("Failed to diff the JSON");
+        const util::String SHADOW_WAIT_FOR_PUBLISH_STRING("Waiting for previously published shadow updates");
+        const util::String SHADOW_JSON_BUFFER_TRUNCATED_STRING("Shadow JSON is truncated as size specified is less than the size of the JSON");
+        const util::String SHADOW_JSON_ERROR_STRING("Encoding error occurred while printing the shadow JSON");
+        const util::String SHADOW_JSON_EMPTY_ERROR_STRING("The shadow JSON is empty");
+        const util::String SHADOW_REQUEST_MAP_EMPTY_STRING("The shadow request map is empty ");
+        const util::String SHADOW_MQTT_DISCONNECTED_ERROR_STRING("The shadow's MQTT connection is inactive");
+        const util::String SHADOW_UNEXPECTED_RESPONSE_TYPE_STRING("The shadow response received is of an unexpected type");
+        const util::String SHADOW_UNEXPECTED_RESPONSE_TOPIC_STRING("The shadow response was received on an unexpected topic");
+        const util::String SHADOW_REQUEST_REJECTED_STRING("The shadow request was rejected by the server");
+        const util::String SHADOW_MQTT_CLIENT_NOT_SET_ERROR_STRING("There is no client set for this shadow");
+        const util::String SHADOW_NOTHING_TO_UPDATE_STRING("There are no shadow updates to be performed");
+        const util::String SHADOW_UNEXPECTED_RESPONSE_PAYLOAD_STRING("The shadow response is in an unexpected format");
+        const util::String SHADOW_RECEIVED_OLD_VERSION_UPDATE_STRING("The received shadow version is older than the current one on the device");
+        const util::String WEBSOCKET_SIGN_URL_NO_MEM_STRING("Internal buffer overflowed while signing WebSocket URL");
+        const util::String WEBSOCKET_GEN_CLIENT_KEY_ERROR_STRING("Error occurred while generating WebSocket handshake client key");
+        const util::String WEBSOCKET_HANDSHAKE_ERROR_STRING("Unable to complete WebSocket handshake");
+        const util::String WEBSOCKET_HANDSHAKE_WRITE_STRING("Unable to transmit WebSocket handshake request");
+        const util::String WEBSOCKET_HANDSHAKE_READ_STRING("Unable to receive WebSocket handshake request");
+        const util::String WEBSOCKET_HANDSHAKE_VERIFY_ERROR_STRING("Unable to verify handshake response from the server");
+        const util::String WEBSOCKET_WSLAY_CONTEXT_INIT_ERROR_STRING("Erro occurred while initializing the WebSocket WSLay context");
+        const util::String WEBSOCKET_FRAME_RECEIVE_ERROR_STRING("Error occurred while receiving WebSocket frame");
+        const util::String WEBSOCKET_FRAME_TRANSMIT_ERROR_STRING("Error occurred while transmitting WebSocket frame");
+        const util::String WEBSOCKET_PROTOCOL_VIOLATION_STRING("Protocol violation was detected in the received WebSocket frames");
+        const util::String WEBSOCKET_MAX_LIFETIME_REACHED_STRING("Max lifetime of the WebSocket connection was reached");
+        const util::String WEBSOCKET_DISCONNECT_ERROR_STRING("Error occurred while disconnecting the WebSocket");
+        const util::String WEBSOCKET_GET_UTC_TIME_FAILED_STRING("WebSocket wrapper is unable to get the UTC ");
+        const util::String DISCOVER_ACTION_REQUEST_FAILED_ERROR_STRING("Unable to perform the discover action");
+        const util::String DISCOVER_ACTION_REQUEST_TIMED_OUT_ERROR_STRING("The discover action request timed out");
+        const util::String DISCOVER_ACTION_UNAUTHORIZED_STRING("The device was unauthorized to perform the discovery action");
+        const util::String DISCOVER_ACTION_SERVER_ERROR_STRING("Server returned unknown error while performing the discovery action");
+        const util::String DISCOVER_ACTION_REQUEST_OVERLOAD_STRING("The discovery action is overloading the server, try again after some time");
+        const util::String DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR_STRING("The discover response JSON is incomplete ");
+        
         /**
          * Takes in a Response Code and returns the appropriate error/success string
          * @param rc Response Code to be converted
          * @return char* Response String
          */
         util::String ToString(ResponseCode rc);
-
+        
     };
 }

@@ -47,7 +47,7 @@ namespace awsiotsdk {
                 /**
                  * Does a printf style output to the output stream. Don't use this, it's unsafe. See LogStream
                  */
-                virtual void Log(LogLevel logLevel, const char *tag, const char *formatStr, ...) = 0;
+                virtual void Log(LogLevel logLevel, const char *tag, const char *function, unsigned int line, const char *formatStr, ...) = 0;
 
                 /**
                 * Writes the stream to the output stream.

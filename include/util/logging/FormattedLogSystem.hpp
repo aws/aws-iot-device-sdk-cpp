@@ -57,7 +57,8 @@ namespace awsiotsdk {
                 /**
                  * Does a printf style output to ProcessFormattedStatement. Don't use this, it's unsafe. See LogStream
                  */
-                virtual void Log(LogLevel logLevel, const char *tag, const char *formatStr, ...) override;
+                virtual void Log(LogLevel logLevel, const char *tag, const char *function, unsigned int line,
+                                 const char *formatStr, ...) override;
 
                 /**
                  * Writes the stream to ProcessFormattedStatement.

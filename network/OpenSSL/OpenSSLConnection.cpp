@@ -43,6 +43,23 @@
 
 namespace awsiotsdk {
 	namespace network {
+        OpenSSLInitializer::~OpenSSLInitializer() {
+            CONF_modules_free();
+            ERR_remove_state(0);
+            CONF_modules_unload(1);
+            SSL_COMP_free_compression_methods();
+            ERR_free_strings();
+            EVP_cleanup();
+            CRYPTO_cleanup_all_ex_data();
+        }
+
+        OpenSSLInitializer *OpenSSLInitializer::getInstance() {
+            static OpenSSLInitializer initializer;
+            return &initializer;
+        }
+
+        std::atomic_bool OpenSSLConnection::is_lib_initialized(false);
+
 		OpenSSLConnection::OpenSSLConnection(util::String endpoint, uint16_t endpoint_port,
 											 std::chrono::milliseconds tls_handshake_timeout,
 											 std::chrono::milliseconds tls_read_timeout,
@@ -60,6 +77,7 @@ namespace awsiotsdk {
 
 			is_connected_ = false;
             certificates_read_flag_ = false;
+            initializer = OpenSSLInitializer::getInstance();
 		}
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -128,6 +146,20 @@ namespace awsiotsdk {
 			proxy_password_ = proxy_password;
 		}
 
+        int OpenSSLConnection::WaitForSelect(int error_code) {
+            fd_set socketFds;
+            struct timeval timeout = {tls_write_timeout_.tv_sec, tls_write_timeout_.tv_usec};
+            FD_ZERO(&socketFds);
+            FD_SET(server_tcp_socket_fd_, &socketFds);
+            if (SSL_ERROR_WANT_READ == error_code) {
+                return select(server_tcp_socket_fd_ + 1, &socketFds, NULL, NULL, &timeout);
+            } else if (SSL_ERROR_WANT_WRITE == error_code) {
+                return select(server_tcp_socket_fd_ + 1, NULL, &socketFds, NULL, &timeout);
+            } else {
+                return 0;
+            }
+        }
+
 		ResponseCode OpenSSLConnection::Initialize() {
 #ifdef WIN32
 			// TODO : Check if it is possible to replace this with std::call_once
@@ -153,12 +185,14 @@ namespace awsiotsdk {
 			}
 #endif
 
-			const SSL_METHOD *method;
-
-			OpenSSL_add_all_algorithms();
-			ERR_load_BIO_strings();
-			ERR_load_crypto_strings();
-			SSL_load_error_strings();
+            if (!is_lib_initialized) {
+                OpenSSL_add_all_algorithms();
+                ERR_load_BIO_strings();
+                ERR_load_crypto_strings();
+                SSL_load_error_strings();
+                is_lib_initialized = true;
+            }
+            const SSL_METHOD *method;
 
 			if(SSL_library_init() < 0) {
 				return ResponseCode::NETWORK_SSL_INIT_ERROR;
@@ -313,13 +347,11 @@ namespace awsiotsdk {
 		ResponseCode OpenSSLConnection::AttemptConnect() {
 			ResponseCode ret_val = ResponseCode::FAILURE;
 			int rc = 0;
-			fd_set readFds;
-			fd_set writeFds;
-			struct timeval timeout = {tls_handshake_timeout_.tv_sec, tls_handshake_timeout_.tv_usec};
 			int errorCode = 0;
 			int select_retCode = 0;
 
 			do {
+                ERR_clear_error();
 				rc = SSL_connect(p_ssl_handle_);
 
 				if(1 == rc) { //1 = SSL_CONNECTED, <= 0 is Error
@@ -330,9 +362,7 @@ namespace awsiotsdk {
 				errorCode = SSL_get_error(p_ssl_handle_, rc);
 
 				if(SSL_ERROR_WANT_READ == errorCode) {
-					FD_ZERO(&readFds);
-					FD_SET(server_tcp_socket_fd_, &readFds);
-					select_retCode = select(server_tcp_socket_fd_ + 1, &readFds, NULL, NULL, &timeout);
+                    select_retCode = WaitForSelect(errorCode);
 					if(0 == select_retCode) { // 0 == SELECT_TIMEOUT
 						AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL Connect time out while waiting for read");
 						ret_val = ResponseCode::NETWORK_SSL_CONNECT_TIMEOUT_ERROR;
@@ -341,9 +371,7 @@ namespace awsiotsdk {
 						ret_val = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
 					}
 				} else if(SSL_ERROR_WANT_WRITE == errorCode) {
-					FD_ZERO(&writeFds);
-					FD_SET(server_tcp_socket_fd_, &writeFds);
-					select_retCode = select(server_tcp_socket_fd_ + 1, NULL, &writeFds, NULL, &timeout);
+                    select_retCode = WaitForSelect(errorCode);
 					if(0 == select_retCode) { // 0 == SELECT_TIMEOUT
 						AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL Connect time out while waiting for write");
 						ret_val = ResponseCode::NETWORK_SSL_CONNECT_TIMEOUT_ERROR;
@@ -370,6 +398,7 @@ namespace awsiotsdk {
 				return ResponseCode::NETWORK_SSL_ROOT_CRT_PARSE_ERROR;
 			}
 
+            // TODO: streamline error codes for TLS
 			if(0 < device_cert_location_.length() && 0 < device_private_key_location_.length()) {
 				AWS_LOG_DEBUG(OPENSSL_WRAPPER_LOG_TAG, "Device crt : %s", device_cert_location_.c_str());
                 if (!SSL_CTX_use_certificate_chain_file(p_ssl_context_, device_cert_location_.c_str())) {
@@ -393,11 +422,6 @@ namespace awsiotsdk {
             ResponseCode networkResponse = ResponseCode::SUCCESS;
 
             X509_VERIFY_PARAM *param = nullptr;
-
-            server_tcp_socket_fd_ = socket(AF_INET, SOCK_STREAM, 0);
-            if (-1 == server_tcp_socket_fd_) {
-                return ResponseCode::NETWORK_TCP_SETUP_ERROR;
-            }
 
             if(!certificates_read_flag_) {
                 networkResponse = LoadCerts();
@@ -427,6 +451,11 @@ namespace awsiotsdk {
 
 			// Configure a non-zero callback if desired
 			SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
+
+            server_tcp_socket_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+            if (-1 == server_tcp_socket_fd_) {
+                return ResponseCode::NETWORK_TCP_SETUP_ERROR;
+            }
 
 			networkResponse = ConnectTCPSocket();
 			if(ResponseCode::SUCCESS != networkResponse) {
@@ -463,7 +492,12 @@ namespace awsiotsdk {
 				networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
 			} else {
 				// ensure you have a valid certificate returned, otherwise no certificate exchange happened
-				if(nullptr == SSL_get_peer_certificate(p_ssl_handle_)) {
+                auto cert_destroyer = [](X509 *cert) {
+                    if (nullptr != cert) X509_free(cert);
+                };
+                std::unique_ptr<X509, decltype(cert_destroyer)> cert(SSL_get_peer_certificate(p_ssl_handle_),
+                                                                     cert_destroyer);
+                if (nullptr == cert) {
 					AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " No certificate exchange happened");
 					networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
 				}
@@ -482,19 +516,16 @@ namespace awsiotsdk {
 			int cur_written_length = 0;
 			size_t total_written_length = 0;
 			ResponseCode rc = ResponseCode::SUCCESS;
-			fd_set write_fds;
 			size_t bytes_to_write = buf.length();
-			struct timeval timeout = {tls_write_timeout_.tv_sec, tls_write_timeout_.tv_usec};
 
 			do {
+                ERR_clear_error();
 				cur_written_length = SSL_write(p_ssl_handle_, buf.c_str(), bytes_to_write);
 				error_code = SSL_get_error(p_ssl_handle_, cur_written_length);
 				if(0 < cur_written_length) {
 					total_written_length += (size_t) cur_written_length;
 				} else if(SSL_ERROR_WANT_WRITE == error_code) {
-					FD_ZERO(&write_fds);
-					FD_SET(server_tcp_socket_fd_, &write_fds);
-					select_retCode = select(server_tcp_socket_fd_ + 1, NULL, &write_fds, NULL, &timeout);
+                    select_retCode = WaitForSelect(error_code);
 					if(0 == select_retCode) { //0 == SELECT_TIMEOUT
 						rc = ResponseCode::NETWORK_SSL_WRITE_TIMEOUT_ERROR;
 					} else if(-1 == select_retCode) { //-1 == SELECT_TIMEOUT
@@ -523,10 +554,9 @@ namespace awsiotsdk {
 			size_t remaining_bytes_to_read = size_bytes_to_read;
 			int cur_read_len = 0;
 			ResponseCode errorStatus = ResponseCode::SUCCESS;
-			fd_set readFds;
-			struct timeval timeout = {tls_read_timeout_.tv_sec, tls_read_timeout_.tv_usec};
 
 			do {
+                ERR_clear_error();
 				cur_read_len = SSL_read(p_ssl_handle_, &buf[total_read_length], (int) remaining_bytes_to_read);
 				if(0 < cur_read_len) {
 					total_read_length += (size_t) cur_read_len;
@@ -535,9 +565,7 @@ namespace awsiotsdk {
 					ssl_retcode = SSL_get_error(p_ssl_handle_, cur_read_len);
 					switch(ssl_retcode) {
 						case SSL_ERROR_WANT_READ:
-							FD_ZERO(&readFds);
-							FD_SET(server_tcp_socket_fd_, &readFds);
-							select_retCode = select(server_tcp_socket_fd_ + 1, &readFds, NULL, NULL, &timeout);
+                            select_retCode = WaitForSelect(SSL_ERROR_WANT_READ);
 							if(0 < select_retCode) {
 								continue;
 							} else if(0 == select_retCode) { //0 == SELECT_TIMEOUT
@@ -573,8 +601,26 @@ namespace awsiotsdk {
                 return ResponseCode::SUCCESS;
             }
 			is_connected_ = false;
-			SSL_shutdown(p_ssl_handle_);
+
+            std::chrono::milliseconds timeout = std::chrono::milliseconds(tls_read_timeout_.tv_sec * 1000 +
+                tls_read_timeout_.tv_usec / 1000);
+
+            std::unique_lock<std::mutex> shutdown_lock(clean_shutdown_action_lock_);
+
+            // TODO: add config for disconnect timeout
+            // wait for tls_read_timeout and then exit the shutdown loop if it is not successful
+            this->shutdown_timeout_condition_.wait_for(shutdown_lock, std::chrono::milliseconds(timeout), [this] {
+                int rc = SSL_shutdown(p_ssl_handle_);
+                if (1 == rc) {
+                    return true;
+                }
+                int errorCode = SSL_get_error(p_ssl_handle_, rc);
+                WaitForSelect(errorCode);
+                return false;
+            });
+
             SSL_free(p_ssl_handle_);
+            ERR_remove_state(0);
 
             certificates_read_flag_ = false;
 #ifdef WIN32

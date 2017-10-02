@@ -1,5 +1,23 @@
 # Change Log
 
+## [1.2.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.2.0) (September 26th, 2017)
+
+Features:
+  - Added a cross-compile toolchain template and instructions on how to cross compile the SDK
+  
+Bugfixes/Improvements:
+  - Fixed Issues:
+    - [#16](https://github.com/aws/aws-iot-device-sdk-cpp/issues/16) - alloc-dealloc-mismatch
+    - Fixed OpenSSL memory leak and ensured the socket is closed correctly 
+    - Fixed disconnect log loop in keepalive 
+  - Included pull requests:
+    - [#15](https://github.com/aws/aws-iot-device-sdk-cpp/pull/15) - Add sanitizers
+    - [#37](https://github.com/aws/aws-iot-device-sdk-cpp/pull/37) - Fix compilation error with unused variables
+  - Improvements:
+    - Added line numbers and function names to all logs
+    - Added unit tests for ConfigCommon and ResponseCode
+    - Added SDK version string into username field
+
 ## [1.1.1](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.1.1) (July 13th, 2017)
 
 Features:

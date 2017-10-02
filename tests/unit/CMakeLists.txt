@@ -33,12 +33,17 @@ elseif (WIN32)
     set(CUSTOM_COMPILER_FLAGS "/W4")
 endif ()
 
+if(SANITIZE_THREAD OR SANITIZE_MEMORY OR SANITIZE_ADDRESS OR SANITIZE_MEMORY)
+    set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/third_party/sanitizers/src/cmake" ${CMAKE_MODULE_PATH})
+    find_package(Sanitizers)
+endif()
+ 
 #############################
 # Add SDK Testing Target #
 #############################
 enable_testing()
 set(UNIT_TEST_TARGET_NAME aws-iot-unit-tests)
-add_executable(${UNIT_TEST_TARGET_NAME} "")
+add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
 target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -66,10 +71,15 @@ add_subdirectory(${CMAKE_BINARY_DIR}/third_party/googletest/src
 
 file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/tests/unit/src/*.cpp)
 target_sources(${UNIT_TEST_TARGET_NAME} PUBLIC ${SDK_UNIT_TEST_SOURCES})
+target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common)
 target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/tests/unit/include)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} gtest gtest_main gmock gmock_main)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${THREAD_LIBRARY_LINK_STRING})
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${SDK_TARGET_NAME})
+
+if(SANITIZE_THREAD OR SANITIZE_MEMORY OR SANITIZE_ADDRESS OR SANITIZE_MEMORY)
+    add_sanitizers(${UNIT_TEST_TARGET_NAME})
+endif()
 
 find_program(GCOV gcov)
 find_program(LCOV lcov)

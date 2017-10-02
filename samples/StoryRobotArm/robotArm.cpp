@@ -168,6 +168,9 @@ namespace awsiotsdk {
                          static_cast<int>(rc));
 
             util::String current_working_directory = ConfigCommon::GetCurrentPath();
+            if (0 == current_working_directory.length()) {
+                return ResponseCode::FILE_OPEN_ERROR;
+            }
 
 #ifdef WIN32
             current_working_directory.append("\\");
