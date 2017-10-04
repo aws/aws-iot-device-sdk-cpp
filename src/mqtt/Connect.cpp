@@ -451,7 +451,7 @@ namespace awsiotsdk {
                             std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
 
                         if (nullptr != p_client_state_->p_disconnect_handler_ && nullptr != p_connect_packet) {
-                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), nullptr);
+                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), p_client_state_->p_app_handler_data_);
                         }
 
                         reconnect_backoff_timer = p_client_state_->GetMinReconnectBackoffTimeout();
@@ -523,7 +523,7 @@ namespace awsiotsdk {
                             std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
 
                         if (nullptr != p_client_state_->p_disconnect_handler_ && nullptr != p_connect_packet) {
-                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), nullptr);
+                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), p_client_state_->p_app_handler_data_);
                         }
 
                         p_client_state_->setDisconnectCallbackPending(false);
