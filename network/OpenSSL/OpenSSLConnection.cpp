@@ -41,7 +41,9 @@ namespace awsiotsdk {
     namespace network {
         OpenSSLInitializer::~OpenSSLInitializer() {
             CONF_modules_free();
-            ERR_remove_state(0);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
+            ERR_remove_thread_state(NULL);
+#endif
             CONF_modules_unload(1);
             SSL_COMP_free_compression_methods();
             ERR_free_strings();
@@ -158,7 +160,11 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_SSL_INIT_ERROR;
             }
 
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L 
             method = TLSv1_2_method();
+#else
+            method = TLS_method();
+#endif
 
             if ((p_ssl_context_ = SSL_CTX_new(method)) == NULL) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL INIT Failed - Unable to create SSL Context");
@@ -492,7 +498,9 @@ namespace awsiotsdk {
             });
 
             SSL_free(p_ssl_handle_);
-            ERR_remove_state(0);
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
+            ERR_remove_thread_state(NULL);
+#endif
 
             certificates_read_flag_ = false;
 #ifdef WIN32
