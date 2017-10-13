@@ -32,6 +32,7 @@
 #else
 #include <arpa/inet.h>
 #include <limits>
+#include <resolv.h>
 #define MAX_PATH_LENGTH_ PATH_MAX
 #endif
 
@@ -189,12 +190,17 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
+#ifndef WIN32
+            if (res_init() == -1) {
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "DNS initialize error");
+            }
+#endif
+
             hostent *host = gethostbyname(endpoint_char);
             if (nullptr == host) {
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
-            ResponseCode ret_val = ResponseCode::NETWORK_TCP_CONNECT_ERROR;
             sockaddr_in dest_addr;
 
             dest_addr.sin_family = AF_INET;
@@ -202,12 +208,23 @@ namespace awsiotsdk {
             dest_addr.sin_addr.s_addr = *(uint32_t *) (host->h_addr);
             memset(&(dest_addr.sin_zero), '\0', 8);
 
+            AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG,
+                         "resolved %s to %s",
+                         endpoint_.c_str(),
+                         inet_ntoa(dest_addr.sin_addr));
+
             int connect_status = connect(server_tcp_socket_fd_, (sockaddr *) &dest_addr, sizeof(sockaddr));
             if (-1 != connect_status) {
-                ret_val = ResponseCode::SUCCESS;
+                return ResponseCode::SUCCESS;
             }
 
-            return ret_val;
+#ifdef WIN32
+            closesocket(server_tcp_socket_fd_);
+#else
+            close(server_tcp_socket_fd_);
+#endif
+            AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "connect - %s", strerror(errno));
+            return ResponseCode::NETWORK_TCP_CONNECT_ERROR;
         }
 
         ResponseCode OpenSSLConnection::SetSocketToNonBlocking() {

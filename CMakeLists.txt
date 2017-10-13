@@ -81,6 +81,10 @@ find_package(Threads REQUIRED)
 set(THREAD_LIBRARY_LINK_STRING "Threads::Threads" -ldl)
 target_link_libraries(${SDK_TARGET_NAME} "Threads::Threads" -ldl)
 
+if(APPLE)
+	target_link_libraries(${SDK_TARGET_NAME} -lresolv)
+endif()
+
 if(BUILD_DOCS)
 	find_package(Doxygen REQUIRED)
 	file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/docs)
