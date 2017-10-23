@@ -76,6 +76,7 @@ To update the MQTT Client's Auto-reconnect configuration:
  * The auto-reconnect flow can be completely disabled using SetAutoReconnectEnabled API
  * The minimum and maximum backoff timer values can be set using SetMinReconnectBackoffTimeout and SetMaxReconnectBackoffTimeout APIs
  * The default Min value is 1 second and Max value is 128 seconds
+ * You can set callbacks for disconnect, reconnect and resubscribe. Please note that these callbacks have to be non-blocking. 
 
 <a name="usingshadows"></a>
 ### How to use Shadows

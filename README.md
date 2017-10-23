@@ -9,6 +9,7 @@ This change will allow us to push out bug fixes quickly and avoid having situati
 * [Overview](#overview)
 * [Features](#features)
 * [Design Goals](#design)
+* [Collection of Metrics](#metrics)
 * [Getting Started](#getstarted)
 * [Installation](#installation)
 * [Porting to different platforms](#porting)

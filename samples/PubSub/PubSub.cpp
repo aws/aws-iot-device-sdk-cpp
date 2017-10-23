@@ -96,6 +96,26 @@ namespace awsiotsdk {
             return ResponseCode::SUCCESS;
         }
 
+        ResponseCode PubSub::ReconnectCallback(util::String client_id,
+                                               std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data,
+                                               ResponseCode reconnect_result) {
+            std::cout << "*******************************************" << std::endl
+                      << client_id << " Reconnect Attempted. Result " << ResponseHelper::ToString(reconnect_result)
+                      << std::endl
+                      << "*******************************************" << std::endl;
+            return ResponseCode::SUCCESS;
+        }
+
+        ResponseCode PubSub::ResubscribeCallback(util::String client_id,
+                                                 std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data,
+                                                 ResponseCode resubscribe_result) {
+            std::cout << "*******************************************" << std::endl
+                      << client_id << " Resubscribe Attempted. Result" << ResponseHelper::ToString(resubscribe_result)
+                      << std::endl
+                      << "*******************************************" << std::endl;
+            return ResponseCode::SUCCESS;
+        }
+
         ResponseCode PubSub::Subscribe() {
             util::String p_topic_name_str = SDK_SAMPLE_TOPIC;
             std::unique_ptr<Utf8String> p_topic_name = Utf8String::Create(p_topic_name_str);
@@ -194,9 +214,25 @@ namespace awsiotsdk {
             ClientCoreState::ApplicationDisconnectCallbackPtr p_disconnect_handler =
                 std::bind(&PubSub::DisconnectCallback, this, std::placeholders::_1, std::placeholders::_2);
 
+            ClientCoreState::ApplicationReconnectCallbackPtr p_reconnect_handler =
+                std::bind(&PubSub::ReconnectCallback,
+                          this,
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3);
+
+            ClientCoreState::ApplicationResubscribeCallbackPtr p_resubscribe_handler =
+                std::bind(&PubSub::ResubscribeCallback,
+                          this,
+                          std::placeholders::_1,
+                          std::placeholders::_2,
+                          std::placeholders::_3);
+
             p_iot_client_ = std::shared_ptr<MqttClient>(MqttClient::Create(p_network_connection_,
                                                                            ConfigCommon::mqtt_command_timeout_,
-                                                                           p_disconnect_handler, nullptr));
+                                                                           p_disconnect_handler, nullptr,
+                                                                           p_reconnect_handler, nullptr,
+                                                                           p_resubscribe_handler, nullptr));
             if (nullptr == p_iot_client_) {
                 return ResponseCode::FAILURE;
             }

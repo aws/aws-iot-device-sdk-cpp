@@ -41,6 +41,12 @@ namespace awsiotsdk {
                                            std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
             ResponseCode DisconnectCallback(util::String topic_name,
                                             std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+            ResponseCode ReconnectCallback(util::String client_id,
+                                           std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data,
+                                           ResponseCode reconnect_result);
+            ResponseCode ResubscribeCallback(util::String client_id,
+                                             std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data,
+                                             ResponseCode resubscribe_result);
             ResponseCode Subscribe();
             ResponseCode Unsubscribe();
             ResponseCode InitializeTLS();

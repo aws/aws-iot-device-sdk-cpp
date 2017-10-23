@@ -53,13 +53,34 @@ namespace awsiotsdk {
          *
          * @param p_network_connection - Network connection to use with this MQTT Client instance
          * @param mqtt_command_timeout - Command timeout in milliseconds for internal blocking operations (Reconnect and Resubscribe)
-         * @param callback_ptr - pointer of the disconnect callback handler
-         * @param app_handler_data - context data for the disconnect handler
+         * @param disconnect_callback_ptr - pointer of the disconnect callback handler
+         * @param p_disconnect_app_handler_data - context data for the disconnect handler
+         * @param reconnect_callback_ptr - pointer of the reconnect callback handler
+         * @param p_reconnect_app_handler_data - context data for the reconnect handler
+         * @param resubscribe_callback_ptr - pointer of the resubscribe callback handler
+         * @param p_resubscribe_app_handler_data - context data for the resubscribe handler
          */
         MqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
                    std::chrono::milliseconds mqtt_command_timeout,
-                   ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
-                   std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+                   ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                   std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                   ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                   std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                   ClientCoreState::ApplicationResubscribeCallbackPtr resubscribe_callback_ptr,
+                   std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data);
+
+        /**
+         * @brief Constructor
+         *
+         * @param p_network_connection - Network connection to use with this MQTT Client instance
+         * @param mqtt_command_timeout - Command timeout in milliseconds for internal blocking operations (Reconnect and Resubscribe)
+         * @param disconnect_callback_ptr - pointer of the disconnect callback handler
+         * @param p_disconnect_app_handler_data - context data for the disconnect handler
+         */
+        MqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
+                   std::chrono::milliseconds mqtt_command_timeout,
+                   ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                   std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data);
 
         /**
          * @brief Constructor
@@ -96,16 +117,38 @@ namespace awsiotsdk {
         /**
          * @brief Create factory method, with additional parameters for disconnect callback.
          *
-         * @param networkConnection  - Network connection to use with this MQTT Client instance
+         * @param p_network_connection  - Network connection to use with this MQTT Client instance
          * @param mqtt_command_timeout - Command timeout in milliseconds for internal blocking operations (Reconnect and Resubscribe)
-         * @param callback_ptr - pointer of the disconnect callback handler
-         * @param app_handler_data - context data for the disconnect handler
+         * @param disconnect_callback_ptr_ptr - pointer of the disconnect callback handler
+         * @param p_app_handler_data - context data for the disconnect handler
          * @return std::unique_ptr<MqttClient> pointing to a unique MQTT client instance
          */
         static std::unique_ptr<MqttClient> Create(std::shared_ptr<NetworkConnection> p_network_connection,
                                                   std::chrono::milliseconds mqtt_command_timeout,
-                                                  ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
-                                                  std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+                                                  ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                  std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data);
+
+        /**
+         * @brief Create factory method, with additional parameters for disconnect, reconnect and resubscribe callbacks.
+         *
+         * @param p_network_connection  - Network connection to use with this MQTT Client instance
+         * @param mqtt_command_timeout - Command timeout in milliseconds for internal blocking operations (Reconnect and Resubscribe)
+         * @param disconnect_callback_ptr - pointer of the disconnect callback handler
+         * @param p_app_handler_data - context data for the disconnect handler
+         * @param reconnect_callback_ptr - pointer of the reconnect callback handler
+         * @param p_reconnect_app_handler_data - context data for the reconnect handler
+         * @param resubscribe_callback_ptr - pointer of the resubscribe callback handler
+         * @param p_resubscribe_app_handler_data - context data for the resubscribe handler
+         * @return std::unique_ptr<MqttClient> pointing to a unique MQTT client instance
+         */
+        static std::unique_ptr<MqttClient> Create(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                  std::chrono::milliseconds mqtt_command_timeout,
+                                                  ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                  std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                                                  ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                                                  std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                                                  ClientCoreState::ApplicationResubscribeCallbackPtr p_resubscribec_callback,
+                                                  std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data);
 
         // Sync API
 
@@ -340,11 +383,32 @@ namespace awsiotsdk {
         /**
          * @brief Set the callback function for disconnects
          *
-         * @param callback_ptr
-         * @param disconnect_context_data
+         * @param p_callback_ptr
+         * @param p_app_handler_data
          * @return ResponseCode indicating whether the callback was set successfully
          */
         virtual ResponseCode SetDisconnectCallbackPtr(ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
                                                       std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data);
+
+        /**
+         * @brief Set the callback function for reconnects
+         *
+         * @param p_callback_ptr
+         * @param p_app_handler_data
+         * @return ResponseCode indicating whether the callback was set successfully
+         */
+        virtual ResponseCode SetReconnectCallbackPtr(ClientCoreState::ApplicationReconnectCallbackPtr p_callback_ptr,
+                                                     std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data);
+
+        /**
+         * @brief Set the callback function for resubscribes
+         *
+         * @param p_callback_ptr
+         * @param p_app_handler_data
+         * @return ResponseCode indicating whether the callback was set successfully
+         */
+        virtual ResponseCode SetResubscribeCallbackPtr(ClientCoreState::ApplicationResubscribeCallbackPtr p_callback_ptr,
+                                                       std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data);
+
     };
 }

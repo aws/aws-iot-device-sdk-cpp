@@ -38,31 +38,62 @@ namespace awsiotsdk {
 
         return std::unique_ptr<MqttClient>(new MqttClient(p_network_connection,
                                                           mqtt_command_timeout,
-                                                          nullptr,
-                                                          nullptr));
+                                                          nullptr, nullptr, nullptr,
+                                                          nullptr, nullptr, nullptr));
     }
 
     std::unique_ptr<MqttClient> MqttClient::Create(std::shared_ptr<NetworkConnection> p_network_connection,
                                                    std::chrono::milliseconds mqtt_command_timeout,
-                                                   ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
-                                                   std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data) {
+                                                   ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                   std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data) {
         if (nullptr == p_network_connection) {
             return nullptr;
         }
 
         return std::unique_ptr<MqttClient>(new MqttClient(p_network_connection,
                                                           mqtt_command_timeout,
-                                                          p_callback_ptr,
-                                                          p_app_handler_data));
+                                                          disconnect_callback_ptr,
+                                                          p_disconnect_app_handler_data,
+                                                          nullptr, nullptr, nullptr, nullptr));
+    }
+
+    std::unique_ptr<MqttClient> MqttClient::Create(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                   std::chrono::milliseconds mqtt_command_timeout,
+                                                   ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                   std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                                                   ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                                                   std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                                                   ClientCoreState::ApplicationResubscribeCallbackPtr resubscribe_callback_ptr,
+                                                   std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data) {
+        if (nullptr == p_network_connection) {
+            return nullptr;
+        }
+
+        return std::unique_ptr<MqttClient>(new MqttClient(p_network_connection,
+                                                          mqtt_command_timeout,
+                                                          disconnect_callback_ptr,
+                                                          p_disconnect_app_handler_data,
+                                                          reconnect_callback_ptr,
+                                                          p_reconnect_app_handler_data,
+                                                          resubscribe_callback_ptr,
+                                                          p_resubscribe_app_handler_data));
     }
 
     MqttClient::MqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
                            std::chrono::milliseconds mqtt_command_timeout,
-                           ClientCoreState::ApplicationDisconnectCallbackPtr callback_ptr,
-                           std::shared_ptr<DisconnectCallbackContextData> app_handler_data) {
+                           ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                           std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                           ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                           std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                           ClientCoreState::ApplicationResubscribeCallbackPtr resubscribe_callback_ptr,
+                           std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data) {
         p_client_state_ = mqtt::ClientState::Create(mqtt_command_timeout);
-        p_client_state_->p_disconnect_handler_ = callback_ptr;
-        p_client_state_->p_app_handler_data_ = app_handler_data;
+        p_client_state_->disconnect_handler_ptr_ = disconnect_callback_ptr;
+        p_client_state_->p_disconnect_app_handler_data_ = p_disconnect_app_handler_data;
+        p_client_state_->reconnect_handler_ptr_ = reconnect_callback_ptr;
+        p_client_state_->p_reconnect_app_handler_data_ = p_reconnect_app_handler_data;
+        p_client_state_->resubscribe_handler_ptr_ = resubscribe_callback_ptr;
+        p_client_state_->p_resubscribe_app_handler_data_ = p_resubscribe_app_handler_data;
 
         // Construct Full MQTT Client
         p_client_core_ = std::unique_ptr<ClientCore>(ClientCore::Create(p_network_connection, p_client_state_));
@@ -77,10 +108,20 @@ namespace awsiotsdk {
     }
 
     MqttClient::MqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
+                           std::chrono::milliseconds mqtt_command_timeout,
+                           ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                           std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data)
+        : MqttClient(p_network_connection, mqtt_command_timeout, disconnect_callback_ptr, p_disconnect_app_handler_data,
+                     nullptr, nullptr, nullptr, nullptr) {
+
+    }
+
+    MqttClient::MqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
                            std::chrono::milliseconds mqtt_command_timeout) : MqttClient(p_network_connection,
                                                                                         mqtt_command_timeout,
                                                                                         nullptr,
-                                                                                        nullptr) {
+                                                                                        nullptr, nullptr, nullptr,
+                                                                                        nullptr, nullptr) {
 
     }
 
@@ -220,8 +261,24 @@ namespace awsiotsdk {
 
     ResponseCode MqttClient::SetDisconnectCallbackPtr(ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
                                                       std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data) {
-        p_client_state_->p_disconnect_handler_ = p_callback_ptr;
-        p_client_state_->p_app_handler_data_ = p_app_handler_data;
+        p_client_state_->disconnect_handler_ptr_ = p_callback_ptr;
+        p_client_state_->p_disconnect_app_handler_data_ = p_app_handler_data;
+
+        return ResponseCode::SUCCESS;
+    }
+
+    ResponseCode MqttClient::SetReconnectCallbackPtr(ClientCoreState::ApplicationReconnectCallbackPtr p_callback_ptr,
+                                                      std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data) {
+        p_client_state_->reconnect_handler_ptr_ = p_callback_ptr;
+        p_client_state_->p_reconnect_app_handler_data_ = p_app_handler_data;
+
+        return ResponseCode::SUCCESS;
+    }
+
+    ResponseCode MqttClient::SetResubscribeCallbackPtr(ClientCoreState::ApplicationResubscribeCallbackPtr p_callback_ptr,
+                                                      std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data) {
+        p_client_state_->resubscribe_handler_ptr_ = p_callback_ptr;
+        p_client_state_->p_resubscribe_app_handler_data_ = p_app_handler_data;
 
         return ResponseCode::SUCCESS;
     }

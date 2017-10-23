@@ -450,8 +450,12 @@ namespace awsiotsdk {
                         std::shared_ptr<ConnectPacket> p_connect_packet =
                             std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
 
-                        if (nullptr != p_client_state_->p_disconnect_handler_ && nullptr != p_connect_packet) {
-                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), p_client_state_->p_app_handler_data_);
+                        /**
+                         * NOTE: All callbacks used by the keepalive should be non-blocking
+                         */
+                        if (nullptr != p_client_state_->disconnect_handler_ptr_ && nullptr != p_connect_packet) {
+                            p_client_state_->disconnect_handler_ptr_(p_connect_packet->GetClientID(),
+                                                                   p_client_state_->p_disconnect_app_handler_data_);
                         }
 
                         reconnect_backoff_timer = p_client_state_->GetMinReconnectBackoffTimeout();
@@ -462,15 +466,24 @@ namespace awsiotsdk {
                         AWS_LOG_INFO(KEEPALIVE_LOG_TAG, "Max backoff value : %ld!!", max_backoff_value.count());
                     }
                     AWS_LOG_INFO(KEEPALIVE_LOG_TAG, "Attempting Reconnect");
+
+                    std::shared_ptr<ConnectPacket> p_connect_packet =
+                        std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
+
                     rc = p_client_state_->PerformAction(ActionType::CONNECT,
-                                                        p_client_state_->GetAutoReconnectData(),
+                                                        p_connect_packet,
                                                         p_client_state_->GetMqttCommandTimeout());
+
+                    if (nullptr != p_client_state_->reconnect_handler_ptr_) {
+                        p_client_state_->reconnect_handler_ptr_(p_connect_packet->GetClientID(),
+                                                              p_client_state_->p_reconnect_app_handler_data_,
+                                                              rc);
+                    }
                     if (ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED == rc) {
+
                         // if no subscriptions, skip resubscribe
-                        if (p_client_state_->subscription_map_.empty()) {
-                            p_client_state_->SetAutoReconnectRequired(false);
-                            continue;
-                        } else {
+                        if (!p_client_state_->subscription_map_.empty()) {
+
                             util::Vector<std::shared_ptr<mqtt::Subscription>> topic_vector;
 
                             util::Map<util::String, std::shared_ptr<Subscription>>::const_iterator
@@ -492,14 +505,32 @@ namespace awsiotsdk {
                                 }
                             }
 
-                            if (!topic_vector.empty()) {
-                                std::shared_ptr<mqtt::SubscribePacket>
-                                    p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
-                                rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
+                            if (ResponseCode::SUCCESS == rc || ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED == rc) {
+                                if (!topic_vector.empty()) {
+                                    std::shared_ptr<mqtt::SubscribePacket>
+                                        p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
+                                    rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
+                                }
                             }
-                            p_client_state_->SetAutoReconnectRequired(false);
-                            continue;
+
+                            if (nullptr != p_client_state_->resubscribe_handler_ptr_) {
+                                p_client_state_->resubscribe_handler_ptr_(p_connect_packet->GetClientID(),
+                                                                        p_client_state_->p_resubscribe_app_handler_data_,
+                                                                        rc);
+                            }
                         }
+                        /**
+                         * NOTE :The resubscribe response can be NETWORK_DISCONNECTED_ERROR as the network might have
+                         * disconnected again after the reconnect was successful.
+                         */
+                        if (ResponseCode::NETWORK_DISCONNECTED_ERROR != rc) {
+                            p_client_state_->SetAutoReconnectRequired(false);
+                        } else {
+                            p_client_state_->PerformAction(ActionType::DISCONNECT,
+                                                           DisconnectPacket::Create(),
+                                                           p_client_state_->GetMqttCommandTimeout());
+                        }
+                        continue;
                     }
 
                     p_client_state_->setDisconnectCallbackPending(false);
@@ -522,8 +553,9 @@ namespace awsiotsdk {
                         std::shared_ptr<ConnectPacket> p_connect_packet =
                             std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
 
-                        if (nullptr != p_client_state_->p_disconnect_handler_ && nullptr != p_connect_packet) {
-                            p_client_state_->p_disconnect_handler_(p_connect_packet->GetClientID(), p_client_state_->p_app_handler_data_);
+                        if (nullptr != p_client_state_->disconnect_handler_ptr_ && nullptr != p_connect_packet) {
+                            p_client_state_->disconnect_handler_ptr_(p_connect_packet->GetClientID(),
+                                                                   p_client_state_->p_disconnect_app_handler_data_);
                         }
 
                         p_client_state_->setDisconnectCallbackPending(false);

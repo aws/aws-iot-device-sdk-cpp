@@ -40,31 +40,78 @@ namespace awsiotsdk {
 
         return std::unique_ptr<GreengrassMqttClient>(new GreengrassMqttClient(p_network_connection,
                                                                               mqtt_command_timeout,
-                                                                              nullptr,
-                                                                              nullptr));
+                                                                              nullptr, nullptr, nullptr, nullptr,
+                                                                              nullptr, nullptr));
     }
 
     std::unique_ptr<GreengrassMqttClient> GreengrassMqttClient::Create(std::shared_ptr<NetworkConnection> p_network_connection,
                                                                        std::chrono::milliseconds mqtt_command_timeout,
-                                                                       ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
-                                                                       std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data) {
+                                                                       ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                                       std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data) {
         if (nullptr == p_network_connection) {
             return nullptr;
         }
 
         return std::unique_ptr<GreengrassMqttClient>(new GreengrassMqttClient(p_network_connection,
                                                                               mqtt_command_timeout,
-                                                                              p_callback_ptr,
-                                                                              p_app_handler_data));
+                                                                              disconnect_callback_ptr,
+                                                                              p_disconnect_app_handler_data,
+                                                                              nullptr,
+                                                                              nullptr,
+                                                                              nullptr,
+                                                                              nullptr));
+    }
+
+    std::unique_ptr<GreengrassMqttClient> GreengrassMqttClient::Create(std::shared_ptr<NetworkConnection> p_network_connection,
+                                                                       std::chrono::milliseconds mqtt_command_timeout,
+                                                                       ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                                                       std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                                                                       ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                                                                       std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                                                                       ClientCoreState::ApplicationResubscribeCallbackPtr resubscribe_callback_ptr,
+                                                                       std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data) {
+        if (nullptr == p_network_connection) {
+            return nullptr;
+        }
+
+        return std::unique_ptr<GreengrassMqttClient>(new GreengrassMqttClient(p_network_connection,
+                                                                              mqtt_command_timeout,
+                                                                              disconnect_callback_ptr,
+                                                                              p_disconnect_app_handler_data,
+                                                                              reconnect_callback_ptr,
+                                                                              p_reconnect_app_handler_data,
+                                                                              resubscribe_callback_ptr,
+                                                                              p_resubscribe_app_handler_data));
     }
 
     GreengrassMqttClient::GreengrassMqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
                                                std::chrono::milliseconds mqtt_command_timeout,
-                                               ClientCoreState::ApplicationDisconnectCallbackPtr p_callback_ptr,
-                                               std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)
-        : MqttClient::MqttClient(p_network_connection, mqtt_command_timeout, p_callback_ptr, p_app_handler_data) {
+                                               ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                               std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data,
+                                               ClientCoreState::ApplicationReconnectCallbackPtr reconnect_callback_ptr,
+                                               std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data,
+                                               ClientCoreState::ApplicationResubscribeCallbackPtr resubscribe_callback_ptr,
+                                               std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data)
+        : MqttClient::MqttClient(p_network_connection, mqtt_command_timeout, disconnect_callback_ptr,
+                                 p_disconnect_app_handler_data, reconnect_callback_ptr, p_reconnect_app_handler_data,
+                                 resubscribe_callback_ptr, p_resubscribe_app_handler_data) {
         // Register Greengrass Discover Action in addition to other MQTT actions
         p_client_core_->RegisterAction(ActionType::GREENGRASS_DISCOVER, discovery::DiscoverAction::Create);
+    }
+
+    GreengrassMqttClient::GreengrassMqttClient(std::shared_ptr<NetworkConnection> p_network_connection,
+                                               std::chrono::milliseconds mqtt_command_timeout,
+                                               ClientCoreState::ApplicationDisconnectCallbackPtr disconnect_callback_ptr,
+                                               std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data)
+        : GreengrassMqttClient(p_network_connection,
+                               mqtt_command_timeout,
+                               disconnect_callback_ptr,
+                               p_disconnect_app_handler_data,
+                               nullptr,
+                               nullptr,
+                               nullptr,
+                               nullptr) {
+
     }
 
     GreengrassMqttClient::GreengrassMqttClient(std::shared_ptr<NetworkConnection> p_network_connection,

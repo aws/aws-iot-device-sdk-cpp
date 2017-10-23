@@ -58,6 +58,28 @@ namespace awsiotsdk {
     };
 
     /**
+     * @brief MQTT Reconnect Callback Context Data
+     *
+     * This class can be used to provide customer context data to be provided with each reconnect callback.
+     * Uses a pure virtual destructor to allow for polymorphism
+     */
+    class ReconnectCallbackContextData {
+    public:
+        virtual ~ReconnectCallbackContextData() = 0;
+    };
+
+    /**
+     * @brief MQTT Resubscribe Callback Context Data
+     *
+     * This class can be used to provide customer context data to be provided with each resubscribe callback.
+     * Uses a pure virtual destructor to allow for polymorphism
+     */
+    class ResubscribeCallbackContextData {
+    public:
+        virtual ~ResubscribeCallbackContextData() = 0;
+    };
+
+    /**
      * @brief Client Core State Class
      *
      * Defining a class for the Core Client State.
@@ -119,12 +141,39 @@ namespace awsiotsdk {
          * @brief Define Handler for Disconnect Callbacks
          *
          * This handler is used to provide notification to the application when a disconnect occurs
+         * NOTE: This handler should be NON-BLOCKING
          */
         typedef std::function<ResponseCode(util::String mqtt_client_id,
                                            std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data)> ApplicationDisconnectCallbackPtr;
 
-        ApplicationDisconnectCallbackPtr p_disconnect_handler_;              ///< Pointer to the Application Disconnect Callback
-        std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data_;  ///< Data to be passed to the Application Handler
+        ApplicationDisconnectCallbackPtr disconnect_handler_ptr_;                         ///< Pointer to the Application Disconnect Callback
+        std::shared_ptr<DisconnectCallbackContextData> p_disconnect_app_handler_data_;  ///< Data to be passed to the Application Handler
+
+        /**
+         * @brief Define Handler for Reconnect Callbacks
+         *
+         * This handler is used to provide notification to the application when a reconnect occurs
+         * NOTE: This handler should be NON-BLOCKING
+         */
+        typedef std::function<ResponseCode(util::String mqtt_client_id,
+                                           std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data,
+                                           ResponseCode reconnect_result)> ApplicationReconnectCallbackPtr;
+
+        ApplicationReconnectCallbackPtr reconnect_handler_ptr_;                           ///< Pointer to the Application Reconnect Callback
+        std::shared_ptr<ReconnectCallbackContextData> p_reconnect_app_handler_data_;   ///< Data to be passed to the Application Handler
+
+        /**
+         * @brief Define Handler for Resubscribe Callbacks
+         *
+         * This handler is used to provide notification to the application when a resubscribe occurs.
+         * NOTE: This handler should be NON-BLOCKING
+         */
+        typedef std::function<ResponseCode(util::String mqtt_client_id,
+                                           std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data,
+                                           ResponseCode resubscribe_result)> ApplicationResubscribeCallbackPtr;
+
+        ApplicationResubscribeCallbackPtr resubscribe_handler_ptr_;                       ///< Pointer to the Application Resubscribe Callback
+        std::shared_ptr<ResubscribeCallbackContextData> p_resubscribe_app_handler_data_; ///< Data to be passed to the Application Handler
 
         /**
          * @brief Network connection instance to use for this instance of the Client
