@@ -79,15 +79,6 @@ namespace awsiotsdk {
 
             packet_size_ = packet_size_ + 2;  // +2 for writing length
 
-
-            // username is not supported by the service
-            /*p_username_ = nullptr;
-            if(nullptr != p_username) {
-                packet_size_ = packet_size_ + p_username->Length() + 2; // +2 for writing length
-                p_username_ = std::move(p_username);
-                connect_flags_ |= 0x80; // Username is Left-to-Right bit 1 in the flag byte
-            }*/
-
             // username used for sending usage metrics
             if (is_metrics_enabled) {
                 util::String p_username_string = SDK_USAGE_METRICS_STRING;
