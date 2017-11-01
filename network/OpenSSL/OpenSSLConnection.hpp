@@ -152,6 +152,15 @@ namespace awsiotsdk {
             ResponseCode LoadCerts();
 
             /**
+             * @brief Perform the connect process after creating the SSL handle and context
+             *
+             * Performs the steps necessary for connecting to an endpoint after the creation of the SSL instance
+             *
+             * @return ResponseCode - successful connection or TLS error
+             */
+            ResponseCode PerformSSLConnect();
+
+            /**
              * @brief Create a TLS socket and open the connection
              *
              * Creates an open socket connection including TLS handshake.

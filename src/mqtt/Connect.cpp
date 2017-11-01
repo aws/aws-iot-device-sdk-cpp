@@ -336,6 +336,7 @@ namespace awsiotsdk {
                 }
                 AWS_LOG_ERROR(CONNECT_LOG_TAG, "Connect Write to Network Failed. %s",
                               ResponseHelper::ToString(rc).c_str());
+                p_network_connection->Disconnect();
             } else {
                 p_client_state_->setDisconnectCallbackPending(true);
             }

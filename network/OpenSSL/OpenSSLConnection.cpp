@@ -77,6 +77,7 @@ namespace awsiotsdk {
             is_connected_ = false;
             certificates_read_flag_ = false;
             initializer = OpenSSLInitializer::getInstance();
+            p_ssl_handle_ = nullptr;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -161,7 +162,7 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_SSL_INIT_ERROR;
             }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L 
+#if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
             method = TLSv1_2_method();
 #else
             method = TLS_method();
@@ -328,36 +329,8 @@ namespace awsiotsdk {
             return ResponseCode::SUCCESS;
         }
 
-        ResponseCode OpenSSLConnection::ConnectInternal() {
+        ResponseCode OpenSSLConnection::PerformSSLConnect() {
             ResponseCode networkResponse = ResponseCode::SUCCESS;
-
-            X509_VERIFY_PARAM *param = nullptr;
-
-            if (!certificates_read_flag_) {
-                networkResponse = LoadCerts();
-                if (ResponseCode::SUCCESS != networkResponse) {
-                    return networkResponse;
-                }
-            }
-
-            p_ssl_handle_ = SSL_new(p_ssl_context_);
-
-            // Requires OpenSSL v1.0.2 and above
-            if (server_verification_flag_) {
-                param = SSL_get0_param(p_ssl_handle_);
-                // Enable automatic hostname checks
-                X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
-
-                // Check if it is an IPv4 or an IPv6 address to enable ip checking
-                // Enable host name check otherwise
-                char dst[INET6_ADDRSTRLEN];
-                if (inet_pton(AF_INET, endpoint_.c_str(), (void *) dst) ||
-                    inet_pton(AF_INET6, endpoint_.c_str(), (void *) dst)) {
-                    X509_VERIFY_PARAM_set1_ip_asc(param, endpoint_.c_str());
-                } else {
-                    X509_VERIFY_PARAM_set1_host(param, endpoint_.c_str(), 0);
-                }
-            }
 
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
@@ -378,24 +351,73 @@ namespace awsiotsdk {
             networkResponse = SetSocketToNonBlocking();
             if (ResponseCode::SUCCESS != networkResponse) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Unable to set the socket to Non-Blocking");
-                return networkResponse;
+            } else {
+                networkResponse = AttemptConnect();
+                if (X509_V_OK != SSL_get_verify_result(p_ssl_handle_)) {
+                    AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Server Certificate Verification failed.");
+                    networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
+                } else {
+                    // ensure you have a valid certificate returned, otherwise no certificate exchange happened
+                    auto cert_destroyer = [](X509 *cert) {
+                        if (nullptr != cert) X509_free(cert);
+                    };
+                    std::unique_ptr<X509, decltype(cert_destroyer)> cert(SSL_get_peer_certificate(p_ssl_handle_),
+                                                                         cert_destroyer);
+                    if (nullptr == cert) {
+                        AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " No certificate exchange happened");
+                        networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
+                    }
+                }
             }
 
-            networkResponse = AttemptConnect();
-            if (X509_V_OK != SSL_get_verify_result(p_ssl_handle_)) {
-                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " Server Certificate Verification failed.");
-                networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
-            } else {
-                // ensure you have a valid certificate returned, otherwise no certificate exchange happened
-                auto cert_destroyer = [](X509 *cert) {
-                    if (nullptr != cert) X509_free(cert);
-                };
-                std::unique_ptr<X509, decltype(cert_destroyer)> cert(SSL_get_peer_certificate(p_ssl_handle_),
-                                                                     cert_destroyer);
-                if (nullptr == cert) {
-                    AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " No certificate exchange happened");
-                    networkResponse = ResponseCode::NETWORK_SSL_CONNECT_ERROR;
+            if (ResponseCode::SUCCESS != networkResponse) {
+#ifdef WIN32
+                closesocket(server_tcp_socket_fd_);
+#else
+                close(server_tcp_socket_fd_);
+#endif
+            }
+
+            return networkResponse;
+        }
+
+        ResponseCode OpenSSLConnection::ConnectInternal() {
+            ResponseCode networkResponse = ResponseCode::SUCCESS;
+
+            X509_VERIFY_PARAM *param = nullptr;
+
+            if (!certificates_read_flag_) {
+                networkResponse = LoadCerts();
+                if (ResponseCode::SUCCESS != networkResponse) {
+                    return networkResponse;
                 }
+            }
+
+            if (nullptr == p_ssl_handle_) {
+                p_ssl_handle_ = SSL_new(p_ssl_context_);
+            }
+
+            // Requires OpenSSL v1.0.2 and above
+            if (server_verification_flag_) {
+                param = SSL_get0_param(p_ssl_handle_);
+                // Enable automatic hostname checks
+                X509_VERIFY_PARAM_set_hostflags(param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+
+                // Check if it is an IPv4 or an IPv6 address to enable ip checking
+                // Enable host name check otherwise
+                char dst[INET6_ADDRSTRLEN];
+                if (inet_pton(AF_INET, endpoint_.c_str(), (void *) dst) ||
+                    inet_pton(AF_INET6, endpoint_.c_str(), (void *) dst)) {
+                    X509_VERIFY_PARAM_set1_ip_asc(param, endpoint_.c_str());
+                } else {
+                    X509_VERIFY_PARAM_set1_host(param, endpoint_.c_str(), 0);
+                }
+            }
+
+            networkResponse = PerformSSLConnect();
+            if (ResponseCode::SUCCESS != networkResponse) {
+                SSL_free(p_ssl_handle_);
+                p_ssl_handle_ = nullptr;
             }
 
             if (ResponseCode::SUCCESS == networkResponse) {
@@ -415,6 +437,9 @@ namespace awsiotsdk {
 
             do {
                 ERR_clear_error();
+                if (nullptr == p_ssl_handle_) {
+                    return ResponseCode::NETWORK_SSL_WRITE_ERROR;
+                }
                 cur_written_length = SSL_write(p_ssl_handle_, buf.c_str(), bytes_to_write);
                 error_code = SSL_get_error(p_ssl_handle_, cur_written_length);
                 if (0 < cur_written_length) {
@@ -452,6 +477,9 @@ namespace awsiotsdk {
 
             do {
                 ERR_clear_error();
+                if (nullptr == p_ssl_handle_) {
+                    return ResponseCode::NETWORK_SSL_READ_ERROR;
+                }
                 cur_read_len = SSL_read(p_ssl_handle_, &buf[total_read_length], (int) remaining_bytes_to_read);
                 if (0 < cur_read_len) {
                     total_read_length += (size_t) cur_read_len;
@@ -515,6 +543,8 @@ namespace awsiotsdk {
             });
 
             SSL_free(p_ssl_handle_);
+            p_ssl_handle_ = nullptr;
+
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
             ERR_remove_thread_state(NULL);
 #endif
