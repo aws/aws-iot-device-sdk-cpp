@@ -79,7 +79,6 @@
 #define WSSGUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 #define WSS_SUCCESS_HANDSHAKE_RESP_HEADER "sec-websocket-accept"
 
-#define MAX_RW_BUF_LEN 2048
 #define TO_HASH_BUF_LEN 64
 #define WSS_CLIENT_KEY_MAX_LEN 64
 #define RANDOM_BYTES_LEN 16
@@ -585,31 +584,18 @@ namespace awsiotsdk {
             }
 
             // -> Assemble Wss Http request
-            util::Vector<unsigned char> rw_buf;
-            rw_buf.resize(MAX_RW_BUF_LEN);
-            snprintf((char *) &rw_buf[0],
-                     MAX_RW_BUF_LEN,
-                     "GET /mqtt?%s %s\r\n"
-                         "Host: %s\r\n"
-                         "Connection: %s\r\n"
-                         "Upgrade: %s\r\n"
-                         "Sec-WebSocket-Version: %s\r\n"
-                         "sec-websocket-key: %s\r\n"
-                         "Sec-WebSocket-Protocol: %s\r\n\r\n",
-                     canonical_query_string.c_str(),
-                     HTTP_1_1,
-                     endpoint_.c_str(),
-                     UPGRADE,
-                     WEBSOCKET,
-                     SEC_WEBSOCKET_VERSION_13,
-                     client_key_buf,
-                     MQTT_PROTOCOL
-            );
+            util::OStringStream stringStream;
+            stringStream << "GET /mqtt?" << canonical_query_string << " " << HTTP_1_1 << "\r\n"
+                         << "Host: " << endpoint_ << "\r\n"
+                         << "Connection: " << UPGRADE << "\r\n"
+                         << "Upgrade: " << WEBSOCKET << "\r\n"
+                         << "Sec-WebSocket-Version: " << SEC_WEBSOCKET_VERSION_13 << "\r\n"
+                         << "sec-websocket-key: " << client_key_buf << "\r\n"
+                         << "Sec-WebSocket-Protocol: " << MQTT_PROTOCOL << "\r\n\r\n";
+            util::String request_string = stringStream.str();
 
             // Send out request
-            size_t out_len = strnlen((char *) &rw_buf[0], MAX_RW_BUF_LEN);
-            util::String out_data((char *) &rw_buf[0], out_len);
-            rc = WriteToNetworkBuffer(out_data);
+            rc = WriteToNetworkBuffer(request_string);
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(WEBSOCKET_WRAPPER_LOG_TAG,
                               "SSL Write failed, %s",
@@ -618,9 +604,9 @@ namespace awsiotsdk {
             }
 
             // Retrieve response
-            rw_buf.clear();
-            rw_buf.resize(SERVER_WSS_RESP_LEN);
-            rc = ReadFromNetworkBuffer(rw_buf, SERVER_WSS_RESP_LEN);
+            util::Vector<unsigned char> r_buf;
+            r_buf.resize(SERVER_WSS_RESP_LEN);
+            rc = ReadFromNetworkBuffer(r_buf, SERVER_WSS_RESP_LEN);
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(WEBSOCKET_WRAPPER_LOG_TAG,
                               "SSL Read failed, %s",
@@ -628,13 +614,8 @@ namespace awsiotsdk {
                 return rc;
             }
 
-            // Verify handshake result
-            ResponseCode verify_res = VerifyHandshakeResponse(rw_buf, SERVER_WSS_RESP_LEN, client_key_buf);
-            if (ResponseCode::SUCCESS != verify_res) {
-                return verify_res;
-            }
-
-            return ResponseCode::SUCCESS;
+            // Verify and return handshake result
+            return VerifyHandshakeResponse(r_buf, SERVER_WSS_RESP_LEN, client_key_buf);
         }
 
         ResponseCode WebSocketConnection::GenerateClientKey(char *res_buf, size_t *res_len) {
