@@ -35,6 +35,8 @@
 
 #define INTEG_TEST_RUNNER_LOG_TAG "[Integration Test Runner]"
 
+#define MAX_ALLOWED_SUBSCRIPTIONS 50
+
 namespace awsiotsdk {
     namespace tests {
         namespace integration {
@@ -100,6 +102,17 @@ namespace awsiotsdk {
                  */
                 {
                     MultipleSubAutoReconnect multiple_sub_runner(8);
+                    rc = multiple_sub_runner.RunTest();
+                    if (ResponseCode::SUCCESS != rc) {
+                        return rc;
+                    }
+                }
+
+                /**
+                 * Run Multiple Subscription auto reconnect test with 50 topics
+                 */
+                {
+                    MultipleSubAutoReconnect multiple_sub_runner(MAX_ALLOWED_SUBSCRIPTIONS);
                     rc = multiple_sub_runner.RunTest();
                     if (ResponseCode::SUCCESS != rc) {
                         return rc;

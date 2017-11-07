@@ -38,7 +38,7 @@ namespace awsiotsdk {
                 std::mutex waiting_for_sub_lock_;
                 std::condition_variable sub_lifecycle_wait_;
                 std::shared_ptr<MqttClient> p_iot_client_;
-                int number_of_subscribers_;
+                int number_of_subscriptions_;
 
                 ResponseCode RunPublish(int msg_count);
                 ResponseCode SubscribeCallback(util::String topic_name,
@@ -55,12 +55,12 @@ namespace awsiotsdk {
                 MultipleSubAutoReconnect() {
                     cur_pending_messages_ = 0;
                     total_published_messages_ = 0;
-                    number_of_subscribers_ = 0;
+                    number_of_subscriptions_ = 0;
                 }
                 MultipleSubAutoReconnect(int number_of_clients) {
                     cur_pending_messages_ = 0;
                     total_published_messages_ = 0;
-                    number_of_subscribers_ = number_of_clients;
+                    number_of_subscriptions_ = number_of_clients;
                 }
                 ResponseCode RunTest();
             };

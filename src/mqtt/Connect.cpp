@@ -486,6 +486,7 @@ namespace awsiotsdk {
                                 if (topic_vector.size() == MAX_TOPICS_IN_ONE_SUBSCRIBE_PACKET) {
                                     std::shared_ptr<mqtt::SubscribePacket>
                                         p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
+                                    p_subscribe_packet->SetPacketId(p_client_state_->GetNextPacketId());
                                     rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
                                     if (ResponseCode::SUCCESS != rc) {
                                         AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
@@ -501,6 +502,7 @@ namespace awsiotsdk {
                                 if (!topic_vector.empty()) {
                                     std::shared_ptr<mqtt::SubscribePacket>
                                         p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
+                                    p_subscribe_packet->SetPacketId(p_client_state_->GetNextPacketId());
                                     rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
                                 }
                             }

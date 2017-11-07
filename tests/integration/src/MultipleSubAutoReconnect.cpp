@@ -49,6 +49,7 @@
 #define SDK_ACR_TEST_MSG_COUNT 5
 #define NETWORK_RECONNECT_BACKOFF_TIMER_MIN 1
 #define NETWORK_RECONNECT_BACKOFF_TIMER_MAX 64
+#define MAX_ALLOWED_SUB_TOPICS_PER_PACKET 8
 
 namespace awsiotsdk {
     namespace tests {
@@ -61,7 +62,7 @@ namespace awsiotsdk {
                 int itr = 1;
 
                 util::String p_topic_name_str = SDK_SAMPLE_TOPIC;
-                p_topic_name_str.append("0");
+                p_topic_name_str.append(std::to_string(number_of_subscriptions_-1));
 
                 do {
                     util::String payload = "Hello from SDK : ";
@@ -99,8 +100,9 @@ namespace awsiotsdk {
             }
 
             ResponseCode MultipleSubAutoReconnect::Subscribe() {
+                ResponseCode rc = ResponseCode::SUCCESS;
                 util::Vector<std::shared_ptr<mqtt::Subscription>> topic_vector;
-                for (int i = 0; i < number_of_subscribers_; i++) {
+                for (int i = 0; i < number_of_subscriptions_; i++) {
                     util::String p_topic_name_str = SDK_SAMPLE_TOPIC;
                     p_topic_name_str.append(std::to_string(i));
 
@@ -116,41 +118,53 @@ namespace awsiotsdk {
                     std::shared_ptr<mqtt::Subscription> p_subscription =
                         mqtt::Subscription::Create(std::move(p_topic_name), mqtt::QoS::QOS0, p_sub_handler, nullptr);
                     topic_vector.push_back(p_subscription);
-                }
 
-                ResponseCode rc = ResponseCode::SUCCESS;
-                {
-                    std::unique_lock<std::mutex> block_handler_lock(waiting_for_sub_lock_);
+                    if (MAX_ALLOWED_SUB_TOPICS_PER_PACKET == topic_vector.size() || (number_of_subscriptions_ - 1) == i)
                     {
-                        if (!topic_vector.empty()) {
-                            rc = p_iot_client_->Subscribe(topic_vector, ConfigCommon::mqtt_command_timeout_);
-                        }
-                    }
+                        {
+                            std::unique_lock<std::mutex> block_handler_lock(waiting_for_sub_lock_);
+                            {
+                                if (!topic_vector.empty()) {
+                                    rc = p_iot_client_->Subscribe(topic_vector, ConfigCommon::mqtt_command_timeout_);
+                                    if (ResponseCode::SUCCESS != rc) {
+                                        return rc;
+                                    }
+                                }
+                            }
 
-                    // Wait for 30 secs for subscribe to finish (shouldn't take longer on a good network connection)
-                    sub_lifecycle_wait_.wait_for(block_handler_lock, std::chrono::seconds(30));
+                            // Wait for 10 secs for subscribe to finish (shouldn't take longer on a good network connection)
+                            sub_lifecycle_wait_.wait_for(block_handler_lock, std::chrono::seconds(10));
+                        }
+                        topic_vector.clear();
+                    }
                 }
+
+
                 return rc;
             }
 
             ResponseCode MultipleSubAutoReconnect::Unsubscribe() {
                 uint16_t packet_id = 0;
+                ResponseCode rc = ResponseCode::SUCCESS;
+
                 util::Vector<std::unique_ptr<Utf8String>> topic_vector;
 
-                for (int i = 0; i < number_of_subscribers_; i++) {
+                for (int i = 0; i < number_of_subscriptions_; i++) {
                     util::String p_topic_name_str = SDK_SAMPLE_TOPIC;
                     p_topic_name_str.append(std::to_string(i));
 
                     std::unique_ptr<Utf8String> p_topic_name = Utf8String::Create(p_topic_name_str);
                     topic_vector.push_back(std::move(p_topic_name));
-
+                    if (MAX_ALLOWED_SUB_TOPICS_PER_PACKET == topic_vector.size() || (number_of_subscriptions_ - 1) == i)
+                    {
+                        if (!topic_vector.empty()) {
+                            rc = p_iot_client_->UnsubscribeAsync(std::move(topic_vector), nullptr, packet_id);
+                            std::this_thread::sleep_for(std::chrono::seconds(1));
+                        }
+                        topic_vector.clear();
+                    }
                 }
 
-                ResponseCode rc = ResponseCode::SUCCESS;
-                if (!topic_vector.empty()) {
-                    rc = p_iot_client_->UnsubscribeAsync(std::move(topic_vector), nullptr, packet_id);
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-                }
                 return rc;
             }
 
@@ -214,7 +228,7 @@ namespace awsiotsdk {
                 std::cout << std::endl
                           << "****************************** Multiple Subscriber Reconnect Test **************************"
                           << std::endl;
-                std::cout << std::endl << "****************************** No of Subscribers: " << number_of_subscribers_
+                std::cout << std::endl << "****************************** No of Subscribers: " << number_of_subscriptions_
                           << " ************" << std::endl;
 
                 bool ran_all_tests = false;
