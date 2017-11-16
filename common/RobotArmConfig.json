@@ -17,7 +17,7 @@
   "thing_name": "RobotArm_Thing",
   "is_clean_session": true,
   "mqtt_command_timeout_msecs": 20000,
-  "keepalive_interval_secs": 30,
+  "keepalive_interval_secs": 600,
   "minimum_reconnect_interval_secs": 1,
   "maximum_reconnect_interval_secs": 128,
   "maximum_acks_to_wait_for": 32,
