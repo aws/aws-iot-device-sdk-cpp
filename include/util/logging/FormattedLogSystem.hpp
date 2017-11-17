@@ -28,53 +28,56 @@
 #include <atomic>
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Logging {
-			/**
-			 * Logger that formats log messages into [LEVEL] timestamp [threadid] message
-			 */
-			class AWS_API_EXPORT FormattedLogSystem : public LogSystemInterface {
-			public:
-				using Base = LogSystemInterface;
+    namespace util {
+        namespace Logging {
+            /**
+             * Logger that formats log messages into [LEVEL] timestamp [threadid] message
+             */
+            class AWS_API_EXPORT FormattedLogSystem : public LogSystemInterface {
+            public:
+                using Base = LogSystemInterface;
 
-				/**
-				 * Initializes log system with logLevel
-				 */
-				FormattedLogSystem(LogLevel logLevel);
+                /**
+                 * Initializes log system with logLevel
+                 */
+                FormattedLogSystem(LogLevel logLevel);
 
-				virtual ~FormattedLogSystem() = default;
+                virtual ~FormattedLogSystem() = default;
 
-				/**
-				 * Gets the currently configured log level.
-				 */
-				virtual LogLevel GetLogLevel(void) const override { return m_logLevel; }
+                /**
+                 * Gets the currently configured log level.
+                 */
+                virtual LogLevel GetLogLevel(void) const override { return m_logLevel; }
 
-				/**
-				 * Set a new log level. This has the immediate effect of changing the log output to the new level.
-				 */
-				void SetLogLevel(LogLevel logLevel) { m_logLevel.store(logLevel); }
+                /**
+                 * Set a new log level. This has the immediate effect of changing the log output to the new level.
+                 */
+                void SetLogLevel(LogLevel logLevel) { m_logLevel.store(logLevel); }
 
-				/**
-				 * Does a printf style output to ProcessFormattedStatement. Don't use this, it's unsafe. See LogStream
-				 */
-				virtual void Log(LogLevel logLevel, const char *tag, const char *formatStr, ...) override;
+                /**
+                 * Does a printf style output to ProcessFormattedStatement. Don't use this, it's unsafe. See LogStream
+                 */
+                virtual void Log(LogLevel logLevel, const char *tag, const char *function, unsigned int line,
+                                 const char *formatStr, ...) override;
 
-				/**
-				 * Writes the stream to ProcessFormattedStatement.
-				 */
-				virtual void LogStream(LogLevel logLevel, const char *tag, const util::OStringStream &messageStream) override;
+                /**
+                 * Writes the stream to ProcessFormattedStatement.
+                 */
+                virtual void LogStream(LogLevel logLevel,
+                                       const char *tag,
+                                       const util::OStringStream &messageStream) override;
 
-			protected:
-				/**
-				 * This is the method that most logger implementations will want to override.
-				 * At this point the message is formatted and is ready to go to the output stream
-				 */
-				virtual void ProcessFormattedStatement(util::String &&statement) = 0;
+            protected:
+                /**
+                 * This is the method that most logger implementations will want to override.
+                 * At this point the message is formatted and is ready to go to the output stream
+                 */
+                virtual void ProcessFormattedStatement(util::String &&statement) = 0;
 
-			private:
-				std::atomic<LogLevel> m_logLevel;
-			};
+            private:
+                std::atomic<LogLevel> m_logLevel;
+            };
 
-		} // namespace Logging
-	} // namespace util
+        } // namespace Logging
+    } // namespace util
 } // namespace awsiotsdk

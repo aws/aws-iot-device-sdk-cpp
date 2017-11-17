@@ -26,13 +26,13 @@
 #include <string>
 
 namespace awsiotsdk {
-	namespace util {
-		using String = std::basic_string<char, std::char_traits<char>>;
+    namespace util {
+        using String = std::basic_string<char, std::char_traits<char>>;
 
 #ifdef _WIN32
-		using WString = std::basic_string<wchar_t, std::char_traits<wchar_t>>;
+        using WString = std::basic_string<wchar_t, std::char_traits<wchar_t>>;
 #endif
-	} // namespace util
+    } // namespace util
 } // namespace awsiotsdk
 
 

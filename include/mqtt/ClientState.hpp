@@ -32,94 +32,109 @@
 #include "mqtt/Common.hpp"
 
 namespace awsiotsdk {
-	namespace mqtt {
-		class ClientState : public ClientCoreState {
-		protected:
+    namespace mqtt {
+        class ClientState : public ClientCoreState {
+        protected:
 
-			bool is_session_present_;
-			std::atomic_bool is_connected_;
-			std::atomic_bool is_auto_reconnect_enabled_;
-			std::atomic_bool is_auto_reconnect_required_;
-			std::atomic_bool is_pingreq_pending_;
+            bool is_session_present_;
+            std::atomic_bool is_connected_;
+            std::atomic_bool is_auto_reconnect_enabled_;
+            std::atomic_bool is_auto_reconnect_required_;
+            std::atomic_bool is_pingreq_pending_;
 
-			uint16_t last_sent_packet_id_;
+            uint16_t last_sent_packet_id_;
 
-			std::chrono::seconds keep_alive_timeout_;
-			std::chrono::seconds min_reconnect_backoff_timeout_;
-			std::chrono::seconds max_reconnect_backoff_timeout_;
-			std::chrono::milliseconds mqtt_command_timeout_;
+            std::chrono::seconds keep_alive_timeout_;
+            std::chrono::seconds min_reconnect_backoff_timeout_;
+            std::chrono::seconds max_reconnect_backoff_timeout_;
+            std::chrono::milliseconds mqtt_command_timeout_;
 
-			std::shared_ptr<ActionData> p_connect_data_;
-		public:
-			util::Map<util::String, std::shared_ptr<Subscription>> subscription_map_;
+            std::shared_ptr<ActionData> p_connect_data_;
 
-			// Rule of 5 stuff
-			// Disable copying because class contains std::atomic<> types used for thread synchronization
-			ClientState() = delete;									// Default constructor
-			ClientState(const ClientState&) = delete;				// Delete Copy constructor
-			ClientState(ClientState&&) = default;					// Move constructor
-			ClientState& operator=(const ClientState&) & = delete;	// Delete Copy assignment operator
-			ClientState& operator=(ClientState&&) & = default;		// Move assignment operator
-			~ClientState() = default;								// Default destructor
+            std::atomic_bool trigger_disconnect_callback_;
+        public:
+            util::Map<util::String, std::shared_ptr<Subscription>> subscription_map_;
 
-			ClientState(std::chrono::milliseconds mqtt_command_timeout);
-			static std::shared_ptr<ClientState> Create(std::chrono::milliseconds mqtt_command_timeout);
+            // Rule of 5 stuff
+            // Disable copying because class contains std::atomic<> types used for thread synchronization
+            ClientState() = delete;                                  // Default constructor
+            ClientState(const ClientState &) = delete;               // Delete Copy constructor
+            ClientState(ClientState &&) = default;                   // Move constructor
+            ClientState &operator=(const ClientState &) & = delete;  // Delete Copy assignment operator
+            ClientState &operator=(ClientState &&) & = default;      // Move assignment operator
+            ~ClientState() = default;                                // Default destructor
 
-			bool IsSessionPresent() { return is_session_present_; }
-			void SetSessionPresent(bool value) { is_session_present_ = value; }
+            ClientState(std::chrono::milliseconds mqtt_command_timeout);
+            static std::shared_ptr<ClientState> Create(std::chrono::milliseconds mqtt_command_timeout);
 
-			bool IsConnected() { return is_connected_; }
-			void SetConnected(bool value) {
-				is_connected_ = value;
-				if(value) {
-					is_auto_reconnect_required_ = false;
-				}
-				SetProcessQueuedActions(value);
-			}
+            bool IsSessionPresent() { return is_session_present_; }
+            void SetSessionPresent(bool value) { is_session_present_ = value; }
 
-			bool IsAutoReconnectEnabled() { return is_auto_reconnect_enabled_; }
-			void SetAutoReconnectEnabled(bool value) { is_auto_reconnect_enabled_ = value; }
+            bool IsConnected() { return is_connected_; }
+            void SetConnected(bool value) {
+                is_connected_ = value;
+                if (value) {
+                    is_auto_reconnect_required_ = false;
+                }
+                SetProcessQueuedActions(value);
+            }
 
-			bool IsAutoReconnectRequired() { return is_auto_reconnect_required_; }
-			void SetAutoReconnectRequired(bool value) { is_auto_reconnect_required_ = value; }
+            bool IsAutoReconnectEnabled() { return is_auto_reconnect_enabled_; }
+            void SetAutoReconnectEnabled(bool value) { is_auto_reconnect_enabled_ = value; }
 
-			bool IsPingreqPending() { return is_pingreq_pending_; }
-			void SetPingreqPending(bool value) { is_pingreq_pending_ = value; }
+            bool IsAutoReconnectRequired() { return is_auto_reconnect_required_; }
+            void SetAutoReconnectRequired(bool value) { is_auto_reconnect_required_ = value; }
 
-			virtual uint16_t GetNextPacketId();
-			virtual uint16_t GetNextActionId() { return GetNextPacketId(); }
+            bool IsPingreqPending() { return is_pingreq_pending_; }
+            void SetPingreqPending(bool value) { is_pingreq_pending_ = value; }
 
-			/**
-			 * @brief Get duration of Keep alive interval in seconds
-			 * @return std::chrono::seconds Keep alive interval duration
-			 */
-			std::chrono::seconds GetKeepAliveTimeout() { return keep_alive_timeout_; }
-			void SetKeepAliveTimeout(std::chrono::seconds keep_alive_timeout) { keep_alive_timeout_ = keep_alive_timeout; }
+            bool isDisconnectCallbackPending() { return trigger_disconnect_callback_; }
+            void setDisconnectCallbackPending(bool value) { trigger_disconnect_callback_ = value; }
 
-			std::chrono::milliseconds GetMqttCommandTimeout() { return mqtt_command_timeout_; }
-			void SetMqttCommandTimeout(std::chrono::milliseconds mqtt_command_timeout) { mqtt_command_timeout_ = mqtt_command_timeout; }
+            virtual uint16_t GetNextPacketId();
+            virtual uint16_t GetNextActionId() { return GetNextPacketId(); }
 
-			std::chrono::seconds GetMinReconnectBackoffTimeout() { return min_reconnect_backoff_timeout_; }
-			void SetMinReconnectBackoffTimeout(std::chrono::seconds min_reconnect_backoff_timeout) { min_reconnect_backoff_timeout_ = min_reconnect_backoff_timeout; }
+            /**
+             * @brief Get duration of Keep alive interval in seconds
+             * @return std::chrono::seconds Keep alive interval duration
+             */
+            std::chrono::seconds GetKeepAliveTimeout() { return keep_alive_timeout_; }
+            void SetKeepAliveTimeout(std::chrono::seconds keep_alive_timeout) {
+                keep_alive_timeout_ = keep_alive_timeout;
+            }
 
-			std::chrono::seconds GetMaxReconnectBackoffTimeout() { return max_reconnect_backoff_timeout_; }
-			void SetMaxReconnectBackoffTimeout(std::chrono::seconds max_reconnect_backoff_timeout) { max_reconnect_backoff_timeout_ = max_reconnect_backoff_timeout; }
+            std::chrono::milliseconds GetMqttCommandTimeout() { return mqtt_command_timeout_; }
+            void SetMqttCommandTimeout(std::chrono::milliseconds mqtt_command_timeout) {
+                mqtt_command_timeout_ = mqtt_command_timeout;
+            }
 
-			std::shared_ptr<ActionData> GetAutoReconnectData() { return p_connect_data_; }
-			void SetAutoReconnectData(std::shared_ptr<ActionData> p_connect_data) { p_connect_data_ = p_connect_data; }
+            std::chrono::seconds GetMinReconnectBackoffTimeout() { return min_reconnect_backoff_timeout_; }
+            void SetMinReconnectBackoffTimeout(std::chrono::seconds min_reconnect_backoff_timeout) {
+                min_reconnect_backoff_timeout_ = min_reconnect_backoff_timeout;
+            }
 
-			std::shared_ptr<Subscription> GetSubscription(util::String p_topic_name);
+            std::chrono::seconds GetMaxReconnectBackoffTimeout() { return max_reconnect_backoff_timeout_; }
+            void SetMaxReconnectBackoffTimeout(std::chrono::seconds max_reconnect_backoff_timeout) {
+                max_reconnect_backoff_timeout_ = max_reconnect_backoff_timeout;
+            }
 
-			std::shared_ptr<Subscription> SetSubscriptionPacketInfo(util::String p_topic_name, uint16_t packet_id, uint8_t index_in_packet);
+            std::shared_ptr<ActionData> GetAutoReconnectData() { return p_connect_data_; }
+            void SetAutoReconnectData(std::shared_ptr<ActionData> p_connect_data) { p_connect_data_ = p_connect_data; }
 
-			ResponseCode SetSubscriptionActive(uint16_t packet_id, uint8_t index_in_sub_packet, mqtt::QoS max_qos);
+            std::shared_ptr<Subscription> GetSubscription(util::String p_topic_name);
 
-			ResponseCode RemoveSubscription(uint16_t packet_id, uint8_t index_in_sub_packet);
+            std::shared_ptr<Subscription> SetSubscriptionPacketInfo(util::String p_topic_name,
+                                                                    uint16_t packet_id,
+                                                                    uint8_t index_in_packet);
 
-			ResponseCode RemoveAllSubscriptionsForPacketId(uint16_t packet_id);
+            ResponseCode SetSubscriptionActive(uint16_t packet_id, uint8_t index_in_sub_packet, mqtt::QoS max_qos);
 
-			ResponseCode RemoveSubscription(util::String p_topic_name);
-		};
-	}
+            ResponseCode RemoveSubscription(uint16_t packet_id, uint8_t index_in_sub_packet);
+
+            ResponseCode RemoveAllSubscriptionsForPacketId(uint16_t packet_id);
+
+            ResponseCode RemoveSubscription(util::String p_topic_name);
+        };
+    }
 }
 

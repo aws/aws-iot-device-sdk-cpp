@@ -14,5 +14,6 @@ This software includes third party software subject to the following licensing:
 - Wslay (Websocket support) - MIT
 - Utf8cpp - Custom
 - GoogleTest/GoogleMock - Google's License
+- sanitizers-cmake (external library, downloaded separately)- MIT
 
 The licenses for these third party components are included in LICENSE

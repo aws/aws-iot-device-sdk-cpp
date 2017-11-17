@@ -30,46 +30,52 @@
 #define MAX_CONFIG_FILE_SIZE_BYTES 4096 //Increase if adding more configuration options
 
 namespace awsiotsdk {
-	namespace util {
-		using JsonDocument = rapidjson::Document;
-		using JsonValue = rapidjson::Value;
+    namespace util {
+        using JsonDocument = rapidjson::Document;
+        using JsonValue = rapidjson::Value;
 
-		class JsonParser {
-		public:
-			static ResponseCode InitializeFromJsonFile(JsonDocument &json_document, const util::String &config_file_path);
+        class JsonParser {
+        public:
+            static ResponseCode InitializeFromJsonFile(JsonDocument &json_document,
+                                                       const util::String &input_file_path);
 
-			static ResponseCode InitializeFromJsonString(JsonDocument &json_document,
-														 const util::String &config_json_string);
+            static ResponseCode InitializeFromJsonString(JsonDocument &json_document,
+                                                         const util::String &input_json_string);
 
-			static ResponseCode GetBoolValue(const JsonDocument &json_document, const char *key, bool &value);
+            static ResponseCode GetBoolValue(const JsonDocument &json_document, const char *key, bool &value);
 
-			static ResponseCode GetIntValue(const JsonDocument &json_document, const char *key, int &value);
+            static ResponseCode GetIntValue(const JsonDocument &json_document, const char *key, int &value);
 
-			static ResponseCode GetUint16Value(const JsonDocument &json_document, const char *key,
-											   uint16_t &value);
+            static ResponseCode GetUint16Value(const JsonDocument &json_document, const char *key,
+                                               uint16_t &value);
 
-			static ResponseCode GetUint32Value(const JsonDocument &json_document, const char *key,
-											   uint32_t &value);
+            static ResponseCode GetUint32Value(const JsonDocument &json_document, const char *key,
+                                               uint32_t &value);
 
-			static ResponseCode GetSizeTValue(const JsonDocument &json_document, const char *key, size_t &value);
+            static ResponseCode GetSizeTValue(const JsonDocument &json_document, const char *key, size_t &value);
 
-			static ResponseCode GetCStringValue(const JsonDocument &json_document, const char *key, char *value,
-												uint16_t max_string_len);
+            static ResponseCode GetCStringValue(const JsonDocument &json_document, const char *key, char *value,
+                                                uint16_t max_string_len);
 
-			static ResponseCode GetStringValue(const JsonDocument &json_document, const char *key,
-											   util::String &value);
+            static ResponseCode GetStringValue(const JsonDocument &json_document, const char *key,
+                                               util::String &value);
 
-			static rapidjson::ParseErrorCode GetParseErrorCode(const JsonDocument &json_document);
+            static rapidjson::ParseErrorCode GetParseErrorCode(const JsonDocument &json_document);
 
-			static size_t GetParseErrorOffset(const JsonDocument &json_document);
+            static size_t GetParseErrorOffset(const JsonDocument &json_document);
 
-			static ResponseCode MergeValues(JsonValue &target, JsonValue &source, JsonValue::AllocatorType& allocator);
+            static ResponseCode MergeValues(JsonValue &target, JsonValue &source, JsonValue::AllocatorType &allocator);
 
-			static ResponseCode DiffValues(JsonValue &target_doc, JsonValue &old_doc, JsonValue &new_doc, JsonValue::AllocatorType& allocator);
+            static ResponseCode DiffValues(JsonValue &target_doc,
+                                           JsonValue &old_doc,
+                                           JsonValue &new_doc,
+                                           JsonValue::AllocatorType &allocator);
 
-			static util::String ToString(JsonDocument &json_document);
+            static util::String ToString(JsonDocument &json_document);
 
-			static util::String ToString(JsonValue &json_value);
-		};
-	}
+            static util::String ToString(JsonValue &json_value);
+
+            static ResponseCode WriteToFile(JsonDocument &json_document, const util::String &output_file_path);
+        };
+    }
 }

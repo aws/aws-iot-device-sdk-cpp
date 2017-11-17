@@ -25,34 +25,36 @@
 #include "mqtt/Client.hpp"
 
 namespace awsiotsdk {
-	namespace tests {
-		namespace integration {
-			class MultipleClients {
-			protected:
-				std::shared_ptr<NetworkConnection> p_network_connection_1_;
-				std::shared_ptr<MqttClient> p_iot_client_1_;
+    namespace tests {
+        namespace integration {
+            class MultipleClients {
+            protected:
+                std::shared_ptr<NetworkConnection> p_network_connection_1_;
+                std::shared_ptr<MqttClient> p_iot_client_1_;
 
-				std::shared_ptr<NetworkConnection> p_network_connection_2_;
-				std::shared_ptr<MqttClient> p_iot_client_2_;
+                std::shared_ptr<NetworkConnection> p_network_connection_2_;
+                std::shared_ptr<MqttClient> p_iot_client_2_;
 
-				std::shared_ptr<NetworkConnection> p_network_connection_3_;
-				std::shared_ptr<MqttClient> p_iot_client_3_;
+                std::shared_ptr<NetworkConnection> p_network_connection_3_;
+                std::shared_ptr<MqttClient> p_iot_client_3_;
 
-				std::atomic_int cur_pending_messages_;
-				std::atomic_int total_published_messages_;
-				std::chrono::milliseconds mqtt_command_timeout_;
+                std::atomic_int cur_pending_messages_;
+                std::atomic_int total_published_messages_;
+                std::chrono::milliseconds mqtt_command_timeout_;
 
-				ResponseCode RunPublish(int msg_count);
-				ResponseCode SubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
-				ResponseCode Subscribe();
-				ResponseCode Unsubscribe();
-				ResponseCode InitializeTLS(std::shared_ptr<NetworkConnection> &p_network_connection);
+                ResponseCode RunPublish(int msg_count);
+                ResponseCode SubscribeCallback(util::String topic_name,
+                                               util::String payload,
+                                               std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+                ResponseCode Subscribe();
+                ResponseCode Unsubscribe();
+                ResponseCode InitializeTLS(std::shared_ptr<NetworkConnection> &p_network_connection);
 
-			public:
-				ResponseCode RunTest();
-			};
-		}
-	}
+            public:
+                ResponseCode RunTest();
+            };
+        }
+    }
 }
 
 

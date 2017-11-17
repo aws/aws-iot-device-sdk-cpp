@@ -27,28 +27,28 @@
 using namespace awsiotsdk::util::Logging;
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Logging {
-			util::String GetLogLevelName(LogLevel logLevel) {
-				switch(logLevel) {
-					case LogLevel::Off:
-						return "OFF";
-					case LogLevel::Fatal:
-						return "FATAL";
-					case LogLevel::Error:
-						return "ERROR";
-					case LogLevel::Warn:
-						return "WARN";
-					case LogLevel::Info:
-						return "INFO";
-					case LogLevel::Debug:
-						return "DEBUG";
-					case LogLevel::Trace:
-						return "TRACE";
-				}
-				// Can never happen but required for compilation
-				return "UNKNOWN LOG LEVEL";
-			}
-		} // namespace Logging
-	} // namespace util
+    namespace util {
+        namespace Logging {
+            util::String GetLogLevelName(LogLevel logLevel) {
+                switch (logLevel) {
+                    case LogLevel::Off:
+                        return "OFF";
+                    case LogLevel::Fatal:
+                        return "FATAL";
+                    case LogLevel::Error:
+                        return "ERROR";
+                    case LogLevel::Warn:
+                        return "WARN";
+                    case LogLevel::Info:
+                        return "INFO";
+                    case LogLevel::Debug:
+                        return "DEBUG";
+                    case LogLevel::Trace:
+                        return "TRACE";
+                }
+                // Can never happen but required for compilation
+                return "UNKNOWN LOG LEVEL";
+            }
+        } // namespace Logging
+    } // namespace util
 } // namespace awsiotsdk

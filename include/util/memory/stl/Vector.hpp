@@ -25,7 +25,7 @@
 #include <vector>
 
 namespace awsiotsdk {
-	namespace util {
-		template<typename T> using Vector = std::vector<T>;
-	} // namespace util
+    namespace util {
+        template<typename T> using Vector = std::vector<T>;
+    } // namespace util
 } // namespace awsiotsdk

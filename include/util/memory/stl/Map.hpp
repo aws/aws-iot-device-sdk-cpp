@@ -24,7 +24,7 @@
 #include <map>
 
 namespace awsiotsdk {
-	namespace util {
-		template<typename K, typename V> using Map = std::map<K, V>;
-	} // namespace util
+    namespace util {
+        template<typename K, typename V> using Map = std::map<K, V>;
+    } // namespace util
 } // namespace awsiotsdk

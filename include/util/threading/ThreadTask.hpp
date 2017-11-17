@@ -31,38 +31,38 @@
 #include "Action.hpp"
 
 namespace awsiotsdk {
-	namespace util {
-		namespace Threading {
-			enum class DestructorAction {
-				JOIN,
-				DETACH
-			};
+    namespace util {
+        namespace Threading {
+            enum class DestructorAction {
+                JOIN,
+                DETACH
+            };
 
-			class AWS_API_EXPORT ThreadTask {
-			public:
-				ThreadTask(DestructorAction destructor_action, std::shared_ptr<std::atomic_bool> sync_point,
-						   util::String thread_descriptor);
-				~ThreadTask();
+            class AWS_API_EXPORT ThreadTask {
+            public:
+                ThreadTask(DestructorAction destructor_action, std::shared_ptr<std::atomic_bool> sync_point,
+                           util::String thread_descriptor);
+                ~ThreadTask();
 
-				// Rule of 5 stuff.
-				// Don't copy or move
-				ThreadTask(const ThreadTask &) = delete;
-				ThreadTask &operator=(const ThreadTask &) = delete;
-				ThreadTask(ThreadTask &&) = delete;
-				ThreadTask &operator=(ThreadTask &&) = delete;
+                // Rule of 5 stuff.
+                // Don't copy or move
+                ThreadTask(const ThreadTask &) = delete;
+                ThreadTask &operator=(const ThreadTask &) = delete;
+                ThreadTask(ThreadTask &&) = delete;
+                ThreadTask &operator=(ThreadTask &&) = delete;
 
-				template<class Fn, class ... Args>
-				void Run(Fn&& fn, Args&& ... args) {
-					m_thread_ = std::thread(std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
-				}
+                template<class Fn, class ... Args>
+                void Run(Fn &&fn, Args &&... args) {
+                    m_thread_ = std::thread(std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
+                }
 
-				void Stop();
-			private:
-				DestructorAction destructor_action_;
-				std::shared_ptr<std::atomic_bool> m_continue_;
-				std::thread m_thread_;
-				util::String thread_descriptor_;
-			};
-		}
-	}
+                void Stop();
+            private:
+                DestructorAction destructor_action_;
+                std::shared_ptr<std::atomic_bool> m_continue_;
+                std::thread m_thread_;
+                util::String thread_descriptor_;
+            };
+        }
+    }
 }

@@ -41,48 +41,50 @@
 using namespace awsiotsdk;
 
 namespace cppsdkcli {
-	class CLI {
-	protected:
-		int port_;
-		int qos_;
-		bool is_publish_;
-		bool is_subscribe_;
-		char topic_[MAX_PATH_LENGTH_];
-		util::String endpoint_;
-		std::shared_ptr<awsiotsdk::MqttClient> p_iot_client_;
-		std::shared_ptr<awsiotsdk::NetworkConnection> p_network_connection_;
+    class CLI {
+    protected:
+        int port_;
+        int qos_;
+        bool is_publish_;
+        bool is_subscribe_;
+        char topic_[MAX_PATH_LENGTH_];
+        util::String endpoint_;
+        std::shared_ptr<awsiotsdk::MqttClient> p_iot_client_;
+        std::shared_ptr<awsiotsdk::NetworkConnection> p_network_connection_;
 
-		ResponseCode InitializeTLS();
+        ResponseCode InitializeTLS();
 
-		ResponseCode InitializeCliConfig();
+        ResponseCode InitializeCliConfig();
 
-		ResponseCode Connect();
+        ResponseCode Connect();
 
-		ResponseCode RunPublish();
+        ResponseCode RunPublish();
 
-		ResponseCode RunPublish(int msg_count);
+        ResponseCode RunPublish(int msg_count);
 
-		ResponseCode Subscribe(std::unique_ptr<Utf8String> p_topic_name, awsiotsdk::mqtt::QoS qos);
+        ResponseCode Subscribe(std::unique_ptr<Utf8String> p_topic_name, awsiotsdk::mqtt::QoS qos);
 
-		ResponseCode RunSubscribe();
+        ResponseCode RunSubscribe();
 
-		util::JsonDocument cli_config_;
+        util::JsonDocument cli_config_;
 
-		static ResponseCode SubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+        static ResponseCode SubscribeCallback(util::String topic_name,
+                                              util::String payload,
+                                              std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
 
-	public:
-		CLI() {
-			port_ = 8883;
-			qos_ = 0;
-			is_publish_ = false;
-			is_subscribe_ = false;
-			topic_[0] = '\0';
-			endpoint_[0] = '\0';
-			p_iot_client_ = nullptr;
-			p_network_connection_ = nullptr;
-		}
-		awsiotsdk::ResponseCode InitializeCLI(int argc, char **argv);
+    public:
+        CLI() {
+            port_ = 8883;
+            qos_ = 0;
+            is_publish_ = false;
+            is_subscribe_ = false;
+            topic_[0] = '\0';
+            endpoint_[0] = '\0';
+            p_iot_client_ = nullptr;
+            p_network_connection_ = nullptr;
+        }
+        awsiotsdk::ResponseCode InitializeCLI(int argc, char **argv);
 
-		awsiotsdk::ResponseCode RunCLI();
-	};
+        awsiotsdk::ResponseCode RunCLI();
+    };
 }

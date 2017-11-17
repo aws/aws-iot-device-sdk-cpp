@@ -62,42 +62,42 @@
 #define SDK_CONFIG_DRAINING_INTERVAL_MSECS_KEY "draining_interval_msecs"
 
 namespace awsiotsdk {
-	namespace util {
-		class SdkTestConfig {
-		protected:
-			static rapidjson::Document sdkConfigJson;
-		public:
-			static ResponseCode InitializeFromJsonFile(const util::String &configFilePath);
+    namespace util {
+        class SdkTestConfig {
+        protected:
+            static rapidjson::Document sdkConfigJson;
+        public:
+            static ResponseCode InitializeFromJsonFile(const util::String &configFilePath);
 
-			static ResponseCode InitializeFromJsonString(const util::String &configJsonString);
+            static ResponseCode InitializeFromJsonString(const util::String &configJsonString);
 
-			static ResponseCode GetBoolValue(const char *key, bool &value);
+            static ResponseCode GetBoolValue(const char *key, bool &value);
 
-			static ResponseCode GetIntValue(const char *key, int &value);
+            static ResponseCode GetIntValue(const char *key, int &value);
 
-			static ResponseCode GetUint16Value(const char *key, uint16_t &value);
+            static ResponseCode GetUint16Value(const char *key, uint16_t &value);
 
-			static ResponseCode GetUint32Value(const char *key, uint32_t &value);
+            static ResponseCode GetUint32Value(const char *key, uint32_t &value);
 
-			static ResponseCode GetSizeTValue(const char *key, size_t &value);
+            static ResponseCode GetSizeTValue(const char *key, size_t &value);
 
-			static ResponseCode GetCStringValue(const char *key, char *value, uint16_t max_string_len);
+            static ResponseCode GetCStringValue(const char *key, char *value, uint16_t max_string_len);
 
-			static ResponseCode GetStringValue(const char *key, util::String &value);
+            static ResponseCode GetStringValue(const char *key, util::String &value);
 
-			static rapidjson::ParseErrorCode GetParseErrorCode();
+            static rapidjson::ParseErrorCode GetParseErrorCode();
 
-			static size_t GetParseErrorOffset();
+            static size_t GetParseErrorOffset();
 
-			static void PrintSdkConfig() {
-				rapidjson::StringBuffer buffer;
-				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-				sdkConfigJson.Accept(writer);
+            static void PrintSdkConfig() {
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                sdkConfigJson.Accept(writer);
 
-				const char *document = buffer.GetString();
-				std::cout << std::endl << "Json Document" << std::endl;
-				std::cout << document << std::endl;
-			}
-		};
-	}
+                const char *document = buffer.GetString();
+                std::cout << std::endl << "Json Document" << std::endl;
+                std::cout << document << std::endl;
+            }
+        };
+    }
 }

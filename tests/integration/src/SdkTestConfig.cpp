@@ -25,52 +25,52 @@
 #include "SdkTestConfig.hpp"
 
 namespace awsiotsdk {
-	namespace util {
-		rapidjson::Document SdkTestConfig::sdkConfigJson;
+    namespace util {
+        rapidjson::Document SdkTestConfig::sdkConfigJson;
 
-		ResponseCode SdkTestConfig::InitializeFromJsonFile(const util::String &configFilePath) {
-			return JsonParser::InitializeFromJsonFile(sdkConfigJson, configFilePath);
-		}
+        ResponseCode SdkTestConfig::InitializeFromJsonFile(const util::String &configFilePath) {
+            return JsonParser::InitializeFromJsonFile(sdkConfigJson, configFilePath);
+        }
 
-		ResponseCode SdkTestConfig::InitializeFromJsonString(const util::String &configJsonString) {
-			return JsonParser::InitializeFromJsonString(sdkConfigJson, configJsonString);
-		}
+        ResponseCode SdkTestConfig::InitializeFromJsonString(const util::String &configJsonString) {
+            return JsonParser::InitializeFromJsonString(sdkConfigJson, configJsonString);
+        }
 
-		ResponseCode SdkTestConfig::GetBoolValue(const char *key, bool &value) {
-			return JsonParser::GetBoolValue(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetBoolValue(const char *key, bool &value) {
+            return JsonParser::GetBoolValue(sdkConfigJson, key, value);
+        }
 
-		ResponseCode SdkTestConfig::GetIntValue(const char *key, int &value) {
-			return JsonParser::GetIntValue(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetIntValue(const char *key, int &value) {
+            return JsonParser::GetIntValue(sdkConfigJson, key, value);
+        }
 
-		ResponseCode SdkTestConfig::GetUint16Value(const char *key, uint16_t &value) {
-			return JsonParser::GetUint16Value(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetUint16Value(const char *key, uint16_t &value) {
+            return JsonParser::GetUint16Value(sdkConfigJson, key, value);
+        }
 
-		ResponseCode SdkTestConfig::GetUint32Value(const char *key, uint32_t &value) {
-			return JsonParser::GetUint32Value(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetUint32Value(const char *key, uint32_t &value) {
+            return JsonParser::GetUint32Value(sdkConfigJson, key, value);
+        }
 
-		ResponseCode SdkTestConfig::GetSizeTValue(const char *key, size_t &value) {
-			return JsonParser::GetSizeTValue(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetSizeTValue(const char *key, size_t &value) {
+            return JsonParser::GetSizeTValue(sdkConfigJson, key, value);
+        }
 
-		ResponseCode SdkTestConfig::GetCStringValue(const char *key, char *value, uint16_t max_string_len) {
-			return JsonParser::GetCStringValue(sdkConfigJson, key, value, max_string_len);
-		}
+        ResponseCode SdkTestConfig::GetCStringValue(const char *key, char *value, uint16_t max_string_len) {
+            return JsonParser::GetCStringValue(sdkConfigJson, key, value, max_string_len);
+        }
 
-		ResponseCode SdkTestConfig::GetStringValue(const char *key, util::String &value) {
-			return JsonParser::GetStringValue(sdkConfigJson, key, value);
-		}
+        ResponseCode SdkTestConfig::GetStringValue(const char *key, util::String &value) {
+            return JsonParser::GetStringValue(sdkConfigJson, key, value);
+        }
 
-		rapidjson::ParseErrorCode SdkTestConfig::GetParseErrorCode() {
-			return JsonParser::GetParseErrorCode(sdkConfigJson);
-		}
+        rapidjson::ParseErrorCode SdkTestConfig::GetParseErrorCode() {
+            return JsonParser::GetParseErrorCode(sdkConfigJson);
+        }
 
-		size_t SdkTestConfig::GetParseErrorOffset() {
-			return JsonParser::GetParseErrorOffset(sdkConfigJson);
-		}
-	}
+        size_t SdkTestConfig::GetParseErrorOffset() {
+            return JsonParser::GetParseErrorOffset(sdkConfigJson);
+        }
+    }
 }
  

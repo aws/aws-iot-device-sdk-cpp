@@ -31,62 +31,64 @@
 using namespace awsiotsdk;
 using namespace awsiotsdk::util::Logging;
 
-static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag) {
-	util::StringStream ss;
+static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag, const char *function, unsigned int line) {
+    util::StringStream ss;
 
-	ss << "[" << GetLogLevelName(logLevel) << "] ";
+    ss << "[" << GetLogLevelName(logLevel) << "] ";
 
-	std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-	std::chrono::milliseconds now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-	std::time_t time_now = std::chrono::duration_cast<std::chrono::seconds>(now_ms).count();
+    std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    std::time_t time_now = std::chrono::duration_cast<std::chrono::seconds>(now_ms).count();
 
-	char *time = std::ctime(&time_now);
-	if(nullptr != time) {
-		ss << time << ":" << now_ms.count() % 1000 << " ";
-	}
-	ss << tag << " [" << std::this_thread::get_id() << "] ";
-
-	return ss.str();
+    char *time = std::ctime(&time_now);
+    if (nullptr != time) {
+        ss << time << ":" << now_ms.count() % 1000 << " ";
+    }
+    ss << tag << " [" << std::this_thread::get_id() << "] ";
+    if (line && function) {
+        ss << "[" << function << ":L"<< line << "] : ";
+    }
+    return ss.str();
 }
 
 FormattedLogSystem::FormattedLogSystem(LogLevel logLevel) :
-		m_logLevel(logLevel) {
+    m_logLevel(logLevel) {
 }
 
-void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *formatStr, ...) {
-	util::StringStream ss;
-	ss << CreateLogPrefixLine(logLevel, tag);
+void FormattedLogSystem::Log(LogLevel logLevel, const char *tag, const char *function, unsigned int line, const char *formatStr, ...) {
+    util::StringStream ss;
+    ss << CreateLogPrefixLine(logLevel, tag, function, line);
 
-	std::va_list args;
-	va_start(args, formatStr);
+    std::va_list args;
+    va_start(args, formatStr);
 
-	va_list tmp_args; //unfortunately you cannot consume a va_list twice
-	va_copy(tmp_args, args); //so we have to copy it
+    va_list tmp_args; //unfortunately you cannot consume a va_list twice
+    va_copy(tmp_args, args); //so we have to copy it
 #ifdef WIN32
-	const int requiredLength = _vscprintf(formatStr, tmp_args) + 1;
+    const int requiredLength = _vscprintf(formatStr, tmp_args) + 1;
 #else
-	const int requiredLength = vsnprintf(nullptr, 0, formatStr, tmp_args) + 1;
+    const int requiredLength = vsnprintf(nullptr, 0, formatStr, tmp_args) + 1;
 #endif
-	va_end(tmp_args);
+    va_end(tmp_args);
 
-	std::unique_ptr<char> outputBuff_uptr = std::unique_ptr<char>(new char[requiredLength]);
-	char *outputBuff = outputBuff_uptr.get();
+    std::unique_ptr<char[]> outputBuff_uptr = std::unique_ptr<char[]>(new char[requiredLength]);
+    char *outputBuff = outputBuff_uptr.get();
 #ifdef WIN32
-	vsnprintf_s(outputBuff, requiredLength, _TRUNCATE, formatStr, args);
+    vsnprintf_s(outputBuff, requiredLength, _TRUNCATE, formatStr, args);
 #else
-	vsnprintf(outputBuff, static_cast<size_t>(requiredLength), formatStr, args);
+    vsnprintf(outputBuff, static_cast<size_t>(requiredLength), formatStr, args);
 #endif // WIN32
 
-	ss << outputBuff << std::endl;
+    ss << outputBuff << std::endl;
 
-	ProcessFormattedStatement(ss.str());
+    ProcessFormattedStatement(ss.str());
 
-	va_end(args);
+    va_end(args);
 }
 
 void FormattedLogSystem::LogStream(LogLevel logLevel, const char *tag, const util::OStringStream &message_stream) {
-	util::StringStream ss;
-	ss << CreateLogPrefixLine(logLevel, tag) << message_stream.rdbuf()->str() << std::endl;
+    util::StringStream ss;
+    ss << CreateLogPrefixLine(logLevel, tag, NULL, 0) << message_stream.rdbuf()->str() << std::endl;
 
-	ProcessFormattedStatement(ss.str());
+    ProcessFormattedStatement(ss.str());
 }

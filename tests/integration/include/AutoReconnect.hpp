@@ -26,35 +26,39 @@
 #include "mqtt/Client.hpp"
 
 namespace awsiotsdk {
-	namespace tests {
-		namespace integration {
-			class AutoReconnect {
-			protected:
-				util::String client_id_tagged_;
-				std::shared_ptr<NetworkConnection> p_network_connection_;
-				std::shared_ptr<mqtt::ConnectPacket> p_connect_packet_;
-				std::atomic_int cur_pending_messages_;
-				std::atomic_int total_published_messages_;
-				std::mutex waiting_for_sub_lock_;
-				std::condition_variable sub_lifecycle_wait_;
-				std::shared_ptr<MqttClient> p_iot_client_;
+    namespace tests {
+        namespace integration {
+            class AutoReconnect {
+            protected:
+                util::String client_id_tagged_;
+                std::shared_ptr<NetworkConnection> p_network_connection_;
+                std::shared_ptr<mqtt::ConnectPacket> p_connect_packet_;
+                std::atomic_int cur_pending_messages_;
+                std::atomic_int total_published_messages_;
+                std::mutex waiting_for_sub_lock_;
+                std::condition_variable sub_lifecycle_wait_;
+                std::shared_ptr<MqttClient> p_iot_client_;
 
-				ResponseCode RunPublish(int msg_count);
-				ResponseCode SubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
-				ResponseCode LifecycleSubscribeCallback(util::String topic_name, util::String payload, std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
-				ResponseCode Subscribe();
-				ResponseCode Unsubscribe();
-				ResponseCode InitializeTLS();
+                ResponseCode RunPublish(int msg_count);
+                ResponseCode SubscribeCallback(util::String topic_name,
+                                               util::String payload,
+                                               std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+                ResponseCode LifecycleSubscribeCallback(util::String topic_name,
+                                                        util::String payload,
+                                                        std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data);
+                ResponseCode Subscribe();
+                ResponseCode Unsubscribe();
+                ResponseCode InitializeTLS();
 
-			public:
-				AutoReconnect() {
-					cur_pending_messages_ = 0;
-					total_published_messages_ = 0;
-				}
-				ResponseCode RunTest();
-			};
-		}
-	}
+            public:
+                AutoReconnect() {
+                    cur_pending_messages_ = 0;
+                    total_published_messages_ = 0;
+                }
+                ResponseCode RunTest();
+            };
+        }
+    }
 }
 
 
