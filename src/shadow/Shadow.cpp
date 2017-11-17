@@ -101,7 +101,7 @@ namespace awsiotsdk {
                                                                                cur_server_state_document_.GetAllocator());
         cur_device_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_DESIRED_KEY].SetObject();
         cur_device_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_REPORTED_KEY].SetObject();
-    };
+    }
 
     std::unique_ptr<Shadow> Shadow::Create(std::shared_ptr<MqttClient> p_mqtt_client,
                                            std::chrono::milliseconds mqtt_command_timeout,
