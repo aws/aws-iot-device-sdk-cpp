@@ -134,7 +134,7 @@ namespace awsiotsdk {
                                                              std::unique_ptr<Utf8String> p_password,
                                                              std::unique_ptr<mqtt::WillOptions> p_will_msg,
                                                              bool is_metrics_enabled) {
-            if (UINT16_MAX < static_cast<uint16_t>(keep_alive_timeout.count())) {
+            if (UINT16_MAX < keep_alive_timeout.count()) {
                 return nullptr;
             }
 
@@ -160,23 +160,14 @@ namespace awsiotsdk {
                                                              std::unique_ptr<Utf8String> p_username,
                                                              std::unique_ptr<Utf8String> p_password,
                                                              std::unique_ptr<mqtt::WillOptions> p_will_msg) {
-            if (UINT16_MAX < static_cast<uint16_t>(keep_alive_timeout.count())) {
-                return nullptr;
-            }
-
-            if (nullptr == p_client_id && false == is_clean_session) {
-                AWS_LOG_ERROR(CONNECT_LOG_TAG, "Clean session value must be true when no client ID is provided");
-                return nullptr;
-            }
-
-            return std::make_shared<ConnectPacket>(is_clean_session,
-                                                   mqtt_version,
-                                                   keep_alive_timeout,
-                                                   std::move(p_client_id),
-                                                   std::move(p_username),
-                                                   std::move(p_password),
-                                                   std::move(p_will_msg),
-                                                   true);
+            return Create(is_clean_session,
+                          mqtt_version,
+                          keep_alive_timeout,
+                          std::move(p_client_id),
+                          std::move(p_username),
+                          std::move(p_password),
+                          std::move(p_will_msg),
+                          true);
         }
 
         util::String ConnectPacket::ToString() {
@@ -194,7 +185,7 @@ namespace awsiotsdk {
             // Ensure the value provided for keep alive is not too large to fit
             // This can happen if the constructor was used directly instead of the Create Factory method
             // Also find out why someone would want to use such a large value
-            if (UINT16_MAX < static_cast<uint16_t>(keep_alive_timeout_.count())) {
+            if (UINT16_MAX < keep_alive_timeout_.count()) {
                 AppendUInt16ToBuffer(buf, static_cast<uint16_t>(UINT16_MAX));
             } else {
                 AppendUInt16ToBuffer(buf, static_cast<uint16_t>(keep_alive_timeout_.count()));

@@ -70,6 +70,31 @@ namespace awsiotsdk {
             const std::chrono::seconds
                 ConnectDisconnectActionTester::keep_alive_timeout_ = std::chrono::seconds(KEEP_ALIVE_TIMEOUT_SECS);
 
+            TEST_F(ConnectDisconnectActionTester, ConnectPacketCreateWithWrongKeepalive) {
+                std::shared_ptr<mqtt::ConnectPacket> p_connect_packet = mqtt::ConnectPacket::Create(true,
+                                                                                                    mqtt::Version::MQTT_3_1_1,
+                                                                                                    std::chrono::seconds(UINT16_MAX + 1),
+                                                                                                    Utf8String::Create(
+                                                                                                        test_client_id_),
+                                                                                                    nullptr,
+                                                                                                    nullptr,
+                                                                                                    nullptr,
+                                                                                                    true);
+                EXPECT_EQ(nullptr, p_connect_packet);
+
+                p_connect_packet = mqtt::ConnectPacket::Create(true,
+                                                               mqtt::Version::MQTT_3_1_1,
+                                                               std::chrono::seconds(UINT16_MAX + 1),
+                                                               Utf8String::Create(
+                                                                   test_client_id_),
+                                                               nullptr,
+                                                               nullptr,
+                                                               nullptr);
+
+                EXPECT_EQ(nullptr, p_connect_packet);
+
+            }
+
             TEST_F(ConnectDisconnectActionTester, ConnectActionTestNoWillMessage) {
                 EXPECT_NE(nullptr, p_network_connection_);
                 EXPECT_NE(nullptr, p_core_state_);
