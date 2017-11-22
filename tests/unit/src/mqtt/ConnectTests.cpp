@@ -37,7 +37,7 @@
 
 #define MQTT_FIXED_HEADER_BYTE_PINGREQ 0xC0
 
-#define SDK_USAGE_METRICS_STRING "%3fUser-Agent%3dCpp%2f"
+#define SDK_USAGE_METRICS_STRING "?SDK=CPP&Version="
 
 namespace awsiotsdk {
     namespace tests {

@@ -38,7 +38,7 @@
 
 #define CONNACK_RESERVED_PACKET_ID 0
 
-#define SDK_USAGE_METRICS_STRING "%3fUser-Agent%3dCpp%2f"
+#define SDK_USAGE_METRICS_STRING "?SDK=CPP&Version="
 
 namespace awsiotsdk {
     namespace mqtt {
@@ -81,9 +81,15 @@ namespace awsiotsdk {
 
             // username used for sending usage metrics
             if (is_metrics_enabled) {
-                util::String p_username_string = SDK_USAGE_METRICS_STRING;
-                p_username_string.append(SDK_VERSION_STRING);
-                p_username_ = Utf8String::Create(p_username_string);
+                util::String username_string = "";
+                // username is not supported by the service
+                /*if (nullptr != p_username) {
+                    username_string.append(p_username->ToStdString());
+                }*/
+                username_string.append(SDK_USAGE_METRICS_STRING);
+                username_string.append(SDK_VERSION_STRING);
+
+                p_username_ = Utf8String::Create(username_string);
                 packet_size_ = packet_size_ + p_username_->Length() + 2;
                 connect_flags_ |= 0x80;
             }
