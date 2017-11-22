@@ -43,7 +43,7 @@ endif()
 #############################
 # Add SDK Target #
 #############################
-add_definitions(-DSDK_VERSION_STRING="1.2.0")
+add_definitions(-DSDK_VERSION_STRING="1.3.0")
 
 # Create library file. The Client applications MUST link to below target if using this CMake file
 set(SDK_TARGET_NAME aws-iot-sdk-cpp)
