@@ -141,7 +141,7 @@ Also included is a simple example 'toolchain' which is used for setting the defa
 <a name="quicklinks"></a>
 ## Quick Links
 
- * [SDK Documentation](http://aws-iot-device-sdk-cpp-docs.s3-website-us-east-1.amazonaws.com/v1.2.0/index.html) - API documentation for the SDK
+ * [SDK Documentation](http://aws-iot-device-sdk-cpp-docs.s3-website-us-east-1.amazonaws.com/v1.3.0/index.html) - API documentation for the SDK
  * [Platform Guide](./Platform.md) - This file lists the steps needed to set up the pre-requisites on some popular platforms
  * [Developers Guide](./DevGuide.md) - Provides a guide on how the SDK can be included in custom code
  * [Greengrass Discovery Support Guide](./GreengrassDiscovery.md) - Provides information on support for AWS Greengrass Discovery Service
