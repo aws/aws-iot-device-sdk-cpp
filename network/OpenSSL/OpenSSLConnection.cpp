@@ -154,6 +154,7 @@ namespace awsiotsdk {
                 ERR_load_BIO_strings();
                 ERR_load_crypto_strings();
                 SSL_load_error_strings();
+                signal(SIGPIPE, SIG_IGN);
                 is_lib_initialized = true;
             }
             const SSL_METHOD *method;
