@@ -121,7 +121,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= level ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( logLevel, tag, logStream ); \
             } \
@@ -132,7 +132,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Fatal ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Fatal, tag, logStream ); \
             } \
@@ -143,7 +143,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Error ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Error, tag, logStream ); \
             } \
@@ -154,7 +154,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Warn ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Warn, tag, logStream ); \
             } \
@@ -165,7 +165,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Info ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Info, tag, logStream ); \
             } \
@@ -176,7 +176,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Debug ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Debug, tag, logStream ); \
             } \
@@ -187,7 +187,7 @@
             awsiotsdk::util::Logging::LogSystemInterface* logSystem = awsiotsdk::util::Logging::GetLogSystem(); \
             if ( logSystem && logSystem->GetLogLevel() >= awsiotsdk::util::Logging::LogLevel::Trace ) \
             { \
-                awsiotsdk::OStringStream logStream; \
+                awsiotsdk::util::OStringStream logStream; \
                 logStream << streamExpression; \
                 logSystem->LogStream( awsiotsdk::util::Logging::LogLevel::Trace, tag, logStream ); \
             } \
