@@ -142,5 +142,13 @@ namespace awsiotsdk {
          * @return ResponseCode indicating result of the API call
          */
         ResponseCode CreateActionRunner(ActionType action_type, std::shared_ptr<ActionData> action_data);
+
+        /**
+         * @brief Waits for all threads to complete their tasks and then clears them
+         * 
+         * This API will go through all the active Thread Tasks and waits for them to complete their respective tasks.
+         * The completed Thread Task is then cleared.
+         */
+        void GracefulShutdownAllThreadTasks();
     };
 }
