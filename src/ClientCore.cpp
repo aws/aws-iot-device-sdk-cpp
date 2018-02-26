@@ -91,6 +91,10 @@ namespace awsiotsdk {
         return rc;
     }
 
+    void ClientCore::GracefulShutdownAllThreadTasks() {
+        thread_map_.clear();
+    }
+
     ClientCore::~ClientCore() {
         thread_map_.clear();
     }
