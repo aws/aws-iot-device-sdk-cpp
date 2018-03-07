@@ -96,7 +96,7 @@ namespace awsiotsdk {
             /**
              * @brief Read bytes from the network socket
              *
-             * @param util::String - reference to buffer where read bytes should be copied
+             * @param util::Vector<unsigned char> - reference to buffer where read bytes should be copied
              * @param size_t - number of bytes to read
              * @param size_t - reference to store number of bytes read
              * @return ResponseCode - successful read or TLS error code

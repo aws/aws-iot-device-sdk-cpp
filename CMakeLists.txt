@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(aws-iot-sdk-cpp CXX)
-option(BUILD_SHARED_LIBRARY "Build the library as a shared object, will build it as a static library otherwise" NO)
+option(BUILD_SHARED_LIBRARY "Build the library as a shared object, will build it as a static library otherwise." ON)
+option(BUILD_CLI "Build the cli." ON)
+option(BUILD_SAMPLES "Build the samples." ON)
+option(BUILD_TESTS "Build the tests." ON)
+option(BUILD_DOCS "Create HTML based API documentation (requires Doxygen)." OFF)
 
 ######################################
 # Section : Disable in-source builds #
@@ -10,11 +14,11 @@ if(${PROJECT_SOURCE_DIR} STREQUAL ${PROJECT_BINARY_DIR})
 	message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder." )
 endif()
 
-option(BUILD_DOCS "Create HTML based API documentation (requires Doxygen)" OFF)
-
 ########################################
 # Section : Common SDK Build setttings #
 ########################################
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Set required compiler standard to standard c++11. Disable extensions.
 set(CMAKE_CXX_STANDARD 11) # C++11...
@@ -152,23 +156,22 @@ endif()
 # Section : Define specific Targets #
 #####################################
 
-if(UNIX)
+if(BUILD_CLI AND UNIX)
 	add_subdirectory(cli)
 endif()
 
-add_subdirectory(tests/integration)
+if(BUILD_TESTS)
+	add_subdirectory(tests/integration)
+	add_subdirectory(tests/unit)
+endif()
 
-add_subdirectory(tests/unit)
-
-add_subdirectory(samples/PubSub)
-
-add_subdirectory(samples/ShadowDelta)
-
-add_subdirectory(samples/Discovery EXCLUDE_FROM_ALL)
-
-add_subdirectory(samples/StoryRobotArm EXCLUDE_FROM_ALL)
-
-add_subdirectory(samples/StorySwitch EXCLUDE_FROM_ALL)
+if(BUILD_SAMPLES)
+	add_subdirectory(samples/PubSub)
+	add_subdirectory(samples/ShadowDelta)
+	add_subdirectory(samples/Discovery EXCLUDE_FROM_ALL)
+	add_subdirectory(samples/StoryRobotArm EXCLUDE_FROM_ALL)
+	add_subdirectory(samples/StorySwitch EXCLUDE_FROM_ALL)
+endif()
 
 ##################################
 # Section: Define Install Target #
@@ -177,3 +180,16 @@ if(NOT MSVC)
     install(TARGETS aws-iot-sdk-cpp DESTINATION lib)
     install(DIRECTORY include/ DESTINATION include)
 endif()
+
+##########################
+# Section: Print Summary #
+##########################
+include(FeatureSummary)
+
+add_feature_info(SharedLibrary BUILD_SHARED_LIBRARY "build the library as shared objects")
+add_feature_info(Cli BUILD_CLI "the command line interface")
+add_feature_info(Samples BUILD_SAMPLES "example programs making use of the SDK")
+add_feature_info(Tests BUILD_TESTS "unit and integration tests")
+add_feature_info(Docs BUILD_DOCS "HTML based API documentation")
+
+feature_summary(WHAT ALL)
