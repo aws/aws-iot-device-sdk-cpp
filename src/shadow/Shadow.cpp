@@ -172,16 +172,14 @@ namespace awsiotsdk {
             return ResponseCode::SHADOW_UNEXPECTED_RESPONSE_TYPE;
         }
 
-        // Validate payload
-        if (!payload.IsObject()
-            || !payload.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
-            return ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
-        }
-
         ResponseCode rc = ResponseCode::SHADOW_REQUEST_ACCEPTED;
         if (ShadowResponseType::Rejected == response_type) {
             AWS_LOG_WARN(SHADOW_LOG_TAG, "Get request rejected for shadow : %s", thing_name_.c_str());
             rc = ResponseCode::SHADOW_REQUEST_REJECTED;
+        } else  if (!payload.IsObject()
+            || !payload.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+            // Invalid payload
+            rc = ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
         } else {
             AWS_LOG_DEBUG(SHADOW_LOG_TAG, "Get request accepted for shadow : %s", thing_name_.c_str());
             cur_server_state_document_.RemoveAllMembers();

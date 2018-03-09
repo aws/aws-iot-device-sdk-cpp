@@ -17,7 +17,9 @@ This sample demonstrates how various Shadow operations can be performed.
 
  * Code for this sample is located [here](./ShadowDelta)
  * Target for this sample is `shadow-delta-sample`
- 
+
+Note: The shadow client token is set as the thing name by default in the sample. The shadow client token is limited to 64 bytes and will return an error if a token longer than 64 bytes is used (`"code":400,"message":"invalid client token"`, although receiving a 400 does not necessarily mean that it is due to the length of the client token). Modify the code [here](../ShadowDelta/ShadowDelta.cpp#L184) if your thing name is longer than 64 bytes to prevent this error.
+
 ### Jobs Sample
 This sample demonstrates how various Jobs API operations can be performed including subscribing to Jobs notifications and publishing Job execution updates.
 
