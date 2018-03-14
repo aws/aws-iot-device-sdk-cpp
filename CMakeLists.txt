@@ -52,6 +52,7 @@ if (BUILD_SHARED_LIBRARY)
     set_target_properties(${SDK_TARGET_NAME} PROPERTIES SUFFIX ".so")
 else()
     add_library(${SDK_TARGET_NAME} "")
+    set_target_properties(${SDK_TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 # Download and include rapidjson, not optional
