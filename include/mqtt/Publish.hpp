@@ -201,7 +201,7 @@ namespace awsiotsdk {
              */
             util::String ToString();
 
-            uint16_t GetPublishPacketId() { return publish_packet_id_; }
+            uint16_t GetPublishPacketId() { return (uint16_t) publish_packet_id_; }
             void SetPublishPacketId(uint16_t publish_packet_id) { publish_packet_id_ = publish_packet_id; }
         };
 
