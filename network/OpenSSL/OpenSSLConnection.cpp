@@ -25,7 +25,7 @@
 #include "OpenSSLConnection.hpp"
 #include "util/logging/LogMacros.hpp"
 #ifdef WIN32
-#include <signal.h> // chamberWang add 03/14/2018
+#include <signal.h> 
 #define MAX_PATH_LENGTH_ 260
 #include <direct.h>
 #define getcwd _getcwd // avoid MSFT "deprecation" warning
@@ -130,7 +130,7 @@ namespace awsiotsdk {
             WSADATA wsa_data;
             int result;
             bool was_wsa_initialized = true;
-            //int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //chamberWang 03/14/2018
+            //int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			UINT_PTR s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             if(INVALID_SOCKET == s) {
                 if(WSANOTINITIALISED == WSAGetLastError()) {
@@ -155,7 +155,7 @@ namespace awsiotsdk {
                 ERR_load_BIO_strings();
                 ERR_load_crypto_strings();
                 SSL_load_error_strings();
-//#ifndef  WIN32	// chamberWang 03/14/2018, issue #72 need consider error handling under WIN32, to workaround it, enable this statement.
+//#ifndef  WIN32
                 signal(SIGPIPE, SIG_IGN);
 //#endif
 				is_lib_initialized = true;
@@ -338,7 +338,6 @@ namespace awsiotsdk {
 
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
-			// chamberWang 03/14/2018 need type conversion
             server_tcp_socket_fd_ = (int) socket(AF_INET, SOCK_STREAM, 0);
             if (-1 == server_tcp_socket_fd_) {
                 return ResponseCode::NETWORK_TCP_SETUP_ERROR;
