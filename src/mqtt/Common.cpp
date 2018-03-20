@@ -26,7 +26,7 @@
 #define MULTI_LEVEL_WILDCARD '#'
 #define RESERVED_TOPIC '$'
 #define SINGLE_LEVEL_REGEX_STRING "[^/]*"       // Single level regex to allow all UTF-8 character except '\'
-#define MULTI_LEVEL_REGEX_STRING  "[^\uc1bf]*"  // Placeholder for the multilevel regex to allow all UTF-8 character
+#define MULTI_LEVEL_REGEX_STRING  u8"[^\uc1bf]*"  // Placeholder for the multilevel regex to allow all UTF-8 character
 
 namespace awsiotsdk {
     namespace mqtt {
@@ -178,6 +178,9 @@ namespace awsiotsdk {
                         p_topic_regex_.append(SINGLE_LEVEL_REGEX_STRING);
                     } else if (it == MULTI_LEVEL_WILDCARD) {
                         p_topic_regex_.append(MULTI_LEVEL_REGEX_STRING);
+                    } else if (it == RESERVED_TOPIC) {
+                        p_topic_regex_ += "\\";
+                        p_topic_regex_ += RESERVED_TOPIC;
                     } else {
                         p_topic_regex_ += it;
                     }

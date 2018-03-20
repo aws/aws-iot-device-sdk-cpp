@@ -30,7 +30,7 @@
 
 #define K 1024
 #define LARGE_PAYLOAD_SIZE 127 * K
-#define VALID_WILDCARD_TOPICS 6
+#define VALID_WILDCARD_TOPICS 8
 #define INVALID_WILDCARD_TOPICS 4
 #define WILDCARD_TEST_TOPICS 10
 #define UNMATCHED_WILDCARD_TEST_TOPICS 2
@@ -97,7 +97,9 @@ namespace awsiotsdk {
                 "+/+",
                 "/+",
                 "sport/tennis/#",
-                "+/tennis/#"
+                "+/tennis/#",
+                "$/tennis/#",
+                "$sport/tennis/+"
             };
 
             const util::String SubUnsubActionTester::valid_topic_regexes[VALID_WILDCARD_TOPICS] = {
@@ -105,8 +107,10 @@ namespace awsiotsdk {
                 "sport/[^/]*/player1",
                 "[^/]*/[^/]*",
                 "/[^/]*",
-                "sport/tennis/[^\uc1bf]*",
-                "[^/]*/tennis/[^\uc1bf]*"
+                u8"sport/tennis/[^\uc1bf]*",
+                u8"[^/]*/tennis/[^\uc1bf]*",
+                u8"\\$/tennis/[^\uc1bf]*",
+                "\\$sport/tennis/[^/]*"
             };
 
             const util::String SubUnsubActionTester::invalid_wildcard_test_topics[INVALID_WILDCARD_TOPICS] = {
