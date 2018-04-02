@@ -570,6 +570,11 @@ namespace awsiotsdk {
                 expected_string = ResponseCodeToString(ResponseHelper::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR_STRING,
                                                        ResponseCode::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR);
                 EXPECT_EQ(expected_string, response_string);
+
+                response_string = ResponseHelper::ToString(ResponseCode::JOBS_INVALID_TOPIC_ERROR);
+                expected_string = ResponseCodeToString(ResponseHelper::JOBS_INVALID_TOPIC_ERROR_STRING,
+                                                       ResponseCode::JOBS_INVALID_TOPIC_ERROR);
+                EXPECT_EQ(expected_string, response_string);
             }
         }
     }
