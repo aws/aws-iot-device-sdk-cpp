@@ -343,6 +343,9 @@ namespace awsiotsdk {
             case ResponseCode::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR:
                 os << awsiotsdk::ResponseHelper::DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR_STRING;
                 break;
+            case ResponseCode::JOBS_INVALID_TOPIC_ERROR:
+                os << awsiotsdk::ResponseHelper::JOBS_INVALID_TOPIC_ERROR_STRING;
+                break;
         }
         os << " : SDK Code " << static_cast<int>(rc) << ".";
         return os;
