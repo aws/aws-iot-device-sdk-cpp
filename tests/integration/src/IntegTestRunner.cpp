@@ -28,6 +28,7 @@
 #include "ConfigCommon.hpp"
 #include "IntegTestRunner.hpp"
 #include "SdkTestConfig.hpp"
+#include "JobsTest.hpp"
 #include "PubSub.hpp"
 #include "AutoReconnect.hpp"
 #include "MultipleClients.hpp"
@@ -53,6 +54,17 @@ namespace awsiotsdk {
             ResponseCode IntegTestRunner::RunAllTests() {
                 ResponseCode rc = ResponseCode::SUCCESS;
                 // Each test runs in its own scope to ensure complete cleanup
+                /**
+                 * Run Jobs Tests
+                 */
+                {
+                    JobsTest jobs_test_runner;
+                    rc = jobs_test_runner.RunTest();
+                    if (ResponseCode::SUCCESS != rc) {
+                        return rc;
+                    }
+                }
+
                 /**
                  * Run Subscribe Publish Tests
                  */
