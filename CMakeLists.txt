@@ -161,6 +161,8 @@ add_subdirectory(tests/unit)
 
 add_subdirectory(samples/PubSub)
 
+add_subdirectory(samples/Jobs)
+
 add_subdirectory(samples/ShadowDelta)
 
 add_subdirectory(samples/Discovery EXCLUDE_FROM_ALL)

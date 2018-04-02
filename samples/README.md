@@ -18,6 +18,12 @@ This sample demonstrates how various Shadow operations can be performed.
  * Code for this sample is located [here](./ShadowDelta)
  * Target for this sample is `shadow-delta-sample`
  
+### Jobs Sample
+This sample demonstrates how various Jobs API operations can be performed including subscribing to Jobs notifications and publishing Job execution updates.
+
+ * Code for this sample is located [here](./Jobs)
+ * Target for this sample is `jobs-sample`
+
 ### Discovery Sample
 This sample demonstrates how the discovery operation can be performed to get the connectivity information to connect to a Greengrass Core (GGC).
 The configuration for this example is slightly different as the Discovery operation is a HTTP call, and uses port 8443, instead of port 8883 which is used for MQTT operations. The endpoint is the same IoT host endpoint used to connect the IoT thing to the cloud.
