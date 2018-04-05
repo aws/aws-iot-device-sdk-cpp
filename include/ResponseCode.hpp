@@ -322,5 +322,5 @@ namespace awsiotsdk {
          */
         util::String ToString(ResponseCode rc);
         
-    };
+    }
 }

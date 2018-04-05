@@ -1,5 +1,5 @@
 # Known Issues/Limitations
-## [1.2.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.2.0) (September 26th, 2017)
+## [1.3.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.3.0) (Nov 22, 2017)
 
 ### Common
 

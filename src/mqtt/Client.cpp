@@ -292,6 +292,9 @@ namespace awsiotsdk {
             }
         }
 
+        // wait for all running threads to finish respective tasks
+        p_client_core_->GracefulShutdownAllThreadTasks();
+
         // p_client_state_.action_map_ and p_client_state_.outbound_action_queue_ retains p_client_state_
         // hence, calling p_client_state_->RegisterAction() or p_client_state_->EnqueueOutboundAction() introduces cyclic references inside p_client_state_
         // make sure that p_client_state_.action_map_ and p_client_state_.outbound_action_queue_ are cleared prior to p_client_state_ destructor

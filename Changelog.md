@@ -1,5 +1,33 @@
 # Change Log
 
+## [1.3.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.3.0) (Nov 22, 2017)
+
+Features:
+  - [#21](https://github.com/aws/aws-iot-device-sdk-cpp/issues/21) - add reconnect and resubscribe callback
+
+Bugfixes/Improvements:
+  - Fixed Issues:
+    - [#5](https://github.com/aws/aws-iot-device-sdk-cpp/issues/5) - openssl wrapper gets stuck if client is started before network is ready
+    - [#44](https://github.com/aws/aws-iot-device-sdk-cpp/issues/44) - SDK fails to build with OpenSSL 1.1.0
+    - [#46](https://github.com/aws/aws-iot-device-sdk-cpp/issues/46) - MAX_RW_BUF_LEN not large enough for WebSocketConnection::WssHandshake
+    - [#47](https://github.com/aws/aws-iot-device-sdk-cpp/issues/47) - Fix memory leak in OpenSSL when connect fails
+    - [#52](https://github.com/aws/aws-iot-device-sdk-cpp/issues/52) - Fix for shadow crash when server document does not have all keys required
+    - [#54](https://github.com/aws/aws-iot-device-sdk-cpp/issues/54) - Fix for comparison always being false due to limited range of data type
+    - Removed redundant comments
+    - Set correct packet ID for resubscribe packets in keepalive
+    - updated default keepalive to 600 seconds
+    - updated SDK metrics string
+  - Included pull requests:
+    - [#6](https://github.com/aws/aws-iot-device-sdk-cpp/pull/6) - Add res_init() call to update resolv.conf in glibc
+    - [#19](https://github.com/aws/aws-iot-device-sdk-cpp/pull/19) - use version independent TLS method as TLSv1_2_method is deprecated
+    - [#27](https://github.com/aws/aws-iot-device-sdk-cpp/pull/27) - update include
+    - [#39](https://github.com/aws/aws-iot-device-sdk-cpp/pull/39) - Implement static Shadow method GetEmptyShadowDocument
+    - [#40](https://github.com/aws/aws-iot-device-sdk-cpp/pull/40) - Do not add std::chrono::milliseconds to std::chrono::time_point
+    - [#43](https://github.com/aws/aws-iot-device-sdk-cpp/pull/43) - Fill in context data for disconnect callback
+    - [#45](https://github.com/aws/aws-iot-device-sdk-cpp/pull/45) - Allow SDK to work with OpenSSL 1.1.0
+    - [#53](https://github.com/aws/aws-iot-device-sdk-cpp/pull/53) - Remove extra semicolons as they appear as warnings in clang -wpedantic
+
+
 ## [1.2.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.2.0) (September 26th, 2017)
 
 Features:

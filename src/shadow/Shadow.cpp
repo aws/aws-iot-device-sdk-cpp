@@ -101,7 +101,7 @@ namespace awsiotsdk {
                                                                                cur_server_state_document_.GetAllocator());
         cur_device_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_DESIRED_KEY].SetObject();
         cur_device_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_REPORTED_KEY].SetObject();
-    };
+    }
 
     std::unique_ptr<Shadow> Shadow::Create(std::shared_ptr<MqttClient> p_mqtt_client,
                                            std::chrono::milliseconds mqtt_command_timeout,
@@ -227,13 +227,25 @@ namespace awsiotsdk {
                 bool own_request = false;
                 if (payload.HasMember(SHADOW_DOCUMENT_CLIENT_TOKEN_KEY)) {
                     util::String received_client_token;
-                    util::JsonParser::GetStringValue(payload, SHADOW_DOCUMENT_CLIENT_TOKEN_KEY, received_client_token);
+                    util::JsonParser::GetStringValue((const util::JsonDocument &)payload, SHADOW_DOCUMENT_CLIENT_TOKEN_KEY, received_client_token);
                     own_request = (0 == client_token_.compare(received_client_token));
                 }
                 if (ShadowResponseType::Delta == response_type) {
                     if (!own_request) {
                         AWS_LOG_DEBUG(SHADOW_LOG_TAG, "Delta received for shadow : %s", thing_name_.c_str());
                         rc = ResponseCode::SHADOW_RECEIVED_DELTA;
+                        if (!cur_server_state_document_.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+                            util::JsonParser::InitializeFromJsonString(cur_server_state_document_,
+                                                                       SHADOW_DOCUMENT_EMPTY_STRING);
+                        }
+
+                        if (!cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY].HasMember(SHADOW_DOCUMENT_DESIRED_KEY)) {
+                            util::JsonDocument empty_doc;
+                            util::JsonParser::InitializeFromJsonString(empty_doc, SHADOW_DOCUMENT_EMPTY_STRING);
+                            util::JsonParser::MergeValues(cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY],
+                                                          empty_doc[SHADOW_DOCUMENT_STATE_KEY],
+                                                          cur_server_state_document_.GetAllocator());
+                        }
                         util::JsonParser::MergeValues(cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_DESIRED_KEY],
                                                       payload[SHADOW_DOCUMENT_STATE_KEY],
                                                       cur_server_state_document_.GetAllocator());
@@ -458,6 +470,12 @@ namespace awsiotsdk {
     }
 
     util::JsonDocument Shadow::GetServerReported() {
+        if (!cur_server_state_document_.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+            return nullptr;
+        }
+        if (!cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY].HasMember(SHADOW_DOCUMENT_REPORTED_KEY)) {
+            return nullptr;
+        }
         util::JsonDocument reported;
         reported.CopyFrom(cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_REPORTED_KEY],
                           reported.GetAllocator());
@@ -465,6 +483,12 @@ namespace awsiotsdk {
     }
 
     util::JsonDocument Shadow::GetServerDesired() {
+        if (!cur_server_state_document_.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+            return nullptr;
+        }
+        if (!cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY].HasMember(SHADOW_DOCUMENT_DESIRED_KEY)) {
+            return nullptr;
+        }
         util::JsonDocument desired;
         desired.CopyFrom(cur_server_state_document_[SHADOW_DOCUMENT_STATE_KEY][SHADOW_DOCUMENT_DESIRED_KEY],
                          desired.GetAllocator());

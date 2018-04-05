@@ -43,7 +43,7 @@ endif()
 #############################
 # Add SDK Target #
 #############################
-add_definitions(-DSDK_VERSION_STRING="1.2.0")
+add_definitions(-DSDK_VERSION_STRING="1.3.0")
 
 # Create library file. The Client applications MUST link to below target if using this CMake file
 set(SDK_TARGET_NAME aws-iot-sdk-cpp)
@@ -52,6 +52,7 @@ if (BUILD_SHARED_LIBRARY)
     set_target_properties(${SDK_TARGET_NAME} PROPERTIES SUFFIX ".so")
 else()
     add_library(${SDK_TARGET_NAME} "")
+    set_target_properties(${SDK_TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 # Download and include rapidjson, not optional
