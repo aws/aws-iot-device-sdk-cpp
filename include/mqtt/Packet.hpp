@@ -118,11 +118,11 @@ namespace awsiotsdk {
             std::atomic_uint_fast16_t packet_id_;  ///< Message sequence identifier.  Handled automatically by the MQTT client
 
         public:
-            uint16_t GetActionId() { return packet_id_; }
+            uint16_t GetActionId() { return (uint16_t) packet_id_; }	
             void SetActionId(uint16_t action_id) { packet_id_ = action_id; }
             bool isPacketDataValid();
 
-            uint16_t GetPacketId() { return packet_id_; }
+            uint16_t GetPacketId() { return (uint16_t) packet_id_; } 
             void SetPacketId(uint16_t packet_id) { packet_id_ = packet_id; }
 
             size_t Size() { return serialized_packet_length_; }
