@@ -130,7 +130,7 @@ namespace awsiotsdk {
             WSADATA wsa_data;
             int result;
             bool was_wsa_initialized = true;
-            int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            UINT_PTR s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             if(INVALID_SOCKET == s) {
                 if(WSANOTINITIALISED == WSAGetLastError()) {
                     was_wsa_initialized = false;
@@ -338,7 +338,7 @@ namespace awsiotsdk {
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
 
-            server_tcp_socket_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+            server_tcp_socket_fd_ = (int)socket(AF_INET, SOCK_STREAM, 0);
             if (-1 == server_tcp_socket_fd_) {
                 return ResponseCode::NETWORK_TCP_SETUP_ERROR;
             }

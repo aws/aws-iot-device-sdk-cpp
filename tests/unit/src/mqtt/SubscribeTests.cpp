@@ -107,9 +107,9 @@ namespace awsiotsdk {
                 "sport/[^/]*/player1",
                 "[^/]*/[^/]*",
                 "/[^/]*",
-                "sport/tennis/[^\uc1bf]*",
-                "[^/]*/tennis/[^\uc1bf]*",
-                "\\$/tennis/[^\uc1bf]*",
+                u8"sport/tennis/[^\uc1bf]*",
+                u8"[^/]*/tennis/[^\uc1bf]*",
+                u8"\\$/tennis/[^\uc1bf]*",
                 "\\$sport/tennis/[^/]*"
             };
 
