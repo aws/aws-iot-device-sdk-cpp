@@ -18,6 +18,8 @@ This sample demonstrates how various Shadow operations can be performed.
  * Code for this sample is located [here](./ShadowDelta)
  * Target for this sample is `shadow-delta-sample`
  
+Note: The shadow client token is set as the thing name by default in the sample. The shadow client token is limited to 64 bytes and will return an error if a token longer than 64 bytes is used (`"code":400,"message":"invalid client token"`, although receiving a 400 does not necessarily mean that it is due to the length of the client token). Modify the code [here](../ShadowDelta/ShadowDelta.cpp#L184) if your thing name is longer than 64 bytes to prevent this error.
+
 ### Discovery Sample
 This sample demonstrates how the discovery operation can be performed to get the connectivity information to connect to a Greengrass Core (GGC).
 The configuration for this example is slightly different as the Discovery operation is a HTTP call, and uses port 8443, instead of port 8883 which is used for MQTT operations. The endpoint is the same IoT host endpoint used to connect the IoT thing to the cloud.
