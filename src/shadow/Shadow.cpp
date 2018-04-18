@@ -179,7 +179,7 @@ namespace awsiotsdk {
         } else  if (!payload.IsObject()
             || !payload.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
             // Invalid payload
-            return ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
+            rc = ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
         } else {
             AWS_LOG_DEBUG(SHADOW_LOG_TAG, "Get request accepted for shadow : %s", thing_name_.c_str());
             cur_server_state_document_.RemoveAllMembers();
