@@ -28,6 +28,14 @@
 #define MBEDTLS_WRAPPER_LOG_TAG "[MbedTLS Wrapper]"
 #define MAX_CHARS_IN_PORT_NUMBER 6
 
+#if defined(MBEDTLS_SSL_ALPN)
+    const bool ALPN_ENABLED = true;
+    const char* ALPN_PROTOCOLS[] = {"x-amzn-mqtt-ca", nullptr};
+#else
+    const bool ALPN_ENABLED = false;
+    const char* ALPN_PROTOCOLS[] = {nullptr};
+#endif
+
 namespace awsiotsdk {
     namespace network {
         MbedTLSConnection::MbedTLSConnection(util::String endpoint,
@@ -96,6 +104,14 @@ namespace awsiotsdk {
             mbedtls_x509_crt_init(&cacert_);
             mbedtls_x509_crt_init(&clicert_);
             mbedtls_pk_init(&pkey_);
+
+            if (443 == endpoint_port_) {
+                if (ALPN_ENABLED) {
+                    mbedtls_ssl_conf_alpn_protocols(&conf_, ALPN_PROTOCOLS);
+                } else {
+                    AWS_LOG_INFO(MBEDTLS_WRAPPER_LOG_TAG, "Warning: using 443 as endpoint port but MbedTLS was built without ALPN support.\n");
+                }
+            }
 
             requires_free_ = true;
 
