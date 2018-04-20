@@ -34,3 +34,6 @@ Any unexpected behavior is always treated as an issue with the Network Connectio
 
 ### Thread Safety
 Since the SDK itself cannot guarantee thread safety within the Network libraries that are being used, we apply mutex guards at the Base class level. Only one read and one write request can be in progress at a time.
+
+### ALPN
+AWS IoT supports connections using MQTT over TLS on port 443. This requires that ALPN support be enabled in the TLS layer. The provided reference network layers for MbedTLS and OpenSSL provide an additional constructor that allows enabling ALPN when port 443 is being used.
