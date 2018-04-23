@@ -588,6 +588,11 @@ namespace awsiotsdk {
 
                         p_client_state_->SetPingreqPending(true);
                         next = std::chrono::system_clock::now() + std::chrono::seconds(keep_alive_interval);
+                    } else if (!p_client_state_->IsConnected()) {
+                        // its PING time, but for some reason the client got disconnected.
+                        // make sure that we reconnect (if auto reconnect is enabled) ASAP.
+                        p_client_state_->SetAutoReconnectRequired(true);
+                        continue;
                     }
                 }
                 std::this_thread::sleep_for(thread_sleep_duration);
