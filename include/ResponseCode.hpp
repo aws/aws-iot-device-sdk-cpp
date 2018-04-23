@@ -193,7 +193,11 @@ namespace awsiotsdk {
 
         // Discovery Response Parsing Error Codes
 
-        DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR = -1200  ///< Discover Response Json is missing expected keys
+        DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR = -1200,  ///< Discover Response Json is missing expected keys
+
+        // Jobs Error Codes
+
+        JOBS_INVALID_TOPIC_ERROR = -1300                           ///< Jobs invalid topic
     };
 
     /**
@@ -314,6 +318,7 @@ namespace awsiotsdk {
         const util::String DISCOVER_ACTION_SERVER_ERROR_STRING("Server returned unknown error while performing the discovery action");
         const util::String DISCOVER_ACTION_REQUEST_OVERLOAD_STRING("The discovery action is overloading the server, try again after some time");
         const util::String DISCOVER_RESPONSE_UNEXPECTED_JSON_STRUCTURE_ERROR_STRING("The discover response JSON is incomplete ");
+        const util::String JOBS_INVALID_TOPIC_ERROR_STRING("Invalid jobs topic");
         
         /**
          * Takes in a Response Code and returns the appropriate error/success string
