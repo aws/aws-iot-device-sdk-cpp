@@ -362,6 +362,11 @@ namespace awsiotsdk {
             networkResponse = ConnectTCPSocket();
             if (ResponseCode::SUCCESS != networkResponse) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "TCP Connection error");
+#ifdef WIN32
+                closesocket(server_tcp_socket_fd_);
+#else
+                close(server_tcp_socket_fd_);
+#endif
                 return networkResponse;
             }
 
