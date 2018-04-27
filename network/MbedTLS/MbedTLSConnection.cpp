@@ -115,7 +115,15 @@ namespace awsiotsdk {
             mbedtls_pk_init(&pkey_);
 
             if (enable_alpn_) {
-                mbedtls_ssl_conf_alpn_protocols(&conf_, alpn_protocol_list);
+#ifdef MBEDTLS_SSL_ALPN
+                if (0 != mbedtls_ssl_conf_alpn_protocols(&conf_, alpn_protocol_list)) {
+                    AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, " SSL INIT Failed - Unable to set ALPN options");
+                    return ResponseCode::NETWORK_SSL_INIT_ERROR;
+                }
+#else
+                AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, " SSL INIT Failed - No ALPN support");
+                return ResponseCode::NETWORK_SSL_INIT_ERROR;
+#endif
             }
 
             requires_free_ = true;
