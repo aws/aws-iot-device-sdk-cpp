@@ -14,7 +14,7 @@
  */
 
 /**
- * @file MbedTLSConnection.hpp
+ * @file MbedTLSConnection.cpp
  * @brief
  *
  */

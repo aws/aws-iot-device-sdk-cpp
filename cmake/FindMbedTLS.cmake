@@ -1,0 +1,13 @@
+
+find_path(MBEDTLS_INCLUDE_DIR mbedtls/ssl.h)
+
+find_library(MBEDTLS_TLS_LIB mbedtls)
+find_library(MBEDTLS_X509_LIB mbedx509)
+find_library(MBEDTLS_CRYPTO_LIB mbedcrypto)
+
+set(MBEDTLS_LIBS "${MBEDTLS_TLS_LIB}" "${MBEDTLS_X509_LIB}" "${MBEDTLS_CRYPTO_LIB}")
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(MBEDTLS DEFAULT_MSG MBEDTLS_TLS_LIB MBEDTLS_X509_LIB MBEDTLS_CRYPTO_LIB MBEDTLS_INCLUDE_DIR)
+
+mark_as_advanced(MBEDTLS_INCLUDE_DIR MBEDTLS_TLS_LIB MBEDTLS_X509_LIB MBEDTLS_CRYPTO_LIB)
