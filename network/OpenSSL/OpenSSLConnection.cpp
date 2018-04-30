@@ -238,11 +238,6 @@ namespace awsiotsdk {
                 return ResponseCode::SUCCESS;
             }
 
-#ifdef WIN32
-            closesocket(server_tcp_socket_fd_);
-#else
-            close(server_tcp_socket_fd_);
-#endif
             AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "connect - %s", strerror(errno));
             return ResponseCode::NETWORK_TCP_CONNECT_ERROR;
         }
@@ -362,6 +357,11 @@ namespace awsiotsdk {
             networkResponse = ConnectTCPSocket();
             if (ResponseCode::SUCCESS != networkResponse) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "TCP Connection error");
+#ifdef WIN32
+                closesocket(server_tcp_socket_fd_);
+#else
+                close(server_tcp_socket_fd_);
+#endif
                 return networkResponse;
             }
 
