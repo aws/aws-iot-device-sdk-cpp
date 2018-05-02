@@ -164,7 +164,7 @@ namespace awsiotsdk {
 
             ssize_t WssFrameSendCallback(const uint8_t *data, size_t len, int flags, void *user_data);
             
-            void UrlEncode(std::string &string, const std::vector<unsigned char> &ignore_chars) const;
+            void UrlEncode(util::String &string, const util::Vector<unsigned char> &ignore_chars) const;
 
             ssize_t WssFrameRecvCallback(uint8_t *buf, size_t len, int flags, void *user_data);
 

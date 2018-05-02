@@ -517,7 +517,7 @@ namespace awsiotsdk {
                 canonical_query_string.append("&");
                 canonical_query_string.append(X_AMZ_SECURITY_TOKEN);
                 canonical_query_string.append("=");
-                std::string encoded_string = std::string(aws_session_token_);
+                util::String encoded_string = util::String(aws_session_token_);
                 UrlEncode(encoded_string, NOT_ENCODED_CHARS);
                 canonical_query_string.append(encoded_string);
             }
@@ -525,12 +525,12 @@ namespace awsiotsdk {
             return ResponseCode::SUCCESS;
         }
 
-        void WebSocketConnection::UrlEncode(std::string &string,
-                                            const std::vector<unsigned char> &ignore_chars) const{
+        void WebSocketConnection::UrlEncode(util::String &string,
+                                            const util::Vector<unsigned char> &ignore_chars) const{
             if (!string.empty()) {
-                std::ostringstream escaped_string;
+                util::OStringStream escaped_string;
                 escaped_string << std::hex;
-                for (std::string::iterator iterator = string.begin(); iterator != string.end(); ++iterator) {
+                for (util::String::iterator iterator = string.begin(); iterator != string.end(); ++iterator) {
                     auto current_char = (unsigned char) (*iterator);
 
                     // Keep alphanumeric and other accepted characters intact
