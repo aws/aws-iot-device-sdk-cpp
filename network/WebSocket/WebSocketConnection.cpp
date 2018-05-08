@@ -33,6 +33,7 @@
 #include <openssl/evp.h>
 #include <cstring>
 #include <iomanip>
+#include <algorithm>
 
 #include "WebSocketConnection.hpp"
 #include "util/logging/LogMacros.hpp"
