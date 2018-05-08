@@ -32,6 +32,7 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <cstring>
+#include <iomanip>
 
 #include "WebSocketConnection.hpp"
 #include "util/logging/LogMacros.hpp"
@@ -80,6 +81,7 @@
 #define MQTT_PROTOCOL "mqttv3.1.1"
 #define WSSGUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 #define WSS_SUCCESS_HANDSHAKE_RESP_HEADER "sec-websocket-accept"
+#define NOT_ENCODED_CHARS {'/'}
 
 #define TO_HASH_BUF_LEN 64
 #define WSS_CLIENT_KEY_MAX_LEN 64
@@ -537,11 +539,39 @@ namespace awsiotsdk {
                 canonical_query_string.append("&");
                 canonical_query_string.append(X_AMZ_SECURITY_TOKEN);
                 canonical_query_string.append("=");
-                canonical_query_string.append(aws_session_token_);
+                util::String encoded_string = util::String(aws_session_token_);
+                UrlEncode(encoded_string, NOT_ENCODED_CHARS);
+                canonical_query_string.append(encoded_string);
             }
             AWS_LOG_DEBUG(WEBSOCKET_WRAPPER_LOG_TAG, "CompletedCanonicalQuery: %s", canonical_query_string.c_str());
             return ResponseCode::SUCCESS;
         }
+
+        void WebSocketConnection::UrlEncode(util::String &string,
+                                            const util::Vector<unsigned char> &ignore_chars) const{
+            if (!string.empty()) {
+                util::OStringStream escaped_string;
+                escaped_string << std::hex;
+                for (util::String::iterator iterator = string.begin(); iterator != string.end(); ++iterator) {
+                    auto current_char = (unsigned char) (*iterator);
+
+                    // Keep alphanumeric and other accepted characters intact
+                    if (isalnum(current_char) ||
+                        std::find(ignore_chars.begin(), ignore_chars.end(), current_char) != ignore_chars.end()) {
+                        escaped_string << current_char;
+                        continue;
+                    }
+
+                    // Any other characters are percent-encoded
+                    escaped_string << std::uppercase;
+                    escaped_string << '%' << std::setw(2) << int(current_char);
+                    escaped_string << std::nouppercase;
+                }
+                string = escaped_string.str();
+            } else {
+            }
+        }
+
 
         ssize_t WebSocketConnection::WssFrameSendCallback(const uint8_t *data, size_t len, int flags, void *user_data) {
             util::String out_data((char *) data, len);
