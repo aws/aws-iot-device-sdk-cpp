@@ -1,9 +1,10 @@
 # Known Issues/Limitations
-## [1.3.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.3.0) (Nov 22, 2017)
+## [1.4.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.4.0) (May 10, 2018)
 
 ### Common
 
   - Client Core - Reduce shared pointer usage, figure out ways to use fewer copy operations
+  - MQTT - if subcriptions are disallowed by the policy, enabling auto resubcribe can lead to a connect-disconnect loop, issue [#94](https://github.com/aws/aws-iot-device-sdk-cpp/issues/94)
   - Network Read - Add recovery options for out of sync buffers
   - Network Layer, Common - Currently, vector resize is called before the vector is passed for reading in data. Determine if a more flexible solution is possible with fewer allocations
   - Network Layer, OpenSSL - error handling for library API call
@@ -14,8 +15,8 @@
   - Shadow - Refactor delta requests into separate function
   - Shadow - Add action for automatically performing Shadow updates
   - Samples, Shadow - Add Console Echo Sample
+  - Threading - lock-order-inversion (potential deadlock), issue [#14](https://github.com/aws/aws-iot-device-sdk-cpp/issues/14)
   - CLI, Configuration - Add support for command line cert paths
-  - CMake, Configuration - Add proper options for different CMake build types
   - CMake, path warnings - Cleaner way to download repositories from github and build them
   - CMake, build settings - Provide options for setting up certain values that are hardcoded using macros at the moment
   - Testing - More edge case testing required for Reconnect logic

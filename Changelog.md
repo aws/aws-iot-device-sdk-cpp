@@ -1,6 +1,31 @@
 # Change Log
 
-## [1.3.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.3.0) (Nov 22, 2017)
+## [1.4.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.4.0) (May 10, 2018)
+
+Features:
+  - [#95](https://github.com/aws/aws-iot-device-sdk-cpp/pull/95) - Jobs support with custom auth
+  - ALPN support
+
+Bugfixes/Improvements:
+  - Fixed Issues:
+    - [#60](https://github.com/aws/aws-iot-device-sdk-cpp/pull/60) - Ignore sigpipe to prevent program termination
+    - [#93](https://github.com/aws/aws-iot-device-sdk-cpp/pull/93) - Set auto-reconnect to false when resubscribe fails
+    - [#86](https://github.com/aws/aws-iot-device-sdk-cpp/pull/86) - Make shadow handler call response handler for error cases
+    - [#87](https://github.com/aws/aws-iot-device-sdk-cpp/pull/87) - Failing WSS handshake for session token
+    - Updated shadow documentation on shadow client token limitation
+    - Fix wildcard regex for special topics with $ symbols
+  - Included pull requests:
+    - [#63](https://github.com/aws/aws-iot-device-sdk-cpp/pull/63) - Update LogMacros.hpp
+    - [#67](https://github.com/aws/aws-iot-device-sdk-cpp/pull/67) - Fixed invalid read inside mqtt/Client
+    - [#70](https://github.com/aws/aws-iot-device-sdk-cpp/pull/70) - Add some minor improvements
+    - [#73](https://github.com/aws/aws-iot-device-sdk-cpp/pull/73) - Allow Position Independent Code for static library
+    - [#75](https://github.com/aws/aws-iot-device-sdk-cpp/pull/75), [#76](https://github.com/aws/aws-iot-device-sdk-cpp/pull/76) and [#77](https://github.com/aws/aws-iot-device-sdk-cpp/pull/77) - Pull requests to fix warnings on windows
+    - [#83](https://github.com/aws/aws-iot-device-sdk-cpp/pull/83) - Adding standard files
+    - [#88](https://github.com/aws/aws-iot-device-sdk-cpp/pull/88) - URL encode session token when building the canonical error string
+    - [#92](https://github.com/aws/aws-iot-device-sdk-cpp/pull/92) - Add the currently missing error checks when creating an MbedTLSconnection with ALPN support enabled
+
+
+# [1.3.0](https://github.com/aws/aws-iot-device-sdk-cpp/releases/tag/v1.3.0) (Nov 22, 2017)
 
 Features:
   - [#21](https://github.com/aws/aws-iot-device-sdk-cpp/issues/21) - add reconnect and resubscribe callback
