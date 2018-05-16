@@ -70,6 +70,8 @@ namespace awsiotsdk {
             mbedtls_pk_context pkey_;
             mbedtls_net_context server_fd_;
 
+            bool enable_alpn_;
+
             // TODO: This is a Hotfix, requires a better approach
             std::atomic_bool requires_free_;                               ///< Boolean indicating whether the mbedtls struct variables have been allocated or not
 
@@ -94,7 +96,7 @@ namespace awsiotsdk {
             /**
              * @brief Read bytes from the network socket
              *
-             * @param util::String - reference to buffer where read bytes should be copied
+             * @param util::Vector<unsigned char> - reference to buffer where read bytes should be copied
              * @param size_t - number of bytes to read
              * @param size_t - reference to store number of bytes read
              * @return ResponseCode - successful read or TLS error code
@@ -133,6 +135,12 @@ namespace awsiotsdk {
                               std::chrono::milliseconds tls_handshake_timeout,
                               std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
                               bool server_verification_flag);
+
+            MbedTLSConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+                              util::String device_cert_location, util::String device_private_key_location,
+                              std::chrono::milliseconds tls_handshake_timeout,
+                              std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
+                              bool server_verification_flag, bool enable_alpn);
 
             /**
              * @brief Check if TLS layer is still connected

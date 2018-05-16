@@ -103,6 +103,7 @@ namespace awsiotsdk {
             int server_tcp_socket_fd_;                  ///< Server Socket descriptor
 
             bool certificates_read_flag_;
+            bool enable_alpn_;
 
             std::mutex clean_shutdown_action_lock_;
             std::condition_variable shutdown_timeout_condition_;
@@ -230,6 +231,12 @@ namespace awsiotsdk {
                               std::chrono::milliseconds tls_handshake_timeout,
                               std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
                               bool server_verification_flag);
+
+            OpenSSLConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+                              util::String device_cert_location, util::String device_private_key_location,
+                              std::chrono::milliseconds tls_handshake_timeout,
+                              std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
+                              bool server_verification_flag, bool enable_alpn);
 
             /**
              * @brief Initialize the OpenSSL object

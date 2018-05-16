@@ -78,6 +78,7 @@ namespace awsiotsdk {
             certificates_read_flag_ = false;
             initializer = OpenSSLInitializer::getInstance();
             p_ssl_handle_ = nullptr;
+            enable_alpn_ = false;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -94,6 +95,21 @@ namespace awsiotsdk {
             root_ca_location_ = root_ca_location;
             device_cert_location_ = device_cert_location;
             device_private_key_location_ = device_private_key_location;
+        }
+
+        OpenSSLConnection::OpenSSLConnection(util::String endpoint,
+                                             uint16_t endpoint_port,
+                                             util::String root_ca_location,
+                                             util::String device_cert_location,
+                                             util::String device_private_key_location,
+                                             std::chrono::milliseconds tls_handshake_timeout,
+                                             std::chrono::milliseconds tls_read_timeout,
+                                             std::chrono::milliseconds tls_write_timeout,
+                                             bool server_verification_flag, bool enable_alpn)
+            : OpenSSLConnection(endpoint, endpoint_port, root_ca_location, device_cert_location,
+                                device_private_key_location, tls_handshake_timeout, tls_read_timeout, tls_write_timeout,
+                                server_verification_flag) {
+            enable_alpn_ = enable_alpn;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -222,11 +238,6 @@ namespace awsiotsdk {
                 return ResponseCode::SUCCESS;
             }
 
-#ifdef WIN32
-            closesocket(server_tcp_socket_fd_);
-#else
-            close(server_tcp_socket_fd_);
-#endif
             AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "connect - %s", strerror(errno));
             return ResponseCode::NETWORK_TCP_CONNECT_ERROR;
         }
@@ -346,6 +357,11 @@ namespace awsiotsdk {
             networkResponse = ConnectTCPSocket();
             if (ResponseCode::SUCCESS != networkResponse) {
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "TCP Connection error");
+#ifdef WIN32
+                closesocket(server_tcp_socket_fd_);
+#else
+                close(server_tcp_socket_fd_);
+#endif
                 return networkResponse;
             }
 
@@ -386,6 +402,10 @@ namespace awsiotsdk {
 
         ResponseCode OpenSSLConnection::ConnectInternal() {
             ResponseCode networkResponse = ResponseCode::SUCCESS;
+            const unsigned char alpn_protocol_list[] = {
+                    14, 'x', '-', 'a', 'm', 'z', 'n', '-', 'm', 'q', 't', 't', '-', 'c', 'a'
+            };
+            const unsigned int alpn_protocol_list_length = sizeof(alpn_protocol_list);
 
             X509_VERIFY_PARAM *param = nullptr;
 
@@ -414,6 +434,13 @@ namespace awsiotsdk {
                     X509_VERIFY_PARAM_set1_ip_asc(param, endpoint_.c_str());
                 } else {
                     X509_VERIFY_PARAM_set1_host(param, endpoint_.c_str(), 0);
+                }
+            }
+
+            if (enable_alpn_) {
+                if (0 != SSL_set_alpn_protos(p_ssl_handle_, alpn_protocol_list, alpn_protocol_list_length)) {
+                    AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, " SSL INIT Failed - Unable to set ALPN options");
+                    return ResponseCode::NETWORK_SSL_INIT_ERROR;
                 }
             }
 

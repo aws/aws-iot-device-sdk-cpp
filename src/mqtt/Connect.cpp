@@ -469,7 +469,7 @@ namespace awsiotsdk {
                                                               rc);
                     }
                     if (ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED == rc) {
-
+                        p_client_state_->SetAutoReconnectRequired(false);
                         // if no subscriptions, skip resubscribe
                         if (!p_client_state_->subscription_map_.empty()) {
 
@@ -520,6 +520,7 @@ namespace awsiotsdk {
                             p_client_state_->PerformAction(ActionType::DISCONNECT,
                                                            DisconnectPacket::Create(),
                                                            p_client_state_->GetMqttCommandTimeout());
+                            p_client_state_->SetAutoReconnectRequired(true);
                         }
                         continue;
                     }

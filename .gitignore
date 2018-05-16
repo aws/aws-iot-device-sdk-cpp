@@ -481,3 +481,8 @@ gen### Gcov template
 #Output Folder for cmake
 build/
 cmake-build-debug/
+
+# Certificate data
+certs/*.key
+certs/*.pem
+certs/*.crt
