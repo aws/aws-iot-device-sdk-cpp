@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@
 
 #include "util/logging/FormattedLogSystem.hpp"
 
-#include <chrono>
 #include <fstream>
 #include <cstdarg>
-#include <ctime>
-#include <stdio.h>
 #include <thread>
+#include <iomanip>
+#include <mutex>
 
 using namespace awsiotsdk;
 using namespace awsiotsdk::util::Logging;
 
 static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag, const char *function, unsigned int line) {
+    static std::mutex log_mutex;
     util::StringStream ss;
 
     ss << "[" << GetLogLevelName(logLevel) << "] ";
@@ -39,11 +39,14 @@ static util::String CreateLogPrefixLine(LogLevel logLevel, const char *tag, cons
     std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
     std::chrono::milliseconds now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     std::time_t time_now = std::chrono::duration_cast<std::chrono::seconds>(now_ms).count();
-
-    char *time = std::ctime(&time_now);
-    if (nullptr != time) {
-        ss << time << ":" << now_ms.count() % 1000 << " ";
+    std::tm tm_now;
+    {
+        std::lock_guard<std::mutex> log_lock(log_mutex);
+        tm_now = *std::localtime(&time_now);
     }
+
+    ss << std::put_time(&tm_now, "%c") << ":" << now_ms.count() % 1000 << " ";
+
     ss << tag << " [" << std::this_thread::get_id() << "] ";
     if (line && function) {
         ss << "[" << function << ":L"<< line << "] : ";

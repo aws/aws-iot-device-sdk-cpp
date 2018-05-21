@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -182,6 +182,11 @@ namespace awsiotsdk {
                               std::placeholders::_2);
                 p_publish_packet->p_async_ack_handler_ = p_async_ack_handler;
                 p_publish_packet->SetPacketId(test_packet_id_);
+                p_publish_packet->is_sync = true;
+
+                /*** Check for Puback ***/
+                callback_received_ = false;
+                p_core_state_->RegisterPendingAck(test_packet_id_, p_publish_packet);
 
                 EXPECT_CALL(*p_network_mock_, WriteInternalProxy(::testing::_, ::testing::_)).WillOnce(
                     ::testing::DoAll(::testing::SetArgReferee<1>(p_publish_packet->Size()),
@@ -209,11 +214,6 @@ namespace awsiotsdk {
                     written_payload((char *) p_last_msg, calculated_rem_len - written_topic_name->Length() - 4);
                 EXPECT_EQ(test_payload_, written_payload);
 
-
-                /*** Check for Puback ***/
-                callback_received_ = false;
-                p_core_state_->RegisterPendingAck(test_packet_id_, p_async_ack_handler);
-
                 p_network_connection_->ClearNextReadBuf();
                 p_network_connection_->SetNextReadBuf(TestHelper::GetSerializedPubAckMessage(test_packet_id_));
 
@@ -226,6 +226,11 @@ namespace awsiotsdk {
                 p_publish_packet = mqtt::PublishPacket::Create(Utf8String::Create(test_topic_), true, false,
                                                                mqtt::QoS::QOS1, test_payload_);
                 p_publish_packet->SetPacketId(test_packet_id_);
+                p_publish_packet->p_async_ack_handler_ = p_async_ack_handler;
+
+                /*** Check for Puback ***/
+                callback_received_ = false;
+                p_core_state_->RegisterPendingAck(test_packet_id_, p_publish_packet);
 
                 EXPECT_CALL(*p_network_mock_, WriteInternalProxy(::testing::_, ::testing::_)).WillOnce(
                     ::testing::DoAll(::testing::SetArgReferee<1>(p_publish_packet->Size()),
@@ -252,11 +257,6 @@ namespace awsiotsdk {
                 written_payload =
                     util::String((char *) p_last_msg, calculated_rem_len - written_topic_name->Length() - 4);
                 EXPECT_EQ(test_payload_, written_payload);
-
-
-                /*** Check for Puback ***/
-                callback_received_ = false;
-                p_core_state_->RegisterPendingAck(test_packet_id_, p_async_ack_handler);
 
                 p_network_connection_->ClearNextReadBuf();
                 p_network_connection_->SetNextReadBuf(TestHelper::GetSerializedPubAckMessage(test_packet_id_));
@@ -287,6 +287,11 @@ namespace awsiotsdk {
                               std::placeholders::_2);
                 p_publish_packet->p_async_ack_handler_ = p_async_ack_handler;
                 p_publish_packet->SetPacketId(test_packet_id_);
+                p_publish_packet->is_sync = false;
+
+                /*** Check for Puback ***/
+                callback_received_ = false;
+                p_core_state_->RegisterPendingAck(test_packet_id_, p_publish_packet);
 
                 EXPECT_CALL(*p_network_mock_, WriteInternalProxy(::testing::_, ::testing::_)).WillOnce(
                     ::testing::DoAll(::testing::SetArgReferee<1>(p_publish_packet->Size()),
@@ -314,11 +319,6 @@ namespace awsiotsdk {
                     written_payload((char *) p_last_msg, calculated_rem_len - written_topic_name->Length() - 4);
                 EXPECT_EQ(test_payload_, written_payload);
 
-
-                /*** Check for Puback ***/
-                callback_received_ = false;
-                p_core_state_->RegisterPendingAck(test_packet_id_, p_async_ack_handler);
-
                 p_network_connection_->ClearNextReadBuf();
                 p_network_connection_->SetNextReadBuf(TestHelper::GetSerializedPubAckMessage(test_packet_id_));
 
@@ -327,11 +327,11 @@ namespace awsiotsdk {
                 EXPECT_TRUE(p_network_connection_->was_read_called_);
                 EXPECT_TRUE(callback_received_);
 
-
                 /*** Is Retained true   ***/
                 p_publish_packet = mqtt::PublishPacket::Create(Utf8String::Create(test_topic_), true, true,
                                                                mqtt::QoS::QOS1, test_payload_);
                 p_publish_packet->SetPacketId(test_packet_id_);
+                p_publish_packet->p_async_ack_handler_ = p_async_ack_handler;
 
                 EXPECT_CALL(*p_network_mock_, WriteInternalProxy(::testing::_, ::testing::_)).WillOnce(
                     ::testing::DoAll(::testing::SetArgReferee<1>(p_publish_packet->Size()),
@@ -362,7 +362,7 @@ namespace awsiotsdk {
 
                 /*** Check for Puback ***/
                 callback_received_ = false;
-                p_core_state_->RegisterPendingAck(test_packet_id_, p_async_ack_handler);
+                p_core_state_->RegisterPendingAck(test_packet_id_, p_publish_packet);
 
                 p_network_connection_->ClearNextReadBuf();
                 p_network_connection_->SetNextReadBuf(TestHelper::GetSerializedPubAckMessage(test_packet_id_));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -523,6 +523,12 @@ namespace awsiotsdk {
                 EXPECT_CALL(*p_network_mock_, DisconnectInternal()).WillOnce(::testing::Return(ResponseCode::SUCCESS));
 
                 std::shared_ptr<std::atomic_bool> thread_task_out_sync = std::make_shared<std::atomic_bool>(true);
+
+                util::Threading::ThreadTask temp_task_action_runner(util::Threading::DestructorAction::JOIN,
+                                                                    thread_task_out_sync,
+                                                                    "Outbound Action Processing");
+                temp_task_action_runner.Run(&ClientCoreState::ProcessOutboundActionQueue, p_core_state_, thread_task_out_sync);
+
                 util::Threading::ThreadTask temp_task(util::Threading::DestructorAction::JOIN, thread_task_out_sync,
                                                       "TestKeepAlivePingReq");
                 temp_task.Run(&Action::PerformAction, std::move(p_keepalive_action), p_network_connection_,
@@ -534,6 +540,7 @@ namespace awsiotsdk {
                 EXPECT_TRUE(p_core_state_->IsAutoReconnectRequired());
                 EXPECT_FALSE(p_core_state_->IsConnected());
                 p_core_state_->p_network_connection_ = nullptr;
+                p_core_state_->ClearOutboundActionQueue();
             }
 
             TEST_F(ConnectDisconnectActionTester, KeepAliveSendPingreqFailedTest) {
@@ -573,9 +580,15 @@ namespace awsiotsdk {
                             DisconnectInternal()).WillOnce(::testing::Return(ResponseCode::SUCCESS));
 
                 std::shared_ptr<std::atomic_bool> thread_task_out_sync = std::make_shared<std::atomic_bool>(true);
-                util::Threading::ThreadTask temp_task(util::Threading::DestructorAction::JOIN, thread_task_out_sync,
+
+                util::Threading::ThreadTask temp_task_action_runner(util::Threading::DestructorAction::JOIN,
+                                                                    thread_task_out_sync,
+                                                                    "Outbound Action Processing");
+                temp_task_action_runner.Run(&ClientCoreState::ProcessOutboundActionQueue, p_core_state_, thread_task_out_sync);
+
+                util::Threading::ThreadTask temp_task_keepalive(util::Threading::DestructorAction::JOIN, thread_task_out_sync,
                                                       "TestKeepAlivePingReq");
-                temp_task.Run(&Action::PerformAction, std::move(p_keepalive_action), p_network_connection_,
+                temp_task_keepalive.Run(&Action::PerformAction, std::move(p_keepalive_action), p_network_connection_,
                               nullptr);
 
                 std::this_thread::sleep_for(keepalive * 2);
@@ -584,6 +597,7 @@ namespace awsiotsdk {
                 EXPECT_TRUE(p_core_state_->IsAutoReconnectRequired());
                 EXPECT_FALSE(p_core_state_->IsConnected());
                 p_core_state_->p_network_connection_ = nullptr;
+                p_core_state_->ClearOutboundActionQueue();
             }
 
             TEST_F(ConnectDisconnectActionTester, KeepAliveNoExistingSubscriptionTest) {
@@ -613,6 +627,12 @@ namespace awsiotsdk {
                     ::testing::Return(ResponseCode::SUCCESS)));
 
                 std::shared_ptr<std::atomic_bool> thread_task_out_sync = std::make_shared<std::atomic_bool>(true);
+
+                util::Threading::ThreadTask temp_task_action_runner(util::Threading::DestructorAction::JOIN,
+                                                                    thread_task_out_sync,
+                                                                    "Outbound Action Processing");
+                temp_task_action_runner.Run(&ClientCoreState::ProcessOutboundActionQueue, p_core_state_, thread_task_out_sync);
+
                 util::Threading::ThreadTask temp_task(util::Threading::DestructorAction::JOIN, thread_task_out_sync,
                                                       "TestKeepAlivePingReq");
                 temp_task.Run(&Action::PerformAction, std::move(p_keepalive_action), p_network_connection_,
@@ -627,6 +647,8 @@ namespace awsiotsdk {
                     EXPECT_EQ(PINGREQ_PACKET_FIXED_HEADER_VAL, *(p_last_msg++));
                     EXPECT_EQ(*(p_last_msg), '\0');
                 }
+
+                p_core_state_->ClearOutboundActionQueue();
             }
 
             TEST_F(ConnectDisconnectActionTester, ConnectActionTestWithNoClientID) {

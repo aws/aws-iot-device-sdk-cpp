@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@
 #include "Action.hpp"
 #include "ResponseCode.hpp"
 #include "NetworkConnection.hpp"
+#include "util/LockedMap.hpp"
+#include "util/BlockingQueue.hpp"
 
 /**
  * Default sleep duration between each execution of Client Core thread operations
@@ -45,6 +47,7 @@
 #define DEFAULT_MAX_QUEUE_SIZE 16
 
 namespace awsiotsdk {
+
 
     /**
      * @brief MQTT Disconnect Callback Context Data
@@ -101,32 +104,20 @@ namespace awsiotsdk {
         class PendingAckData {
         public:
             std::chrono::system_clock::time_point time_of_request_;           ///< Time at which the request was sent
-            ActionData::AsyncAckNotificationHandlerPtr p_async_ack_handler_;  ///< Handler to which response must be sent
+            std::shared_ptr<ActionData> action_data_;                         ///< ActionData of the request the ack is for
         };
 
         std::atomic<uint16_t> next_action_id_;                                                   ///< Atomic, ID of the next Action that will be enqueued
-        std::atomic_int cur_core_threads_;                                                       ///< Atomic, Count of currently running core threads
-        std::atomic_int max_hardware_threads_;                                                   ///< Atomic, Count of the maximum allowed hardware threads
         std::atomic_size_t max_queue_size_;                                                      ///< Atomic, Current configured max queue size
         std::chrono::seconds ack_timeout_;                                                       ///< Timeout for pending Acks, older Acks are deleted with a failed response
 
-        std::mutex register_action_lock_;                                                        ///< Mutex for Register Action Request flow
-        std::mutex ack_map_lock_;                                                                ///< Mutex for Ack Map operations
-
-        // Used to perform blocking sync actions
-        std::mutex sync_action_request_lock_;                                                    ///< Mutex for Sync Action Request flow
-        std::mutex sync_action_response_lock_;                                                   ///< Mutex for Sync Action Response flow
-        std::condition_variable sync_action_response_wait_;                                      ///< Condition variable used to wake up calling thread on Sync Action response
-        ResponseCode sync_action_response_;                                                      ///< Variable to store received Sync Action response
-
-        std::atomic_bool process_queued_actions_;                                                ///< Atomic, indicates whether currently queued Actions should be processed or not
-        std::shared_ptr<std::atomic_bool> continue_execution_;                                   ///< Atomic, Used to synchronize running threads, false value causes running threads to stop
-
         util::Map<ActionType, std::unique_ptr<Action>> action_map_;                              ///< Map containing currently initialized Action Instances
-        util::Map<uint16_t, std::unique_ptr<PendingAckData>> pending_ack_map_;                   ///< Map containing currently pending Acks
+
+        util::LockedMap<uint16_t, PendingAckData> pending_ack_map_;                              ///< Map containing currently pending Acks
         util::Map<ActionType, Action::CreateHandlerPtr> action_create_handler_map_;              ///< Map containing currently registered Action Types and corrosponding Factories
 
-        util::Queue<std::pair<ActionType, std::shared_ptr<ActionData>>> outbound_action_queue_;  ///< Queue of outbound actions
+        util::BlockingQueue<std::pair<ActionType, std::shared_ptr<ActionData>>>
+            outbound_action_queue_;                                                             ///< Queue of outbound actions
 
         /**
          * @brief Internal Action Handler for Sync Action responses
@@ -206,27 +197,6 @@ namespace awsiotsdk {
         void SetMaxActionQueueSize(size_t max_queue_size) { max_queue_size_ = max_queue_size; }
 
         /**
-         * @brief Get pointer to sync point used for execution status of the Core instance
-         *
-         * This sync point is used to indicate SDK is still continuing execution. Set to false when exiting
-         *
-         * @return std::shared_ptr<std::atomic_bool> pointer to the sync point
-         */
-        std::shared_ptr<std::atomic_bool> GetCoreExecutionSyncPoint() { return continue_execution_; }
-
-        /**
-         * @brief Sets whether the Client is allowed to process queue actions
-         * @param process_queued_actions value to set it to
-         */
-        void SetProcessQueuedActions(bool process_queued_actions) { process_queued_actions_ = process_queued_actions; }
-
-        /**
-         * @brief Get whether the Client can process queued actions
-         * @return boolean value indicating status
-         */
-        bool CanProcessQueuedActions() { return process_queued_actions_; }
-
-        /**
          * @brief Process the outbound action queue
          *
          * This function processes the actions queued up in the Outbound action queue.
@@ -240,7 +210,7 @@ namespace awsiotsdk {
         void ProcessOutboundActionQueue(std::shared_ptr<std::atomic_bool> thread_task_out_sync);
 
         /**
-         * @brief Perform Action in Blocking Mode
+         * @brief Perform Action and block till it is processed
          *
          * This API will perform the Action in Blocking mode. The timeout for the action to give a valid response
          * is provided as an argument. This API stops processing of all outbound actions until Response is received
@@ -251,8 +221,8 @@ namespace awsiotsdk {
          * @param action_reponse_timeout - Timeout for this API call
          * @return ResponseCode indicating result of the API call
          */
-        ResponseCode PerformAction(ActionType action_type, std::shared_ptr<ActionData> action_data,
-                                   std::chrono::milliseconds action_reponse_timeout);
+        ResponseCode PerformActionAndBlock(ActionType action_type, std::shared_ptr<ActionData> action_data,
+                                           std::chrono::milliseconds action_reponse_timeout);
 
         /**
          * @brief Register Action for execution by Client Core
@@ -298,7 +268,7 @@ namespace awsiotsdk {
          * @return ResponseCode indicating result of the API call
          */
         ResponseCode RegisterPendingAck(uint16_t action_id,
-                                        ActionData::AsyncAckNotificationHandlerPtr p_async_ack_handler);
+                                        std::shared_ptr<ActionData> action_data);
 
         /**
          * @brief Delete Ack Handler for specified Action ID

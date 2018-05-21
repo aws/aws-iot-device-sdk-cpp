@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -148,6 +148,7 @@ namespace awsiotsdk {
                     p_network_connection = std::make_shared<tests::mocks::MockNetworkConnection>();
                 std::unique_ptr<ClientCore> p_client_core = ClientCore::Create(p_network_connection, p_core_state);
                 EXPECT_NE(nullptr, p_client_core);
+                p_client_core->StopOutboundProcessingThread();
             }
 
             // Test Register Action - Unregistered Action should be registered successfully,
@@ -163,9 +164,9 @@ namespace awsiotsdk {
 
                 ResponseCode rc = p_client_core_->RegisterAction(ActionType::RESERVED_ACTION, TestAction::Create);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
-                rc = p_client_core_->PerformAction(ActionType::RESERVED_ACTION,
-                                                   p_test_action_data,
-                                                   std::chrono::milliseconds(200));
+                rc = p_client_core_->PerformActionSync(ActionType::RESERVED_ACTION,
+                                                       p_test_action_data,
+                                                       std::chrono::milliseconds(200));
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 EXPECT_EQ(1, TestAction::cur_instance_count_);
                 EXPECT_EQ(1, TestAction::total_instance_count_);
@@ -175,9 +176,9 @@ namespace awsiotsdk {
                 std::shared_ptr<TestActionData> p_test_action_data_puback = std::make_shared<TestActionData>();
                 rc = p_client_core_->RegisterAction(ActionType::PUBACK, TestAction::Create);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
-                rc = p_client_core_->PerformAction(ActionType::PUBACK,
-                                                   p_test_action_data_puback,
-                                                   std::chrono::milliseconds(200));
+                rc = p_client_core_->PerformActionSync(ActionType::PUBACK,
+                                                       p_test_action_data_puback,
+                                                       std::chrono::milliseconds(1000));
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 EXPECT_EQ(2, TestAction::cur_instance_count_);
                 EXPECT_EQ(2, TestAction::total_instance_count_);
@@ -200,9 +201,9 @@ namespace awsiotsdk {
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 rc = p_client_core_->RegisterAction(ActionType::RESERVED_ACTION, TestAction::Create);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
-                rc = p_client_core_->PerformAction(ActionType::RESERVED_ACTION,
-                                                   p_test_action_data,
-                                                   std::chrono::milliseconds(200));
+                rc = p_client_core_->PerformActionSync(ActionType::RESERVED_ACTION,
+                                                       p_test_action_data,
+                                                       std::chrono::milliseconds(200));
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 EXPECT_EQ(1, TestAction::cur_instance_count_);
                 EXPECT_EQ(2, TestAction::total_instance_count_);
@@ -219,9 +220,9 @@ namespace awsiotsdk {
 
                 std::shared_ptr<TestActionData> p_test_action_data = std::make_shared<TestActionData>();
 
-                ResponseCode rc = p_client_core_->PerformAction(ActionType::RESERVED_ACTION,
-                                                                p_test_action_data,
-                                                                std::chrono::milliseconds(200));
+                ResponseCode rc = p_client_core_->PerformActionSync(ActionType::RESERVED_ACTION,
+                                                                    p_test_action_data,
+                                                                    std::chrono::milliseconds(1000));
                 EXPECT_EQ(ResponseCode::ACTION_NOT_REGISTERED_ERROR, rc);
                 EXPECT_EQ(0, TestAction::cur_instance_count_);
                 EXPECT_EQ(0, TestAction::total_instance_count_);
@@ -237,7 +238,6 @@ namespace awsiotsdk {
                 uint16_t action_id = 0;
 
                 TestAction::Reset();
-                p_client_core_->SetProcessQueuedActions(true);
 
                 std::shared_ptr<TestActionData> p_test_action_data = std::make_shared<TestActionData>();
 
@@ -288,7 +288,7 @@ namespace awsiotsdk {
 
                 ResponseCode rc = p_client_core_->RegisterAction(ActionType::RESERVED_ACTION, TestAction::Create);
                 EXPECT_TRUE(ResponseCode::SUCCESS == rc);
-                rc = p_client_core_->PerformAction(ActionType::RESERVED_ACTION,
+                rc = p_client_core_->PerformActionSync(ActionType::RESERVED_ACTION,
                                                    p_test_action_data,
                                                    std::chrono::milliseconds(200));
                 EXPECT_TRUE(ResponseCode::SUCCESS == rc);
@@ -300,9 +300,9 @@ namespace awsiotsdk {
                 std::shared_ptr<TestActionData> p_test_action_data_puback = std::make_shared<TestActionData>();
                 rc = p_client_core_->RegisterAction(ActionType::PUBACK, TestAction::Create);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
-                rc = p_client_core_->PerformAction(ActionType::PUBACK,
+                rc = p_client_core_->PerformActionSync(ActionType::PUBACK,
                                                    p_test_action_data_puback,
-                                                   std::chrono::milliseconds(200));
+                                                   std::chrono::milliseconds(1000));
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 EXPECT_EQ(2, TestAction::cur_instance_count_);
                 EXPECT_EQ(2, TestAction::total_instance_count_);
@@ -322,7 +322,6 @@ namespace awsiotsdk {
                 size_t cur_max_queue_size = p_core_state_->GetMaxActionQueueSize();
 
                 p_core_state_->SetMaxActionQueueSize(1);
-                p_client_core_->SetProcessQueuedActions(false);
 
                 std::shared_ptr<TestActionData> p_test_action_data = std::make_shared<TestActionData>();
 
@@ -338,7 +337,6 @@ namespace awsiotsdk {
                 EXPECT_EQ(1, TestAction::cur_instance_count_);
                 EXPECT_EQ(1, TestAction::total_instance_count_);
 
-                p_client_core_->SetProcessQueuedActions(true);
                 // Sleep and allow outbound queue to process action
                 for (size_t itr = 0; itr < 50; itr++) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -380,6 +378,7 @@ namespace awsiotsdk {
                 EXPECT_EQ(1, p_test_action_data->perform_action_count_);
                 EXPECT_EQ(1, TestAction::cur_instance_count_);
                 EXPECT_EQ(2, TestAction::total_instance_count_);
+                p_client_core_->StopOutboundProcessingThread();
             }
 
             // Test Client Core destroy, all threads should successfully stop, no exceptions

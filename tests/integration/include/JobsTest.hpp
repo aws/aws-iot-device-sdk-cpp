@@ -31,8 +31,6 @@ namespace awsiotsdk {
         namespace integration {
             class JobsTest {
             protected:
-                static const std::chrono::seconds keep_alive_timeout_;
-
                 std::shared_ptr<NetworkConnection> p_network_connection_;
                 std::shared_ptr<MqttClient> p_iot_client_;
                 std::shared_ptr<Jobs> p_jobs_;
@@ -55,5 +53,3 @@ namespace awsiotsdk {
         }
     }
 }
-
-

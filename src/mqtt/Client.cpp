@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ namespace awsiotsdk {
             = std::make_shared<mqtt::ConnectPacket>(is_clean_session, mqtt_version, keep_alive_timeout,
                                                     std::move(p_client_id), std::move(p_username),
                                                     std::move(p_password), std::move(p_will_msg));
-        return p_client_core_->PerformAction(ActionType::CONNECT, p_connect_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::CONNECT, p_connect_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::Connect(std::chrono::milliseconds action_response_timeout, bool is_clean_session,
@@ -153,12 +153,12 @@ namespace awsiotsdk {
             = std::make_shared<mqtt::ConnectPacket>(is_clean_session, mqtt_version, keep_alive_timeout,
                                                     std::move(p_client_id), std::move(p_username),
                                                     std::move(p_password), std::move(p_will_msg), is_metrics_enabled);
-        return p_client_core_->PerformAction(ActionType::CONNECT, p_connect_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::CONNECT, p_connect_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::Disconnect(std::chrono::milliseconds action_response_timeout) {
         std::shared_ptr<mqtt::DisconnectPacket> p_disconnect_packet = std::make_shared<mqtt::DisconnectPacket>();
-        return p_client_core_->PerformAction(ActionType::DISCONNECT, p_disconnect_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::DISCONNECT, p_disconnect_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::Publish(std::unique_ptr<Utf8String> p_topic_name, bool is_retained, bool is_duplicate,
@@ -170,7 +170,7 @@ namespace awsiotsdk {
         std::shared_ptr<mqtt::PublishPacket> p_publish_packet
             = std::make_shared<mqtt::PublishPacket>(std::move(p_topic_name), is_retained, is_duplicate, qos,
                                                     payload);
-        return p_client_core_->PerformAction(ActionType::PUBLISH, p_publish_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::PUBLISH, p_publish_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::Subscribe(util::Vector<std::shared_ptr<mqtt::Subscription>> subscription_list,
@@ -183,7 +183,7 @@ namespace awsiotsdk {
 
         std::shared_ptr<mqtt::SubscribePacket>
             p_subscribe_packet = std::make_shared<mqtt::SubscribePacket>(subscription_list);
-        return p_client_core_->PerformAction(ActionType::SUBSCRIBE, p_subscribe_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::SUBSCRIBE, p_subscribe_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::Unsubscribe(util::Vector<std::unique_ptr<Utf8String>> topic_list,
@@ -196,7 +196,7 @@ namespace awsiotsdk {
 
         std::shared_ptr<mqtt::UnsubscribePacket>
             p_unsubscribe_packet = std::make_shared<mqtt::UnsubscribePacket>(std::move(topic_list));
-        return p_client_core_->PerformAction(ActionType::UNSUBSCRIBE, p_unsubscribe_packet, action_response_timeout);
+        return p_client_core_->PerformActionSync(ActionType::UNSUBSCRIBE, p_unsubscribe_packet, action_response_timeout);
     }
 
     ResponseCode MqttClient::PublishAsync(std::unique_ptr<Utf8String> p_topic_name,
@@ -285,12 +285,15 @@ namespace awsiotsdk {
 
     MqttClient::~MqttClient() {
         if (IsConnected()) {
+
             ResponseCode rc = Disconnect(p_client_state_->GetMqttCommandTimeout());
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(MQTT_CLIENT_LOG_TAG, "Disconnect returned error while destroying MQTT Client. %s",
                               ResponseHelper::ToString(rc).c_str());
             }
         }
+
+        p_client_state_->ClearOutboundActionQueue();
 
         // wait for all running threads to finish respective tasks
         p_client_core_->GracefulShutdownAllThreadTasks();
@@ -300,7 +303,6 @@ namespace awsiotsdk {
         // make sure that p_client_state_.action_map_ and p_client_state_.outbound_action_queue_ are cleared prior to p_client_state_ destructor
         // to break the cyclic references.
         p_client_state_->ClearRegisteredActions();
-        p_client_state_->ClearOutboundActionQueue();
     }
 }
 

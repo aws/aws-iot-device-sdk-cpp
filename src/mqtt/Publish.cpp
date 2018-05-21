@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -189,8 +189,8 @@ namespace awsiotsdk {
             bool is_ack_registered = false;
             ResponseCode rc = ResponseCode::SUCCESS;
             uint16_t packet_id = p_publish_packet->GetPacketId();
-            if (QoS::QOS0 != p_publish_packet->GetQoS() && nullptr != p_publish_packet->p_async_ack_handler_) {
-                rc = p_client_state_->RegisterPendingAck(packet_id, p_publish_packet->p_async_ack_handler_);
+            if (QoS::QOS0 != p_publish_packet->GetQoS()) {
+                rc = p_client_state_->RegisterPendingAck(packet_id, p_action_data);
                 if (ResponseCode::SUCCESS != rc) {
                     AWS_LOG_ERROR(PUBLISH_ACTION_LOG_TAG,
                                   "Registering Ack Handler for Connect Action failed. %s",

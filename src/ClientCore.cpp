@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ namespace awsiotsdk {
                            std::shared_ptr<ClientCoreState> p_state) {
         p_client_core_state_ = p_state;
         p_client_core_state_->p_network_connection_ = p_network_connection;
-        p_client_core_state_->SetProcessQueuedActions(false);
 
         std::shared_ptr<std::atomic_bool> thread_task_out_sync = std::make_shared<std::atomic_bool>(true);
         std::shared_ptr<util::Threading::ThreadTask> thread_task_out = std::shared_ptr<util::Threading::ThreadTask>(
@@ -54,13 +53,15 @@ namespace awsiotsdk {
         return p_client_core_state_->RegisterAction(action_type, p_action_create_handler, p_client_core_state_);
     }
 
-    ResponseCode ClientCore::PerformAction(ActionType action_type, std::shared_ptr<ActionData> p_action_data,
-                                           std::chrono::milliseconds action_reponse_timeout) {
-        return p_client_core_state_->PerformAction(action_type, p_action_data, action_reponse_timeout);
+    ResponseCode ClientCore::PerformActionSync(ActionType action_type, std::shared_ptr<ActionData> p_action_data,
+                                               std::chrono::milliseconds action_reponse_timeout) {
+        p_action_data->is_sync = true;
+        return p_client_core_state_->PerformActionAndBlock(action_type, p_action_data, action_reponse_timeout);
     }
 
     ResponseCode ClientCore::PerformActionAsync(ActionType action_type, std::shared_ptr<ActionData> p_action_data,
                                                 uint16_t &action_id_out) {
+        p_action_data->is_sync = false;
         return p_client_core_state_->EnqueueOutboundAction(action_type, p_action_data, action_id_out);
     }
 

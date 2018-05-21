@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -31,16 +31,11 @@
 
 namespace awsiotsdk {
     ClientCoreState::ClientCoreState() {
-        continue_execution_ = std::make_shared<std::atomic_bool>(true);
         max_queue_size_ = DEFAULT_MAX_QUEUE_SIZE;
-        max_hardware_threads_ = std::thread::hardware_concurrency();
-        cur_core_threads_ = 0;
         next_action_id_ = 1;
     }
 
     ClientCoreState::~ClientCoreState() {
-        std::atomic_bool &_continue_execution_ = *continue_execution_;
-        _continue_execution_ = false;
     }
 
     ResponseCode
@@ -49,8 +44,6 @@ namespace awsiotsdk {
         if (nullptr == p_action_create_handler) {
             return ResponseCode::NULL_VALUE_ERROR;
         }
-
-        std::lock_guard<std::mutex> register_action_lock_guard(register_action_lock_);
 
         action_create_handler_map_.insert(std::make_pair(action_type, p_action_create_handler));
         ResponseCode rc = GetActionCreateHandler(action_type, &p_action_create_handler);
@@ -69,14 +62,14 @@ namespace awsiotsdk {
     ResponseCode
     ClientCoreState::EnqueueOutboundAction(ActionType action_type, std::shared_ptr<ActionData> p_action_data,
                                            uint16_t &action_id_out) {
-        if (outbound_action_queue_.size() >= max_queue_size_) {
+        if (outbound_action_queue_.Size() >= max_queue_size_) {
             // TODO : Add option to overwrite oldest action
             return ResponseCode::ACTION_QUEUE_FULL;
         }
 
         action_id_out = GetNextActionId();
         p_action_data->SetActionId(action_id_out);
-        outbound_action_queue_.push(std::make_pair(action_type, p_action_data));
+        outbound_action_queue_.Enqueue(std::make_pair(action_type, p_action_data));
 
         return ResponseCode::SUCCESS;
     }
@@ -94,64 +87,42 @@ namespace awsiotsdk {
         return rc;
     }
 
-    void ClientCoreState::SyncActionHandler(uint16_t action_id, ResponseCode rc) {
-        std::lock_guard<std::mutex> block_handler_lock(sync_action_response_lock_);
-        sync_action_response_ = rc;
-        sync_action_response_wait_.notify_all();
-    }
-
-    ResponseCode ClientCoreState::PerformAction(ActionType action_type, std::shared_ptr<ActionData> p_action_data,
-                                                std::chrono::milliseconds action_reponse_timeout) {
-        std::lock_guard<std::mutex> sync_action_lock(sync_action_request_lock_);
-        ResponseCode rc = ResponseCode::FAILURE;
-
-        util::Map<ActionType, std::unique_ptr<Action>>::const_iterator itr = action_map_.find(action_type);
-        if (itr == action_map_.end()) {
-            rc = ResponseCode::ACTION_NOT_REGISTERED_ERROR;
-        } else {
-            std::unique_lock<std::mutex> block_handler_lock(sync_action_response_lock_);
-            {
-                sync_action_response_ = ResponseCode::MQTT_REQUEST_TIMEOUT_ERROR;
-                p_action_data->p_async_ack_handler_ = std::bind(&ClientCoreState::SyncActionHandler, this,
-                                                                std::placeholders::_1, std::placeholders::_2);
-                p_action_data->SetActionId(GetNextActionId());
-                rc = itr->second->PerformAction(p_network_connection_, p_action_data);
-            }
-
-            if (ResponseCode::SUCCESS == rc
-                && pending_ack_map_.find(p_action_data->GetActionId()) != pending_ack_map_.end()) {
-                sync_action_response_wait_.wait_for(block_handler_lock, action_reponse_timeout);
-                rc = sync_action_response_;
-            }
+    ResponseCode ClientCoreState::PerformActionAndBlock(ActionType action_type,
+                                                        std::shared_ptr<ActionData> p_action_data,
+                                                        std::chrono::milliseconds action_reponse_timeout) {
+        uint16_t action_id_out;
+        p_action_data->action_mutex_.sync_action_response = ResponseCode::MQTT_REQUEST_TIMEOUT_ERROR;
+        std::unique_lock<std::mutex> sync_action_lock(p_action_data->action_mutex_.sync_action_response_lock);
+        ResponseCode rc = EnqueueOutboundAction(action_type, p_action_data, action_id_out);
+        if (ResponseCode::SUCCESS != rc) {
+            return rc;
         }
-
-        return rc;
+        p_action_data->action_mutex_.sync_action_response_wait.wait_for(sync_action_lock, action_reponse_timeout);
+        return p_action_data->action_mutex_.sync_action_response;
     }
 
     void ClientCoreState::ProcessOutboundActionQueue(std::shared_ptr<std::atomic_bool> thread_task_out_sync) {
-        ResponseCode rc = ResponseCode::SUCCESS;
+        ResponseCode rc;
         int action_execution_delay = 1000 / MAX_CORE_ACTION_PROCESSING_RATE_HZ;
         std::atomic_bool &_thread_task_out_sync = *thread_task_out_sync;
         do {
             // Reset ResponseCode state
             rc = ResponseCode::SUCCESS;
-            if (/*!process_queued_actions_ || */outbound_action_queue_.empty()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(DEFAULT_CORE_THREAD_SLEEP_DURATION_MS));
+            auto next = std::chrono::system_clock::now() + std::chrono::milliseconds(action_execution_delay);
+            std::pair<ActionType, std::shared_ptr<ActionData>> queue_front;
+            if (!outbound_action_queue_.Dequeue(queue_front)) {
                 continue;
             }
-            std::lock_guard<std::mutex> sync_action_lock(sync_action_request_lock_);
-            auto next = std::chrono::system_clock::now() + std::chrono::milliseconds(action_execution_delay);
-            ActionType action_type = outbound_action_queue_.front().first;
-            std::shared_ptr<ActionData> p_action_data = outbound_action_queue_.front().second;
+            ActionType action_type = queue_front.first;
+            std::shared_ptr<ActionData> p_action_data = queue_front.second;
 
-            outbound_action_queue_.pop();
             util::Map<ActionType, std::unique_ptr<Action>>::const_iterator itr = action_map_.find(action_type);
             ActionData::AsyncAckNotificationHandlerPtr p_async_ack_handler = p_action_data->p_async_ack_handler_;
             if (itr != action_map_.end()) {
                 if (nullptr != p_async_ack_handler) {
                     // Add Ack before sending request. Read request runs in separate thread and may receive response
                     // before ack is added, if we add it after sending the request.
-                    rc = RegisterPendingAck(p_action_data->GetActionId(), p_async_ack_handler);
+                    rc = RegisterPendingAck(p_action_data->GetActionId(), p_action_data);
                     if (ResponseCode::SUCCESS != rc) {
                         p_async_ack_handler(p_action_data->GetActionId(), rc);
                         AWS_LOG_ERROR(LOG_TAG_CLIENT_CORE_STATE,
@@ -171,6 +142,19 @@ namespace awsiotsdk {
                         AWS_LOG_ERROR(LOG_TAG_CLIENT_CORE_STATE,
                                       "Performing Outbound Queued Action failed. %s",
                                       ResponseHelper::ToString(rc).c_str());
+                        if (p_action_data->is_sync) {
+                            std::lock_guard<std::mutex>
+                                block_handler_lock(p_action_data->action_mutex_.sync_action_response_lock);
+                            p_action_data->action_mutex_.sync_action_response = rc;
+                            p_action_data->action_mutex_.sync_action_response_wait.notify_all();
+                        }
+                    } else {
+                        if (p_action_data->is_sync && !pending_ack_map_.Exists(p_action_data->GetActionId())) {
+                            std::lock_guard<std::mutex>
+                                block_handler_lock(p_action_data->action_mutex_.sync_action_response_lock);
+                            p_action_data->action_mutex_.sync_action_response = rc;
+                            p_action_data->action_mutex_.sync_action_response_wait.notify_all();
+                        }
                     }
                 }
             } else {
@@ -178,6 +162,12 @@ namespace awsiotsdk {
                 AWS_LOG_ERROR(LOG_TAG_CLIENT_CORE_STATE,
                               "Performing Outbound Queued Action failed. %s",
                               ResponseHelper::ToString(rc).c_str());
+                if(p_action_data->is_sync) {
+                    std::lock_guard<std::mutex>
+                        block_handler_lock(p_action_data->action_mutex_.sync_action_response_lock);
+                    p_action_data->action_mutex_.sync_action_response = rc;
+                    p_action_data->action_mutex_.sync_action_response_wait.notify_all();
+                }
             }
             // This is not perfect since we have no control over how long an action takes.
             // But it will definitely ensure that we don't exceed the max rate
@@ -186,49 +176,37 @@ namespace awsiotsdk {
     }
 
     ResponseCode ClientCoreState::RegisterPendingAck(uint16_t action_id,
-                                                     ActionData::AsyncAckNotificationHandlerPtr p_async_ack_handler) {
-        if (nullptr == p_async_ack_handler) {
+                                                     std::shared_ptr<ActionData> action_data) {
+        if (nullptr == action_data) {
             return ResponseCode::NULL_VALUE_ERROR;
         }
 
         std::unique_ptr<PendingAckData> p_pending_ack_data = std::unique_ptr<PendingAckData>(new PendingAckData());
-        p_pending_ack_data->p_async_ack_handler_ = p_async_ack_handler;
+        p_pending_ack_data->action_data_ = action_data;
         p_pending_ack_data->time_of_request_ = std::chrono::system_clock::now();
 
-        std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
-        pending_ack_map_.insert(std::make_pair(action_id, std::move(p_pending_ack_data)));
+        pending_ack_map_.Insert(action_id, std::move(p_pending_ack_data));
         return ResponseCode::SUCCESS;
     }
 
     void ClientCoreState::DeletePendingAck(uint16_t action_id) {
-        std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
-        util::Map<uint16_t, std::unique_ptr<PendingAckData>>::const_iterator itr = pending_ack_map_.find(action_id);
-        if (itr != pending_ack_map_.end()) {
-            pending_ack_map_.erase(itr);
-        }
-    }
-
-    void ClientCoreState::DeleteExpiredAcks() {
-        std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-        util::Map<uint16_t, std::unique_ptr<PendingAckData>>::const_iterator itr = pending_ack_map_.begin();
-        while (itr != pending_ack_map_.end()) {
-            std::chrono::seconds diff = std::chrono::duration_cast<std::chrono::seconds>(
-                now - itr->second->time_of_request_);
-            if (diff > ack_timeout_) {
-                itr->second->p_async_ack_handler_(itr->first, ResponseCode::MQTT_REQUEST_TIMEOUT_ERROR);
-                pending_ack_map_.erase(itr);
-            }
-        }
+        pending_ack_map_.Delete(action_id);
     }
 
     void ClientCoreState::ForwardReceivedAck(uint16_t action_id, ResponseCode rc) {
-        std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
         // No response code because all Acks might not have registered handlers. No other possible error
-        util::Map<uint16_t, std::unique_ptr<PendingAckData>>::const_iterator itr = pending_ack_map_.find(action_id);
-        if (itr != pending_ack_map_.end()) {
-            itr->second->p_async_ack_handler_(action_id, rc);
-            pending_ack_map_.erase(itr);
+        PendingAckData *itr = pending_ack_map_.Get(action_id);
+        if (itr != nullptr) {
+            ActionData::AsyncAckNotificationHandlerPtr ack_handler = itr->action_data_->p_async_ack_handler_;
+            if (ack_handler != nullptr) {
+                ack_handler(action_id, rc);
+            } else if (itr->action_data_->is_sync){
+                std::lock_guard<std::mutex>
+                    block_handler_lock(itr->action_data_->action_mutex_.sync_action_response_lock);
+                itr->action_data_->action_mutex_.sync_action_response = rc;
+                itr->action_data_->action_mutex_.sync_action_response_wait.notify_all();
+            }
+            pending_ack_map_.Delete(action_id);
         }
     }
 
@@ -237,6 +215,6 @@ namespace awsiotsdk {
     }
 
     void ClientCoreState::ClearOutboundActionQueue() {
-        util::Queue<std::pair<ActionType, std::shared_ptr<ActionData>>>().swap(outbound_action_queue_);
+        outbound_action_queue_.ClearAndExit();
     }
 }

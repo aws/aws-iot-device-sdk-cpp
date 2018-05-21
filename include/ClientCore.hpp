@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -64,14 +64,6 @@ namespace awsiotsdk {
         ClientCore &operator=(ClientCore &&) & = delete;       // Delete Move assignment operator
         virtual ~ClientCore();                                 // Defined destructor
 
-        /**
-         * @brief Enable/Disable processing of queued actions
-         *
-         * @param process_queued_actions - boolean value indicating new state
-         */
-        void SetProcessQueuedActions(bool process_queued_actions) {
-            p_client_core_state_->SetProcessQueuedActions(process_queued_actions);
-        }
 
         /**
          * @brief Factory method for creating a Client Core instance
@@ -87,7 +79,7 @@ namespace awsiotsdk {
          * @brief Register Action for execution by Client Core
          *
          * This function allows Actions to be registered to be executed at a later stage by Client Core.
-         * Actions must be registered before PerformAction can be called using the Action Type.
+         * Actions must be registered before PerformActionSync or PerformActionAysnc can be called using the Action Type.
          * This also applies to Creating Action runners which allow running Actions in dedicated Thread Tasks.
          * Only one Action can be registered to each Action Type. If a second call is made with the same Action Type,
          * the previous registration will be overwritten
@@ -111,8 +103,8 @@ namespace awsiotsdk {
          * @param action_reponse_timeout - Timeout for this API call
          * @return ResponseCode indicating result of the API call
          */
-        ResponseCode PerformAction(ActionType action_type, std::shared_ptr<ActionData> action_data,
-                                   std::chrono::milliseconds action_reponse_timeout);
+        ResponseCode PerformActionSync(ActionType action_type, std::shared_ptr<ActionData> action_data,
+                                       std::chrono::milliseconds action_reponse_timeout);
 
         /**
          * @brief Perform Action in Asynchronous Mode
@@ -145,10 +137,17 @@ namespace awsiotsdk {
 
         /**
          * @brief Waits for all threads to complete their tasks and then clears them
-         * 
+         *
          * This API will go through all the active Thread Tasks and waits for them to complete their respective tasks.
          * The completed Thread Task is then cleared.
          */
         void GracefulShutdownAllThreadTasks();
+
+        /**
+         * @brief Stops the outbound processing thread and clear the outbound action queue
+         *
+         * This API will clear the queue and signal the thread to end outbound action processing
+         */
+        void StopOutboundProcessingThread() { p_client_core_state_->ClearOutboundActionQueue();}
     };
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -234,15 +234,13 @@ namespace awsiotsdk {
             }
 
             uint16_t packet_id = p_subscribe_packet->GetPacketId();
-            if (nullptr != p_subscribe_packet->p_async_ack_handler_) {
-                rc = p_client_state_->RegisterPendingAck(packet_id, p_subscribe_packet->p_async_ack_handler_);
-                if (ResponseCode::SUCCESS != rc) {
-                    AWS_LOG_ERROR(SUBSCRIBE_ACTION_LOG_TAG,
-                                  "Registering Ack Handler for Connect Action failed. %s",
-                                  ResponseHelper::ToString(rc).c_str());
-                } else {
-                    is_ack_registered = true;
-                }
+            rc = p_client_state_->RegisterPendingAck(packet_id, p_action_data);
+            if (ResponseCode::SUCCESS != rc) {
+                AWS_LOG_ERROR(SUBSCRIBE_ACTION_LOG_TAG,
+                              "Registering Ack Handler for Connect Action failed. %s",
+                              ResponseHelper::ToString(rc).c_str());
+            } else {
+                is_ack_registered = true;
             }
 
             // Read running in separate thread, Insert before sending request to avoid situations where response arrives early
@@ -315,16 +313,14 @@ namespace awsiotsdk {
             ResponseCode rc = ResponseCode::SUCCESS;
             bool is_ack_registered = false;
 
-            if (nullptr != p_unsubscribe_packet->p_async_ack_handler_) {
-                rc = p_client_state_->RegisterPendingAck(p_unsubscribe_packet->GetPacketId(),
-                                                         p_unsubscribe_packet->p_async_ack_handler_);
-                if (ResponseCode::SUCCESS != rc) {
-                    AWS_LOG_ERROR(UNSUBSCRIBE_ACTION_LOG_TAG,
-                                  "Registering Ack Handler for Connect Action failed. %s",
-                                  ResponseHelper::ToString(rc).c_str());
-                } else {
-                    is_ack_registered = true;
-                }
+            rc = p_client_state_->RegisterPendingAck(p_unsubscribe_packet->GetPacketId(),
+                                                     p_action_data);
+            if (ResponseCode::SUCCESS != rc) {
+                AWS_LOG_ERROR(UNSUBSCRIBE_ACTION_LOG_TAG,
+                              "Registering Ack Handler for Connect Action failed. %s",
+                              ResponseHelper::ToString(rc).c_str());
+            } else {
+                is_ack_registered = true;
             }
 
             uint16_t packet_id = p_unsubscribe_packet->GetPacketId();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -125,7 +125,8 @@ namespace awsiotsdk {
                                      std::unique_ptr<mqtt::WillOptions> p_will_msg) : ConnectPacket(is_clean_session,
                                                                                                     mqtt_version,
                                                                                                     keep_alive_timeout,
-                                                                                                    std::move(p_client_id),
+                                                                                                    std::move(
+                                                                                                        p_client_id),
                                                                                                     std::move(p_username),
                                                                                                     std::move(p_password),
                                                                                                     std::move(p_will_msg),
@@ -298,16 +299,14 @@ namespace awsiotsdk {
             }
 
             p_connect_packet->SetPacketId(CONNACK_RESERVED_PACKET_ID);
-            if (nullptr != p_connect_packet->p_async_ack_handler_) {
-                rc = p_client_state_->RegisterPendingAck(CONNACK_RESERVED_PACKET_ID,
-                                                         p_connect_packet->p_async_ack_handler_);
-                if (ResponseCode::SUCCESS != rc) {
-                    AWS_LOG_ERROR(CONNECT_LOG_TAG,
-                                  "Registering Ack Handler for Connect Action. %s",
-                                  ResponseHelper::ToString(rc).c_str());
-                } else {
-                    is_ack_registered = true;
-                }
+            rc = p_client_state_->RegisterPendingAck(CONNACK_RESERVED_PACKET_ID,
+                                                     p_action_data);
+            if (ResponseCode::SUCCESS != rc) {
+                AWS_LOG_ERROR(CONNECT_LOG_TAG,
+                              "Registering Ack Handler for Connect Action. %s",
+                              ResponseHelper::ToString(rc).c_str());
+            } else {
+                is_ack_registered = true;
             }
 
             p_client_state_->SetKeepAliveTimeout(p_connect_packet->GetKeepAliveTimeout());
@@ -444,7 +443,7 @@ namespace awsiotsdk {
                          */
                         if (nullptr != p_client_state_->disconnect_handler_ptr_ && nullptr != p_connect_packet) {
                             p_client_state_->disconnect_handler_ptr_(p_connect_packet->GetClientID(),
-                                                                   p_client_state_->p_disconnect_app_handler_data_);
+                                                                     p_client_state_->p_disconnect_app_handler_data_);
                         }
 
                         reconnect_backoff_timer = p_client_state_->GetMinReconnectBackoffTimeout();
@@ -459,14 +458,14 @@ namespace awsiotsdk {
                     std::shared_ptr<ConnectPacket> p_connect_packet =
                         std::dynamic_pointer_cast<ConnectPacket>(p_client_state_->GetAutoReconnectData());
 
-                    rc = p_client_state_->PerformAction(ActionType::CONNECT,
-                                                        p_connect_packet,
-                                                        p_client_state_->GetMqttCommandTimeout());
+                    rc = p_client_state_->PerformActionAndBlock(ActionType::CONNECT,
+                                                                p_connect_packet,
+                                                                p_client_state_->GetMqttCommandTimeout());
 
                     if (nullptr != p_client_state_->reconnect_handler_ptr_) {
                         p_client_state_->reconnect_handler_ptr_(p_connect_packet->GetClientID(),
-                                                              p_client_state_->p_reconnect_app_handler_data_,
-                                                              rc);
+                                                                p_client_state_->p_reconnect_app_handler_data_,
+                                                                rc);
                     }
                     if (ResponseCode::MQTT_CONNACK_CONNECTION_ACCEPTED == rc) {
                         p_client_state_->SetAutoReconnectRequired(false);
@@ -506,8 +505,8 @@ namespace awsiotsdk {
 
                             if (nullptr != p_client_state_->resubscribe_handler_ptr_) {
                                 p_client_state_->resubscribe_handler_ptr_(p_connect_packet->GetClientID(),
-                                                                        p_client_state_->p_resubscribe_app_handler_data_,
-                                                                        rc);
+                                                                          p_client_state_->p_resubscribe_app_handler_data_,
+                                                                          rc);
                             }
                         }
                         /**
@@ -517,9 +516,9 @@ namespace awsiotsdk {
                         if (ResponseCode::NETWORK_DISCONNECTED_ERROR != rc) {
                             p_client_state_->SetAutoReconnectRequired(false);
                         } else {
-                            p_client_state_->PerformAction(ActionType::DISCONNECT,
-                                                           DisconnectPacket::Create(),
-                                                           p_client_state_->GetMqttCommandTimeout());
+                            p_client_state_->PerformActionAndBlock(ActionType::DISCONNECT,
+                                                                   DisconnectPacket::Create(),
+                                                                   p_client_state_->GetMqttCommandTimeout());
                             p_client_state_->SetAutoReconnectRequired(true);
                         }
                         continue;
@@ -547,7 +546,7 @@ namespace awsiotsdk {
 
                         if (nullptr != p_client_state_->disconnect_handler_ptr_ && nullptr != p_connect_packet) {
                             p_client_state_->disconnect_handler_ptr_(p_connect_packet->GetClientID(),
-                                                                   p_client_state_->p_disconnect_app_handler_data_);
+                                                                     p_client_state_->p_disconnect_app_handler_data_);
                         }
 
                         p_client_state_->setDisconnectCallbackPending(false);
@@ -557,9 +556,9 @@ namespace awsiotsdk {
                 if (std::chrono::system_clock::now() > next) {
                     if (p_client_state_->IsPingreqPending()) {
                         if (p_client_state_->IsConnected()) {
-                            rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
-                                                                DisconnectPacket::Create(),
-                                                                p_client_state_->GetMqttCommandTimeout());
+                            rc = p_client_state_->PerformActionAndBlock(ActionType::DISCONNECT,
+                                                                        DisconnectPacket::Create(),
+                                                                        p_client_state_->GetMqttCommandTimeout());
                             if (ResponseCode::SUCCESS != rc && ResponseCode::NETWORK_DISCONNECTED_ERROR != rc) {
                                 AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
                                               "Network Disconnect attempt returned unhandled error. \n%s",
@@ -575,9 +574,9 @@ namespace awsiotsdk {
                             AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
                                           "Writing PingReq to Network Failed. \n%s. \nDisconnecting!",
                                           ResponseHelper::ToString(rc).c_str());
-                            rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
-                                                                DisconnectPacket::Create(),
-                                                                p_client_state_->GetMqttCommandTimeout());
+                            rc = p_client_state_->PerformActionAndBlock(ActionType::DISCONNECT,
+                                                                        DisconnectPacket::Create(),
+                                                                        p_client_state_->GetMqttCommandTimeout());
                             if (ResponseCode::SUCCESS != rc) {
                                 AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
                                               "Network Disconnect attempt returned unhandled error. \n%s",

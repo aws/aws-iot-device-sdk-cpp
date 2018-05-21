@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -173,9 +173,9 @@ namespace awsiotsdk {
                         AWS_LOG_ERROR(NETWORK_READ_LOG_TAG,
                                       "Network Read attempt returned unhandled error. %s Requesting  Network Reconnect.",
                                       ResponseHelper::ToString(rc).c_str());
-                        rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
-                                                            DisconnectPacket::Create(),
-                                                            p_client_state_->GetMqttCommandTimeout());
+                        rc = p_client_state_->PerformActionAndBlock(ActionType::DISCONNECT,
+                                                                DisconnectPacket::Create(),
+                                                                p_client_state_->GetMqttCommandTimeout());
                         if (ResponseCode::SUCCESS != rc) {
                             AWS_LOG_ERROR(NETWORK_READ_LOG_TAG,
                                           "Network Disconnect attempt returned unhandled error. %s",

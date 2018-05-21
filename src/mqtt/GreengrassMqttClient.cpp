@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ namespace awsiotsdk {
                                                 DiscoveryResponse &discovery_response) {
         std::shared_ptr<discovery::DiscoverRequestData> p_discover_request_data
             = std::make_shared<discovery::DiscoverRequestData>(std::move(p_thing_name), action_response_timeout);
-        ResponseCode rc = p_client_core_->PerformAction(ActionType::GREENGRASS_DISCOVER, p_discover_request_data,
+        ResponseCode rc = p_client_core_->PerformActionSync(ActionType::GREENGRASS_DISCOVER, p_discover_request_data,
                                                         action_response_timeout);
         if (ResponseCode::DISCOVER_ACTION_SUCCESS == rc) {
             discovery_response.SetResponseDocument(std::move(p_discover_request_data->discovery_response_.GetResponseDocument()));

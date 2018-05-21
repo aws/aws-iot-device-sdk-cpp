@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@
 #include <iostream>
 #include <memory>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 
 #include "util/Utf8String.hpp"
 #include "util/threading/ThreadTask.hpp"
@@ -62,6 +64,14 @@ namespace awsiotsdk {
         UNSUBSCRIBE = 14,
         RECONNECT = 15,
         GREENGRASS_DISCOVER = 16
+    };
+
+    class ActionMutex {
+    public:
+        // Public locking members for sync actions
+        std::mutex sync_action_response_lock;
+        std::condition_variable sync_action_response_wait;
+        ResponseCode sync_action_response;
     };
 
     /**
@@ -116,6 +126,10 @@ namespace awsiotsdk {
         virtual ~ActionData() = default;                        // Default destructor
 
         AsyncAckNotificationHandlerPtr p_async_ack_handler_;    ///< Handler to call when response is received for this action
+
+        ActionMutex action_mutex_;                              ///< Mutex object used for sync calls
+
+        bool is_sync;                                           ///< Boolean to differentiate between sync and async calls
 
         /**
          * @brief Get ID of the current run of this Action
