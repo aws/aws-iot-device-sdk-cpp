@@ -74,10 +74,8 @@ This file contains instructions for installing dependencies on different platfor
     
 ### Windows
 
-  * Both the Websocket and OpenSSL builds work on windows. OpenSSL 1.0.2 needs to be installed for them to work properly.
-  * Download and install OpenSSL from [this link](https://slproweb.com/products/Win32OpenSSL.html)
-    * Make sure you download the "full" ~30mb version, the "light" version won't work.
-    * I also needed to create a windows environment variable "OPENSSL_ROOT_DIR" and set it to wherever OpenSSL installed.
+  * Both the Websocket and OpenSSL builds work on windows. OpenSSL 1.0.2o needs to be installed for them to work properly.
+  * Download and install OpenSSL V1.02o from [this link](https://slproweb.com/products/Win32OpenSSL.html)
   * Download and install CMake for Windows from [this link](https://cmake.org/download/)
   * Download and install git from [this link](https://git-scm.com/downloads). Please be sure to install git bash as well.
   * Open the Git Bash terminal and navigate to the folder where you want the SDK to be downloaded.
