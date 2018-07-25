@@ -72,10 +72,6 @@ namespace awsiotsdk {
                 util::String SerializeClientTokenPayload() {
                     return Jobs::SerializeClientTokenPayload();
                 }
-
-                util::String Escape(const util::String &value) {
-                    return Jobs::Escape(value);
-                }
             };
 
             const util::String JobsTestWrapper::test_thing_name_ = "CppSdkTestClient";
@@ -256,8 +252,8 @@ namespace awsiotsdk {
                 EXPECT_EQ("{\"status\":\"CANCELED\",\"clientToken\":\"CppSdkTestClientToken\"}", p_jobs_->SerializeJobExecutionUpdatePayload(Jobs::JOB_EXECUTION_CANCELED));
                 EXPECT_EQ("{\"status\":\"REJECTED\",\"clientToken\":\"CppSdkTestClientToken\"}", p_jobs_->SerializeJobExecutionUpdatePayload(Jobs::JOB_EXECUTION_REJECTED));
 
-                statusDetailsMap.insert(std::make_pair("testEscapeKey \" \t \r \n \\ '!", "testEscapeVal \" \t \r \n \\ '!"));
-                EXPECT_EQ("{\"testEscapeKey \\\" \\t \\r \\n \\\\ '!\":\"testEscapeVal \\\" \\t \\r \\n \\\\ '!\",\"testKey\":\"testVal\"}", p_jobs_->SerializeStatusDetails(statusDetailsMap));
+                statusDetailsMap.insert(std::make_pair("testKey2", "testVal2"));
+                EXPECT_EQ("{\"testKey\":\"testVal\",\"testKey2\":\"testVal2\"}", p_jobs_->SerializeStatusDetails(statusDetailsMap));
             }
         }
     }

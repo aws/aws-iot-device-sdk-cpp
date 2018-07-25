@@ -1,5 +1,5 @@
 {
-  "endpoint": "",
+  "endpoint": "a2wait4z8ib049.iot.us-west-2.amazonaws.com",
   "mqtt_port": 8883,
   "https_port": 443,
   "greengrass_discovery_port": 8443,
@@ -14,7 +14,7 @@
   "aws_secret_access_key": "",
   "aws_session_token": "",
   "client_id": "CppSDKTesting",
-  "thing_name": "CppSDKTesting",
+  "thing_name": "Test5",
   "is_clean_session": true,
   "mqtt_command_timeout_msecs": 20000,
   "keepalive_interval_secs": 600,

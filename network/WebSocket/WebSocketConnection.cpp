@@ -130,6 +130,7 @@ namespace awsiotsdk {
             p_wslay_frame_Callbacks_->genmask_callback = std::bind(&WebSocketConnection::WssFrameGenMaskCallback, this,
                                                                    std::placeholders::_1, std::placeholders::_2,
                                                                    std::placeholders::_3);
+            p_wslay_frame_Context_ = nullptr;
 
             wss_frame_read_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
             wss_frame_write_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());

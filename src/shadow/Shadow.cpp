@@ -117,6 +117,9 @@ namespace awsiotsdk {
     }
 
     Shadow::~Shadow() {
+        if (nullptr == p_mqtt_client_) {
+            return;
+        }
         if (p_mqtt_client_->IsConnected()) {
             util::Vector<std::unique_ptr<Utf8String>> topic_list;
             if (is_get_subscription_active_) {
