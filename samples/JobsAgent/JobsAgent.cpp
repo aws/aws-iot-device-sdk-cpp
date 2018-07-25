@@ -16,18 +16,8 @@
 /**
  * @file JobsAgent.cpp
  *
- * This example takes the parameters from the config/SampleConfig.json file and establishes 
- * a connection to the AWS IoT MQTT Platform. It performs several operations to 
- * demonstrate the basic capabilities of the AWS IoT Jobs platform.
- *
- * If all the certs are correct, you should see the list of pending Job Executions 
- * printed out by the GetPendingCallback callback. If there are any existing pending 
- * job executions each will be processed one at a time in the NextJobCallback callback.
- * After all of the pending jobs have been processed the program will wait for
- * notifications for new pending jobs and process them one at a time as they come in.
- * 
- * In the Subscribe function you can see how each callback is registered for each corresponding
- * Jobs topic.
+ * This is a full featured sample agent that interacts with the AWS IoT Jobs 
+ * platform. For more information see the README.md file in the samples directory.
  *
  */
 
