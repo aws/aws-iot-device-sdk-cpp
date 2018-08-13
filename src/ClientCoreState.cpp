@@ -217,7 +217,9 @@ namespace awsiotsdk {
                 now - itr->second->time_of_request_);
             if (diff > ack_timeout_) {
                 itr->second->p_async_ack_handler_(itr->first, ResponseCode::MQTT_REQUEST_TIMEOUT_ERROR);
-                pending_ack_map_.erase(itr);
+                itr = pending_ack_map_.erase(itr);
+            } else {
+                ++itr;
             }
         }
     }
