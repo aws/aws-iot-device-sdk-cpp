@@ -79,7 +79,6 @@ namespace awsiotsdk {
             initializer = OpenSSLInitializer::getInstance();
             p_ssl_handle_ = nullptr;
             enable_alpn_ = false;
-            ipv6_connection = true;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -227,16 +226,14 @@ namespace awsiotsdk {
                 dest_addr.sin_family = AF_INET;
                 dest_addr.sin_port = htons(endpoint_port_);
                 memset(&(dest_addr.sin_zero), '\0', 8);
-                //                dest_addr.sin_addr.s_addr = *(uint32_t *) (host->h_addr);
             }
 
-            //gethostbyname is not to be used anymore
+            //gethostbyname is not to be used anymore.
             struct addrinfo hints{}, *result_add, *iterator;
             memset(&hints, 0, sizeof(hints));
             if (ipv6_connection) {
                 hints.ai_family = AF_INET6;
             } else {
-                // IPv4
                 hints.ai_family = AF_INET;
             }
 
@@ -246,21 +243,22 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
+            // getaddrinfo can return multiple ip addresses.
             iterator = result_add;
             int connect_status;
             do {
                 // init structs for address data
                 socklen_t socketLength;
-                sockaddr *sockaddr1;
+                sockaddr *sock_addr;
                 // add the address to the service used.
                 if (ipv6_connection) {
                     dest_addr6.sin6_addr = ((struct sockaddr_in6 *) (iterator->ai_addr))->sin6_addr;
-                    sockaddr1 = reinterpret_cast<sockaddr *>(&dest_addr6);
+                    sock_addr = reinterpret_cast<sockaddr *>(&dest_addr6);
                     socketLength = sizeof(dest_addr6);
                 } else {
                     dest_addr.sin_addr.s_addr =
                             ((struct sockaddr_in *) (iterator->ai_addr))->sin_addr.s_addr;//set ip address
-                    sockaddr1 = reinterpret_cast<sockaddr *>(&dest_addr);
+                    sock_addr = reinterpret_cast<sockaddr *>(&dest_addr);
                     socketLength = sizeof(dest_addr);
                 }
 
@@ -272,10 +270,13 @@ namespace awsiotsdk {
                 }
                 AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG, "resolved %s to %s", endpoint_.c_str(), straddr);
 
-                connect_status = connect(server_tcp_socket_fd_, sockaddr1, socketLength);
+                connect_status = connect(server_tcp_socket_fd_, sock_addr, socketLength);
 
                 iterator = iterator->ai_next; //next value in address array
             } while (connect_status == -1 && iterator != nullptr);
+
+            // free address info
+            freeaddrinfo(result_add);
 
             if (-1 != connect_status) {
                 return ResponseCode::SUCCESS;
@@ -487,6 +488,12 @@ namespace awsiotsdk {
             }
 
             networkResponse = PerformSSLConnect();
+            if (ResponseCode::SUCCESS != networkResponse && ipv6_connection) {
+                // IPv6 connection unsucessful retry with IPv4
+                ipv6_connection = false;
+                networkResponse = PerformSSLConnect();
+            }
+
             if (ResponseCode::SUCCESS != networkResponse) {
                 SSL_free(p_ssl_handle_);
                 p_ssl_handle_ = nullptr;
