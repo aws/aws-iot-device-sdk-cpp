@@ -207,6 +207,7 @@ namespace awsiotsdk {
         ResponseCode OpenSSLConnection::ConnectTCPSocket() {
             const char *endpoint_char = endpoint_.c_str();
             if (nullptr == endpoint_char) {
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "Hostname was null or empty.");
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
@@ -240,6 +241,7 @@ namespace awsiotsdk {
             int error = getaddrinfo(endpoint_char, nullptr, &hints, &result_add);
             if ((error != 0) || (result_add == nullptr)) {
                 // found no ip address for the server
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "Error resolving hostname: %i", error);
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
