@@ -242,7 +242,7 @@ namespace awsiotsdk {
             if ((error != 0) || (result_add == nullptr)) {
                 // found no ip address for the server
                 AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "Error resolving hostname: %i", error);
-                return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
+                return ResponseCode::NETWORK_TCP_UNKNOWN_HOST;
             }
 
             // getaddrinfo can return multiple ip addresses.
