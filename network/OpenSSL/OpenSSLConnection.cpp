@@ -79,6 +79,7 @@ namespace awsiotsdk {
             initializer = OpenSSLInitializer::getInstance();
             p_ssl_handle_ = nullptr;
             enable_alpn_ = false;
+            ipv6_connection = true;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -216,28 +217,69 @@ namespace awsiotsdk {
             }
 #endif
 
-            hostent *host = gethostbyname(endpoint_char);
-            if (nullptr == host) {
+            sockaddr_in dest_addr{};
+            sockaddr_in6 dest_addr6{};
+
+            if (ipv6_connection) {
+                dest_addr6.sin6_family = AF_INET6;
+                dest_addr6.sin6_port = htons(endpoint_port_);
+            } else {
+                dest_addr.sin_family = AF_INET;
+                dest_addr.sin_port = htons(endpoint_port_);
+                memset(&(dest_addr.sin_zero), '\0', 8);
+                //                dest_addr.sin_addr.s_addr = *(uint32_t *) (host->h_addr);
+            }
+
+            //gethostbyname is not to be used anymore
+            struct addrinfo hints{}, *result_add, *iterator;
+            memset(&hints, 0, sizeof(hints));
+            if (ipv6_connection) {
+                hints.ai_family = AF_INET6;
+            } else {
+                // IPv4
+                hints.ai_family = AF_INET;
+            }
+
+            int error = getaddrinfo(endpoint_char, nullptr, &hints, &result_add);
+            if ((error != 0) || (result_add == nullptr)) {
+                // found no ip address for the server
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
-            sockaddr_in dest_addr;
+            iterator = result_add;
+            int connect_status;
+            do {
+                // init structs for address data
+                socklen_t socketLength;
+                sockaddr *sockaddr1;
+                // add the address to the service used.
+                if (ipv6_connection) {
+                    dest_addr6.sin6_addr = ((struct sockaddr_in6 *) (iterator->ai_addr))->sin6_addr;
+                    sockaddr1 = reinterpret_cast<sockaddr *>(&dest_addr6);
+                    socketLength = sizeof(dest_addr6);
+                } else {
+                    dest_addr.sin_addr.s_addr =
+                            ((struct sockaddr_in *) (iterator->ai_addr))->sin_addr.s_addr;//set ip address
+                    sockaddr1 = reinterpret_cast<sockaddr *>(&dest_addr);
+                    socketLength = sizeof(dest_addr);
+                }
 
-            dest_addr.sin_family = AF_INET;
-            dest_addr.sin_port = htons(endpoint_port_);
-            dest_addr.sin_addr.s_addr = *(uint32_t *) (host->h_addr);
-            memset(&(dest_addr.sin_zero), '\0', 8);
+                char straddr[INET6_ADDRSTRLEN];
+                if (ipv6_connection) {
+                    inet_ntop(AF_INET6, &dest_addr6.sin6_addr, straddr, sizeof(straddr));
+                } else {
+                    inet_ntop(AF_INET, &dest_addr.sin_addr, straddr, sizeof(straddr));
+                }
+                AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG, "resolved %s to %s", endpoint_.c_str(), straddr);
 
-            AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG,
-                         "resolved %s to %s",
-                         endpoint_.c_str(),
-                         inet_ntoa(dest_addr.sin_addr));
+                connect_status = connect(server_tcp_socket_fd_, sockaddr1, socketLength);
 
-            int connect_status = connect(server_tcp_socket_fd_, (sockaddr *) &dest_addr, sizeof(sockaddr));
+                iterator = iterator->ai_next; //next value in address array
+            } while (connect_status == -1 && iterator != nullptr);
+
             if (-1 != connect_status) {
                 return ResponseCode::SUCCESS;
             }
-
             AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "connect - %s", strerror(errno));
             return ResponseCode::NETWORK_TCP_CONNECT_ERROR;
         }
@@ -349,7 +391,7 @@ namespace awsiotsdk {
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
 
-            server_tcp_socket_fd_ = (int)socket(AF_INET, SOCK_STREAM, 0);
+            server_tcp_socket_fd_ = (int)socket(((ipv6_connection) ? AF_INET6 : AF_INET), SOCK_STREAM, 0);
             if (-1 == server_tcp_socket_fd_) {
                 return ResponseCode::NETWORK_TCP_SETUP_ERROR;
             }
