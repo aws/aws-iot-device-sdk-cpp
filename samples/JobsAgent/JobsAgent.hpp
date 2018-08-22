@@ -32,24 +32,25 @@
 
 #define LOG_TAG_JOBS_AGENT "[Sample - JobsAgent]"
 
+#define DEFAULT_INSTALLED_PACKAGES_FILENAME "installedPackages.json"
+
 namespace awsiotsdk {
     namespace samples {
         class JobsAgent {
         protected:
-            static const util::String INSTALLED_PACKAGES_FILENAME;
+            std::mutex m_;
+            std::condition_variable cv_done_;
 
             std::shared_ptr<NetworkConnection> p_network_connection_;
             std::shared_ptr<MqttClient> p_iot_client_;
 #ifdef UNIT_TESTS
             std::shared_ptr<JobsMock> p_jobs_;
-            static bool use_valid_system_command_;
-            static bool packages_running_;
-            util::String operation_status_;
 #else
             std::shared_ptr<Jobs> p_jobs_;
 #endif
+
             util::String process_title_;
-            bool done_;
+            util::String installed_packages_filename_;
             util::JsonDocument installed_packages_json_;
             util::Map<util::String, pid_t> package_runtimes_map_;
 
@@ -120,7 +121,7 @@ namespace awsiotsdk {
             ResponseCode InitializeTLS();
 
         public:
-            ResponseCode RunAgent(util::String processTitle = util::String());
+            ResponseCode RunAgent(const util::String &processTitle = util::String());
         };
     }
 }

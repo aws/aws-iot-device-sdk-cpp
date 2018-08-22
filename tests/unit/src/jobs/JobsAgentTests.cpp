@@ -34,6 +34,8 @@
 
 #define JOBS_AGENT_TEST_LOG_TAG "[Jobs Agent Unit Test]"
 
+#define INSTALLED_PACKAGES_FILENAME_TEST "installedPackagesTest.json"
+
 namespace awsiotsdk {
     util::String JobsMock::last_update_payload_;
 
@@ -42,9 +44,6 @@ namespace awsiotsdk {
             p_network_connection_ = std::make_shared<tests::mocks::MockNetworkConnection>();
             return ResponseCode::SUCCESS;
         }
-
-        bool JobsAgent::use_valid_system_command_;
-        bool JobsAgent::packages_running_;
     }
 
     namespace tests {
@@ -52,26 +51,14 @@ namespace awsiotsdk {
             class JobsAgentTestWrapper : public samples::JobsAgent {
             public:
                 JobsAgentTestWrapper() {
-                    p_jobs_ = std::shared_ptr<JobsMock>(new JobsMock());
+                    p_jobs_ = std::make_shared<JobsMock>();
+                    installed_packages_filename_ = INSTALLED_PACKAGES_FILENAME_TEST;
+
                     SetInstalledPackages("{}");
-                    use_valid_system_command_ = false;
-                    packages_running_ = false;
                 }
 
                 void SetInstalledPackages(util::String installedPackages) {
                     util::JsonParser::InitializeFromJsonString(installed_packages_json_, installedPackages);
-                }
-
-                static void SetSystemCommandValidity(bool use_valid_system_command) {
-                    use_valid_system_command_ = use_valid_system_command;
-                }
-
-                static void SetPackagesRunning(bool packages_running) {
-                    packages_running_ = packages_running;
-                }
-
-                util::String GetOperationStatus() {
-                    return operation_status_;
                 }
 
                 ResponseCode NextJobCallback(util::String topic_name,
@@ -115,12 +102,9 @@ namespace awsiotsdk {
             }
 
             TEST_F(JobsAgentTester, ShutdownHandler) {
-                JobsAgentTestWrapper::SetSystemCommandValidity(false);
-                p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"reboot\"}}}", nullptr);
-                EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"error\":\"System command (invalid command) returned error code: 32512\",\"errorCode\":\"ERR_SYSTEM_CALL_FAILED\",\"errorMessage\":\"unable to execute shutdown, check passwordless sudo permissions on agent\",\"operation\":\"reboot\"},\"includeJobExecutionState\":\"true\",\"clientToken\":\"testClientToken\"}",
-                          JobsMock::GetLastUpdatePayload());
+                p_jobs_agent_->UpdateAcceptedCallback("TestTopicName", "{\"executionState\":{\"statusDetails\":{\"step\":\"test\"}},\"jobDocument\":{\"operation\":\"reboot\"}}", nullptr);
+                p_jobs_agent_->UpdateAcceptedCallback("TestTopicName", "{\"executionState\":{\"statusDetails\":{\"step\":\"test\"}},\"jobDocument\":{\"operation\":\"shutdown\"}}", nullptr);
 
-                JobsAgentTestWrapper::SetSystemCommandValidity(true);
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"shutdown\"}}}", nullptr);
                 EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"shutdown\",\"step\":\"initiated\"},\"includeJobExecutionState\":\"true\",\"includeJobDocument\":\"true\",\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
@@ -132,12 +116,6 @@ namespace awsiotsdk {
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"reboot\"},\"statusDetails\":{\"step\":\"initiated\"}}}", nullptr);
                 EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"reboot\",\"step\":\"completed\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
-
-                p_jobs_agent_->UpdateAcceptedCallback("TestTopicName", "{\"executionState\":{\"statusDetails\":{\"step\":\"initiated\"}},\"jobDocument\":{\"operation\":\"reboot\"}}", nullptr);
-                EXPECT_EQ("rebooting...", p_jobs_agent_->GetOperationStatus());
-
-                p_jobs_agent_->UpdateAcceptedCallback("TestTopicName", "{\"executionState\":{\"statusDetails\":{\"step\":\"initiated\"}},\"jobDocument\":{\"operation\":\"shutdown\"}}", nullptr);
-                EXPECT_EQ("shutting down...", p_jobs_agent_->GetOperationStatus());
             }
 
             TEST_F(JobsAgentTester, InstallHandler) {
@@ -150,7 +128,6 @@ namespace awsiotsdk {
                           JobsMock::GetLastUpdatePayload());
 
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"workingDirectory\":\".\",\"files\":[{\"fileName\":\"test1.txt\",\"fileSource\":{\"url\":\"https://invalid-url/test1.txt\"},\"checksum\":{\"inline\":{\"value\":\"12345\"},\"hashAlgorithm\":\"test\"}},{\"fileName\":\"test2.txt\",\"fileSource\":{\"url\":\"https://invalid-url/test2.txt\"}}]}}}", nullptr);
-                EXPECT_EQ("BackupFiles:./test1.txt;./test2.txt;DownloadFiles:https://invalid-url/test1.txt;RollbackFiles:./test1.txt;./test2.txt;", p_jobs_agent_->GetOperationStatus());
                 EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"curlError\":\"Couldn't resolve host name\",\"errorCode\":\"ERR_DOWNLOAD_FAILED\",\"errorMessage\":\"curl error encountered\",\"fileSourceUrl\":\"https://invalid-url/test1.txt\",\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"step\":\"rollback files\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
@@ -160,14 +137,11 @@ namespace awsiotsdk {
 
                 p_jobs_agent_->SetInstalledPackages("{\"testPackage1\":{\"packageName\":\"testPackage1\"},\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}");
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"workingDirectory\":\"/tmp\",\"launchCommand\":\"nop\",\"autoStart\":true,\"files\":[{\"fileName\":\"test2.txt\",\"fileSource\":{\"url\":\"https://www.amazon.com\"}}]}}}", nullptr);
-                EXPECT_EQ("{\"testPackage1\":{\"packageName\":\"testPackage1\"},\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"},\"uniquePackageName\":{\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"workingDirectory\":\"/tmp\",\"launchCommand\":\"nop\",\"autoStart\":true,\"files\":[{\"fileName\":\"test2.txt\",\"fileSource\":{\"url\":\"https://www.amazon.com\"}}]}}",
-                          p_jobs_agent_->GetOperationStatus());
                 EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"step\":\"completed\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
                 p_jobs_agent_->SetInstalledPackages("{\"testPackage1\":{\"packageName\":\"testPackage1\"},\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}");
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"launchCommand\":\"nop\",\"autoStart\":true,\"files\":[{\"fileName\":\"/test2.txt\",\"fileSource\":{\"url\":\"https://www.amazon.com\"}}]}}}", nullptr);
-                EXPECT_EQ("BackupFiles:/test2.txt;DownloadFiles:https://www.amazon.com;RollbackFiles:/test2.txt;", p_jobs_agent_->GetOperationStatus());
                 EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"errorCode\":\"ERR_DOWNLOAD_FAILED\",\"errorMessage\":\"unable to open file for writing\",\"operation\":\"install\",\"packageName\":\"uniquePackageName\",\"step\":\"rollback files\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
             }
@@ -179,23 +153,18 @@ namespace awsiotsdk {
                           JobsMock::GetLastUpdatePayload());
 
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"uninstall\",\"packageName\":\"testPackage1\"}}}", nullptr);
-                EXPECT_EQ("{\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}", p_jobs_agent_->GetOperationStatus());
                 EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"uninstall\"},\"clientToken\":\"testClientToken\"}", JobsMock::GetLastUpdatePayload());
 
-                p_jobs_agent_->SetPackagesRunning(true);
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"start\",\"packageName\":\"testPackage2\"}}}", nullptr);
-                EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"errorCode\":\"ERR_UNABLE_TO_START_PACKAGE\",\"errorMessage\":\"package already running\",\"operation\":\"start\",\"step\":\"start package\"},\"clientToken\":\"testClientToken\"}",
+                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"start\",\"step\":\"completed\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"uninstall\",\"packageName\":\"testPackage2\"}}}", nullptr);
-                EXPECT_EQ("{\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}", p_jobs_agent_->GetOperationStatus());
-                EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"errorCode\":\"ERR_UNABLE_TO_STOP_PACKAGE\",\"errorMessage\":\"error in call to kill\",\"operation\":\"uninstall\",\"step\":\"stop package\"},\"clientToken\":\"testClientToken\"}",
+                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"uninstall\",\"step\":\"stop package\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
-                p_jobs_agent_->SetPackagesRunning(false);
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"uninstall\",\"packageName\":\"testPackage2\"}}}", nullptr);
-                EXPECT_EQ("{}", p_jobs_agent_->GetOperationStatus());
-                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"operation\":\"uninstall\"},\"clientToken\":\"testClientToken\"}", JobsMock::GetLastUpdatePayload());
+                EXPECT_EQ("{\"status\":\"FAILED\",\"statusDetails\":{\"errorCode\":\"ERR_INVALID_PACKAGE_NAME\",\"errorMessage\":\"no package found with name testPackage2\",\"operation\":\"uninstall\"},\"clientToken\":\"testClientToken\"}", JobsMock::GetLastUpdatePayload());
             }
 
             TEST_F(JobsAgentTester, StartPackageHandler) {
@@ -234,18 +203,17 @@ namespace awsiotsdk {
             TEST_F(JobsAgentTester, SystemStatusHandler) {
                 p_jobs_agent_->SetInstalledPackages("{\"testPackage1\":{\"packageName\":\"testPackage1\"},\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}");
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"systemStatus\"}}}", nullptr);
-                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"arch\":\"testArch\",\"cwd\":\"testCwd\",\"installedPackages\":\"[\\\"testPackage1\\\",\\\"testPackage2\\\"]\",\"operation\":\"systemStatus\",\"platform\":\"testPlatform\",\"runningPackages\":\"[]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
+                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"installedPackages\":\"[\\\"testPackage1\\\",\\\"testPackage2\\\"]\",\"operation\":\"systemStatus\",\"runningPackages\":\"[]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
-                p_jobs_agent_->SetPackagesRunning(true);
                 p_jobs_agent_->SetInstalledPackages("{\"testPackage1\":{\"packageName\":\"testPackage1\"},\"testPackage2\":{\"packageName\":\"testPackage2\",\"launchCommand\":\"nop\"}}");
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"systemStatus\"}}}", nullptr);
-                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"arch\":\"testArch\",\"cwd\":\"testCwd\",\"installedPackages\":\"[\\\"testPackage1\\\",\\\"testPackage2\\\"]\",\"operation\":\"systemStatus\",\"platform\":\"testPlatform\",\"runningPackages\":\"[\\\"testPackage2\\\"]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
+                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"installedPackages\":\"[\\\"testPackage1\\\",\\\"testPackage2\\\"]\",\"operation\":\"systemStatus\",\"runningPackages\":\"[]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
 
                 p_jobs_agent_->SetInstalledPackages("{}");
                 p_jobs_agent_->NextJobCallback("TestTopicName", "{\"execution\":{\"jobId\":\"TestJobId\",\"jobDocument\":{\"operation\":\"systemStatus\"}}}", nullptr);
-                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"arch\":\"testArch\",\"cwd\":\"testCwd\",\"installedPackages\":\"[]\",\"operation\":\"systemStatus\",\"platform\":\"testPlatform\",\"runningPackages\":\"[]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
+                EXPECT_EQ("{\"status\":\"SUCCEEDED\",\"statusDetails\":{\"installedPackages\":\"[]\",\"operation\":\"systemStatus\",\"runningPackages\":\"[]\",\"title\":\"\"},\"clientToken\":\"testClientToken\"}",
                           JobsMock::GetLastUpdatePayload());
             }
 

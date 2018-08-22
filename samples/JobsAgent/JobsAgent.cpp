@@ -47,18 +47,18 @@ namespace awsiotsdk {
             ResponseCode rc = ResponseCode::SUCCESS;
 
 #ifdef USE_WEBSOCKETS
-            p_network_connection_ = std::shared_ptr<NetworkConnection>(
-                new network::WebSocketConnection(ConfigCommon::endpoint_, ConfigCommon::endpoint_https_port_,
-                                                 ConfigCommon::root_ca_path_, ConfigCommon::aws_region_,
-                                                 ConfigCommon::aws_access_key_id_,
-                                                 ConfigCommon::aws_secret_access_key_,
-                                                 ConfigCommon::aws_session_token_,
-                                                 ConfigCommon::tls_handshake_timeout_,
-                                                 ConfigCommon::tls_read_timeout_,
-                                                 ConfigCommon::tls_write_timeout_, true));
+            p_network_connection_ = std::make_shared<NetworkConnection>(ConfigCommon::endpoint_,
+                                                                        ConfigCommon::endpoint_https_port_,
+                                                                        ConfigCommon::root_ca_path_,
+                                                                        ConfigCommon::aws_region_,
+                                                                        ConfigCommon::aws_access_key_id_,
+                                                                        ConfigCommon::aws_secret_access_key_,
+                                                                        ConfigCommon::aws_session_token_,
+                                                                        ConfigCommon::tls_handshake_timeout_,
+                                                                        ConfigCommon::tls_read_timeout_,
+                                                                        ConfigCommon::tls_write_timeout_, true);
             if (nullptr == p_network_connection_) {
-                AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "Failed to initialize Network Connection. %s",
-                              ResponseHelper::ToString(rc).c_str());
+                AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Failed to initialize Network Connection. " << ResponseHelper::ToString(rc).c_str());
                 rc = ResponseCode::FAILURE;
             }
 #elif defined USE_MBEDTLS
@@ -72,8 +72,7 @@ namespace awsiotsdk {
                                                                                  ConfigCommon::tls_write_timeout_,
                                                                                  true);
             if (nullptr == p_network_connection_) {
-                AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "Failed to initialize Network Connection. %s",
-                              ResponseHelper::ToString(rc).c_str());
+                AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Failed to initialize Network Connection. " << ResponseHelper::ToString(rc).c_str());
                 rc = ResponseCode::FAILURE;
             }
 #else
@@ -89,9 +88,7 @@ namespace awsiotsdk {
             rc = p_network_connection->Initialize();
 
             if (ResponseCode::SUCCESS != rc) {
-                AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT,
-                              "Failed to initialize Network Connection. %s",
-                              ResponseHelper::ToString(rc).c_str());
+                AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Failed to initialize Network Connection. " << ResponseHelper::ToString(rc).c_str());
                 rc = ResponseCode::FAILURE;
             } else {
                 p_network_connection_ = std::dynamic_pointer_cast<NetworkConnection>(p_network_connection);
@@ -131,14 +128,23 @@ namespace awsiotsdk {
         ResponseCode JobsAgent::Subscribe() {
             AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "Subscribe");
 
-            mqtt::Subscription::ApplicationCallbackHandlerPtr p_next_handler =
-                std::bind(&JobsAgent::NextJobCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            auto p_next_handler = [this](util::String topic_name,
+                                         util::String payload,
+                                         std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data) {
+                return NextJobCallback(topic_name, payload, p_app_handler_data);
+            };
 
-            mqtt::Subscription::ApplicationCallbackHandlerPtr p_update_accepted_handler =
-                std::bind(&JobsAgent::UpdateAcceptedCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            auto p_update_accepted_handler = [this](util::String topic_name,
+                                                    util::String payload,
+                                                    std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data) {
+                return UpdateAcceptedCallback(topic_name, payload, p_app_handler_data);
+            };
 
-            mqtt::Subscription::ApplicationCallbackHandlerPtr p_update_rejected_handler =
-                std::bind(&JobsAgent::UpdateRejectedCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            auto p_update_rejected_handler = [this](util::String topic_name,
+                                                    util::String payload,
+                                                    std::shared_ptr<mqtt::SubscriptionHandlerContextData> p_app_handler_data) {
+                return UpdateRejectedCallback(topic_name, payload, p_app_handler_data);
+            };
 
             util::Vector<std::shared_ptr<mqtt::Subscription>> topic_vector;
             std::shared_ptr<mqtt::Subscription> p_subscription;
@@ -175,15 +181,16 @@ namespace awsiotsdk {
             }
         }
 
-        ResponseCode JobsAgent::RunAgent(util::String processTitle) {
+        ResponseCode JobsAgent::RunAgent(const util::String &processTitle) {
             process_title_ = processTitle;
 
-            ResponseCode rc = util::JsonParser::InitializeFromJsonFile(installed_packages_json_, JobsAgent::INSTALLED_PACKAGES_FILENAME);
+            installed_packages_filename_ = DEFAULT_INSTALLED_PACKAGES_FILENAME;
+            ResponseCode rc = util::JsonParser::InitializeFromJsonFile(installed_packages_json_, installed_packages_filename_.c_str());
             if (ResponseCode::FILE_OPEN_ERROR == rc) {
-                AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "Unable to open installed packages file %s, assuming no packages installed.", "test");//JobsAgent::INSTALLED_PACKAGES_FILENAME);
+                AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "Unable to open installed packages file %s, assuming no packages installed.", installed_packages_filename_.c_str());
                 rc = util::JsonParser::InitializeFromJsonString(installed_packages_json_, "{}");
                 if (ResponseCode::SUCCESS != rc) {
-                    AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "Unexpected initialization error: %s", ResponseHelper::ToString(rc).c_str());
+                    AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Unexpected initialization error: " << ResponseHelper::ToString(rc).c_str());
                 }
             } else if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT,
@@ -199,14 +206,22 @@ namespace awsiotsdk {
                 return rc;
             }
 
-            ClientCoreState::ApplicationDisconnectCallbackPtr p_disconnect_handler =
-                std::bind(&JobsAgent::DisconnectCallback, this, std::placeholders::_1, std::placeholders::_2);
+            auto p_disconnect_handler = [this](util::String topic_name,
+                                               std::shared_ptr<DisconnectCallbackContextData> p_app_handler_data) {
+                return DisconnectCallback(topic_name, p_app_handler_data);
+            };
 
-            ClientCoreState::ApplicationReconnectCallbackPtr p_reconnect_handler =
-                std::bind(&JobsAgent::ReconnectCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            auto p_reconnect_handler = [this](util::String client_id,
+                                              std::shared_ptr<ReconnectCallbackContextData> p_app_handler_data,
+                                              ResponseCode reconnect_result) {
+                return ReconnectCallback(client_id, p_app_handler_data, reconnect_result);
+            };
 
-            ClientCoreState::ApplicationResubscribeCallbackPtr p_resubscribe_handler =
-                std::bind(&JobsAgent::ResubscribeCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+            auto p_resubscribe_handler = [this](util::String client_id,
+                                                std::shared_ptr<ResubscribeCallbackContextData> p_app_handler_data,
+                                                ResponseCode resubscribe_result) {
+                return ResubscribeCallback(client_id, p_app_handler_data, resubscribe_result);
+            };
 
             p_iot_client_ = std::shared_ptr<MqttClient>(MqttClient::Create(p_network_connection_,
                                                                            ConfigCommon::mqtt_command_timeout_,
@@ -217,10 +232,9 @@ namespace awsiotsdk {
                 return ResponseCode::FAILURE;
             }
 
-            util::String client_id_tagged = ConfigCommon::base_client_id_;
-            client_id_tagged.append("_jobs_agent_");
-            client_id_tagged.append(std::to_string(rand()));
-            std::unique_ptr<Utf8String> client_id = Utf8String::Create(client_id_tagged);
+            std::stringstream client_id_tagged;
+            client_id_tagged << ConfigCommon::base_client_id_ << "_jobs_agent_" << std::to_string(rand());
+            std::unique_ptr<Utf8String> client_id = Utf8String::Create(client_id_tagged.str());
 
             rc = p_iot_client_->Connect(ConfigCommon::mqtt_command_timeout_, ConfigCommon::is_clean_session_,
                                         mqtt::Version::MQTT_3_1_1, ConfigCommon::keep_alive_timeout_secs_,
@@ -231,11 +245,11 @@ namespace awsiotsdk {
 
             StartInstalledPackages();
 
-            p_jobs_ = Jobs::Create(p_iot_client_, mqtt::QoS::QOS1, ConfigCommon::thing_name_, client_id_tagged);
+            p_jobs_ = Jobs::Create(p_iot_client_, mqtt::QoS::QOS1, ConfigCommon::thing_name_, client_id_tagged.str());
 
             rc = Subscribe();
             if (ResponseCode::SUCCESS != rc) {
-                AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "Subscribe failed. %s", ResponseHelper::ToString(rc).c_str());
+                AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Subscribe failed. " << ResponseHelper::ToString(rc).c_str());
             } else {
                 rc = p_jobs_->SendJobsQuery(Jobs::JOB_GET_PENDING_TOPIC);
 
@@ -244,21 +258,19 @@ namespace awsiotsdk {
                 }
 
                 if (ResponseCode::SUCCESS != rc) {
-                    AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "SendJobsQuery failed. %s",
-                                  ResponseHelper::ToString(rc).c_str());
+                    AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "SendJobsQuery failed. " << ResponseHelper::ToString(rc).c_str());
                     p_iot_client_->Disconnect(ConfigCommon::mqtt_command_timeout_);
                 }
             }
 
-            // Wait for job processing to complete
-            done_ = false;
-            while (!done_) {
-                std::this_thread::sleep_for(std::chrono::seconds(10));
-            }
+            // Wait for job processing to complete. To cause agent to exit add call to cv_done_.notify_one() when
+            // exit condition is satisfied.
+            std::unique_lock<std::mutex> lk(m_);
+            cv_done_.wait(lk);
 
             rc = p_iot_client_->Disconnect(ConfigCommon::mqtt_command_timeout_);
             if (ResponseCode::SUCCESS != rc) {
-                AWS_LOG_ERROR(LOG_TAG_JOBS_AGENT, "Disconnect failed. %s", ResponseHelper::ToString(rc).c_str());
+                AWS_LOGSTREAM_ERROR(LOG_TAG_JOBS_AGENT, "Disconnect failed. " << ResponseHelper::ToString(rc).c_str());
             }
 
             std::cout << "Exiting Sample!!!!" << std::endl;

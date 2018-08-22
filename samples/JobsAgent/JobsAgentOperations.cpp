@@ -33,14 +33,6 @@
 #include "ConfigCommon.hpp"
 #include "JobsAgent.hpp"
 
-#ifdef UNIT_TESTS
-#define IF_UNIT_TESTS(stmt) stmt
-#define IF_NOT_UNIT_TESTS(stmt)
-#else
-#define IF_UNIT_TESTS(stmt)
-#define IF_NOT_UNIT_TESTS(stmt) stmt
-#endif
-
 /*
 jobs agent error values:
 
@@ -59,8 +51,6 @@ ERR_UNEXPECTED
 
 namespace awsiotsdk {
     namespace samples {
-        const util::String JobsAgent::INSTALLED_PACKAGES_FILENAME = "installedPackages.json";
-
         void JobsAgent::ShowJobsError(util::String operation, ResponseCode rc) {
             if (ResponseCode::SUCCESS != rc) {
                 util::String fullMessage = "Error in %s operation. %s";
@@ -70,9 +60,15 @@ namespace awsiotsdk {
         }
 
         util::String JobsAgent::GetShutdownSystemCommand(bool dryRun, bool reboot) {
-            IF_UNIT_TESTS(if (!use_valid_system_command_) return "invalid command";)
-
-            util::String result = "sudo /sbin/shutdown ";
+            util::String result;
+#ifdef WIN32
+            result = "shutdown ";
+            if (!dryRun) {
+                result += (reboot ? "/r" : "/s");
+                result += " /t:0";
+            }
+#else
+            result = "sudo /sbin/shutdown ";
             if (dryRun || reboot) {
                 result += "-";
                 result += (reboot ? "r" : "");
@@ -80,6 +76,7 @@ namespace awsiotsdk {
                 result += " ";
             }
             result += "+0";
+#endif
             return result;
         }
 
@@ -140,8 +137,11 @@ namespace awsiotsdk {
             utsname sysInfo;
             uname(&sysInfo);
 
-            util::String installedPackages = "[";
-            util::String runningPackages = "[";
+            std::stringstream installedPackages;
+            std::stringstream runningPackages;
+
+            installedPackages << '[';
+            runningPackages << '[';
             for (util::JsonValue::ConstMemberIterator package_itr = installed_packages_json_.MemberBegin();
                 package_itr != installed_packages_json_.MemberEnd(); ++package_itr) {
                 if (package_itr->value.IsObject()) {
@@ -149,33 +149,27 @@ namespace awsiotsdk {
                     if (firstPackage) {
                         firstPackage = false;
                     } else {
-                        installedPackages += ',';
+                        installedPackages << ',';
                     }
-                    installedPackages += "\"";
-                    installedPackages += packageName;
-                    installedPackages += "\"";
+                    installedPackages << '\"';
+                    installedPackages << packageName;
+                    installedPackages << '\"';
 
                     if (PackageIsRunning(packageName)) {
-                        runningPackages += "\"";
-                        runningPackages += packageName;
-                        runningPackages += "\"";
+                        runningPackages << '\"';
+                        runningPackages << packageName;
+                        runningPackages << '\"';
                     }
                 }
             }
-            installedPackages += "]";
-            runningPackages += "]";
+            installedPackages << ']';
+            runningPackages << ']';
 
-            statusDetailsMap["installedPackages"] = installedPackages;
-            statusDetailsMap["runningPackages"] = runningPackages;
-#ifdef UNIT_TESTS
-            statusDetailsMap["arch"] = "testArch";
-            statusDetailsMap["cwd"] = "testCwd";
-            statusDetailsMap["platform"] = "testPlatform";
-#else
+            statusDetailsMap["installedPackages"] = installedPackages.str();
+            statusDetailsMap["runningPackages"] = runningPackages.str();
             statusDetailsMap["arch"] = sysInfo.machine;
             statusDetailsMap["cwd"] = ConfigCommon::GetCurrentPath();
             statusDetailsMap["platform"] = sysInfo.sysname;
-#endif
             statusDetailsMap["title"] = process_title_;
 
             return p_jobs_->SendJobsUpdate(jobId, Jobs::JOB_EXECUTION_SUCCEEDED, statusDetailsMap);
@@ -185,14 +179,12 @@ namespace awsiotsdk {
                                             util::String workingDirectory,
                                             util::JsonValue & files) {
             AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "BackupFiles");
-            IF_UNIT_TESTS(operation_status_ += "BackupFiles:");
 
             statusDetailsMap["step"] = "backup files";
 
             for (unsigned int i = 0; i < files.Size(); i++) {
                 if (files[i].HasMember("fileName") && files[i]["fileName"].IsString()) {
                     util::String fileNameWithPath = GetFullPath(workingDirectory, files[i]["fileName"].GetString());
-                    IF_UNIT_TESTS(operation_status_ += fileNameWithPath + ';');
 
                     std::ifstream src(fileNameWithPath, std::ios::binary);
                     if (src.good()) {
@@ -203,7 +195,7 @@ namespace awsiotsdk {
                             statusDetailsMap["fileName"] = fileNameWithPath;
                             return ResponseCode::FAILURE;
                         }
-                        IF_NOT_UNIT_TESTS(dst << src.rdbuf());
+                        dst << src.rdbuf();
                     }
                 }
             }
@@ -215,7 +207,6 @@ namespace awsiotsdk {
                                               util::String workingDirectory,
                                               util::JsonValue & files) {
             AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "RollbackFiles");
-            IF_UNIT_TESTS(operation_status_ += "RollbackFiles:");
 
             ResponseCode rc = ResponseCode::SUCCESS;
 
@@ -224,7 +215,6 @@ namespace awsiotsdk {
             for (unsigned int i = 0; i < files.Size(); i++) {
                 if (files[i].HasMember("fileName") && files[i]["fileName"].IsString()) {
                     util::String fileNameWithPath = GetFullPath(workingDirectory, files[i]["fileName"].GetString());
-                    IF_UNIT_TESTS(operation_status_ += fileNameWithPath + ';');
 
                     std::ifstream src(fileNameWithPath + ".old", std::ios::binary);
                     if (src.good()) {
@@ -233,7 +223,7 @@ namespace awsiotsdk {
                             statusDetailsMap["rollbackError"] = "not all files were successfully rolled back";
                             rc = ResponseCode::FAILURE;
                         } else {
-                            IF_NOT_UNIT_TESTS(dst << src.rdbuf());
+                            dst << src.rdbuf();
                         }
                     }
                 }
@@ -246,7 +236,6 @@ namespace awsiotsdk {
                                               util::String workingDirectory,
                                               util::JsonValue & files) {
             AWS_LOG_INFO(LOG_TAG_JOBS_AGENT, "DownloadFiles");
-            IF_UNIT_TESTS(operation_status_ += "DownloadFiles:");
 
             statusDetailsMap["step"] = "download files";
 
@@ -266,8 +255,6 @@ namespace awsiotsdk {
 
                     util::String fileNameWithPath = GetFullPath(workingDirectory, file["fileName"].GetString());
                     util::String fileSourceUrl = file["fileSource"]["url"].GetString();
-
-                    IF_UNIT_TESTS(operation_status_ += fileSourceUrl + ';');
 
                     FILE* file = fopen(fileNameWithPath.c_str(), "wb");
                     if (!file) {
@@ -307,12 +294,7 @@ namespace awsiotsdk {
             packageJobDocumentCopy.CopyFrom(packageJobDocument, installed_packages_json_.GetAllocator());
             installed_packages_json_.AddMember(util::JsonValue(packageName.c_str(), installed_packages_json_.GetAllocator()), packageJobDocumentCopy, installed_packages_json_.GetAllocator());
 
-#ifndef UNIT_TESTS
-            return util::JsonParser::WriteToFile(installed_packages_json_, JobsAgent::INSTALLED_PACKAGES_FILENAME);
-#else
-            operation_status_ = util::JsonParser::ToString(installed_packages_json_);
-            return ResponseCode::SUCCESS;
-#endif
+            return util::JsonParser::WriteToFile(installed_packages_json_, installed_packages_filename_.c_str());
         }
 
         bool JobsAgent::PackageIsExecutable(util::String packageName) {
@@ -320,13 +302,9 @@ namespace awsiotsdk {
         }
 
         bool JobsAgent::PackageIsRunning(util::String packageName) {
-#ifndef UNIT_TESTS
             return (package_runtimes_map_.count(packageName.c_str()) > 0 &&
-                package_runtimes_map_[packageName.c_str()] > 0 &&
-                kill(package_runtimes_map_[packageName.c_str()], 0) == 0);
-#else
-            return PackageIsExecutable(packageName) && packages_running_;
-#endif
+                    package_runtimes_map_[packageName.c_str()] > 0 &&
+                    kill(package_runtimes_map_[packageName.c_str()], 0) == 0);
         }
 
         bool JobsAgent::PackageIsAutoStart(util::String packageName) {
@@ -408,7 +386,7 @@ namespace awsiotsdk {
             statusDetailsMap["step"] = "stop package";
 
             if (PackageIsRunning(packageName)) {
-                if (IF_UNIT_TESTS(false &&) kill(package_runtimes_map_[packageName.c_str()], SIGTERM) == 0) {
+                if (kill(package_runtimes_map_[packageName.c_str()], SIGTERM) == 0) {
                     waitpid(package_runtimes_map_[packageName.c_str()], 0, 0);
                     return ResponseCode::SUCCESS;
                 } else {
@@ -466,8 +444,6 @@ namespace awsiotsdk {
             util::String workingDirectory = "";
             util::Map<util::String, util::String> statusDetailsMap;
             statusDetailsMap["operation"] = "install";
-
-            IF_UNIT_TESTS(operation_status_ = "");
 
             if (!jobDocument.HasMember("packageName") || !jobDocument["packageName"].IsString()) {
                 statusDetailsMap["errorCode"] = "ERR_UNNAMED_PACKAGE";
@@ -545,15 +521,12 @@ namespace awsiotsdk {
 
             installed_packages_json_.RemoveMember(packageName.c_str());
 
-#ifndef UNIT_TESTS
-            if (util::JsonParser::WriteToFile(installed_packages_json_, JobsAgent::INSTALLED_PACKAGES_FILENAME) != ResponseCode::SUCCESS) {
+            if (util::JsonParser::WriteToFile(installed_packages_json_, installed_packages_filename_.c_str()) != ResponseCode::SUCCESS) {
                 statusDetailsMap["errorCode"] = "ERR_FILE_COPY_FAILED";
                 statusDetailsMap["errorMessage"] = "uninstall package failed";
                 return p_jobs_->SendJobsUpdate(jobId, Jobs::JOB_EXECUTION_FAILED, statusDetailsMap);
             }
-#else
-            operation_status_ = util::JsonParser::ToString(installed_packages_json_);
-#endif
+
             return p_jobs_->SendJobsUpdate(jobId, Jobs::JOB_EXECUTION_SUCCEEDED, statusDetailsMap);
         }
 
@@ -659,14 +632,11 @@ namespace awsiotsdk {
 
                                 util::String systemCommand;
                                 util::String outputMessage = (operation == "reboot" ? "rebooting..." : "shutting down...");
-#ifdef UNIT_TESTS
-                                operation_status_ = outputMessage;
-#else
+
                                 // User account running agent must have passwordless sudo access on /sbin/shutdown
                                 // Recommended online search for permissions setup instructions https://www.google.com/search?q=passwordless+sudo+access+instructions
                                 systemCommand = GetShutdownSystemCommand(false, operation == "reboot");
                                 system(systemCommand.c_str());
-#endif
                                 std::cout << std::endl << outputMessage << std::endl;
                             }
                         }

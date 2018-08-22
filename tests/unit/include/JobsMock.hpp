@@ -31,18 +31,18 @@ namespace awsiotsdk {
     public:
         JobsMock() : Jobs(nullptr, mqtt::QoS::QOS1, "testThingName", "testClientToken") {}
 
-        static std::unique_ptr<JobsMock> Create() {
-            return std::unique_ptr<JobsMock>(new JobsMock());
-        }
-
         ResponseCode SendJobsUpdate(const util::String &jobId,
-                                    JobExecutionStatus status,
+                                    Jobs::JobExecutionStatus status,
                                     const util::Map<util::String, util::String> &statusDetailsMap = util::Map<util::String, util::String>(),
                                     int64_t expectedVersion = 0,    // set to 0 to ignore
                                     int64_t executionNumber = 0,    // set to 0 to ignore
                                     bool includeJobExecutionState = false,
                                     bool includeJobDocument = false) {
-            last_update_payload_ = SerializeJobExecutionUpdatePayload(status, statusDetailsMap, expectedVersion, executionNumber,
+            util::Map<util::String, util::String> statusDetailsMapCleaned = statusDetailsMap;
+            statusDetailsMapCleaned.erase("arch");
+            statusDetailsMapCleaned.erase("cwd");
+            statusDetailsMapCleaned.erase("platform");
+            last_update_payload_ = SerializeJobExecutionUpdatePayload(status, statusDetailsMapCleaned, expectedVersion, executionNumber,
                                                                       includeJobExecutionState, includeJobDocument);
             return ResponseCode::SUCCESS;
         }

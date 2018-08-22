@@ -40,7 +40,7 @@ set(JOBS_AGENT_TARGET_NAME jobs-agent)
 add_executable(${JOBS_AGENT_TARGET_NAME} "${PROJECT_SOURCE_DIR}/JobsAgent.cpp;${PROJECT_SOURCE_DIR}/JobsAgentOperations.cpp;${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 # Add Target specific includes
-target_include_directories(${JOBS_AGENT_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common)
+target_include_directories(${JOBS_AGENT_TARGET_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/../../common)
 target_include_directories(${JOBS_AGENT_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 # Configure Threading library
