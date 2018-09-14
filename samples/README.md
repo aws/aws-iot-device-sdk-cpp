@@ -26,6 +26,101 @@ This sample demonstrates how various Jobs API operations can be performed includ
  * Code for this sample is located [here](./Jobs)
  * Target for this sample is `jobs-sample`
 
+### Jobs Agent Sample
+This sample is a full featured example of a Jobs Agent that uses Jobs API operations to perform a variety of management tasks such as installing additional files/programs, rebooting a device, and collecting device status information. It can be run on a device as-is or it can be modified to suit specific use cases. Example job documents are provided below. For more information see the AWS IoT connected device management documentation [here](https://aws.amazon.com/iot-device-management/).
+
+ * Code for this sample is located [here](./JobsAgent)
+ * Target for this sample is `jobs-agent`
+
+#### Using the jobs-agent
+##### systemStatus operation
+The jobs-agent will respond to the AWS IoT jobs management platform with system status information when it receives a job execution notification with a job document that looks like this:
+```
+ {
+  "operation": "systemStatus"
+ }
+```
+##### reboot operation
+When the jobs-agent receives a reboot job document it will attempt to reboot the device it is running on while sending updates on its progress to the AWS IoT jobs management platform. After the reboot the job execution status will be marked as IN_PROGRESS until the jobs-agent is also restarted at which point the status will be updated to SUCCESS. To avoid manual steps during reboot it is suggested that device be configured to automatically start the jobs-agent at device startup time. Job document format:
+```
+ {
+  "operation": "reboot"
+ }
+```
+##### shutdown operation
+When the jobs-agent receives a shutdown job document it will attempt to shutdown the device.
+```
+ {
+  "operation": "shutdown"
+ }
+```
+##### install operation
+When the jobs-agent receives an install job document it will attempt to install the files specified in the job document. An install job document should follow this general format.
+```
+ {
+  "operation": "install",
+  "packageName": "uniquePackageName",
+  "workingDirectory": ".",
+  "launchCommand": "program-name program-arguments",
+  "autoStart": "true",
+  "files": [
+    {
+      "fileName": "program-name",
+      "fileVersion": "1.0.2.10",
+      "fileSource": {
+        "url": "https://some-bucket.s3.amazonaws.com/program-name"
+      },
+      "checksum": {
+        "inline": {
+          "value": "9569257356cfc5c7b2b849e5f58b5d287f183e08627743498d9bd52801a2fbe4"
+        },
+        "hashAlgorithm": "SHA256"
+      }
+    },
+    {
+      "fileName": "config.json",
+      "fileSource": {
+        "url": "https://some-bucket.s3.amazonaws.com/config.json"
+      }
+    }
+  ]
+}
+```
+* `packageName`: Each install operation must have a unique package name. If the packageName matches a previous install operation then the new install operation overwrites the previous one.
+* `workingDirectory`: Optional property for working directory
+* `launchCommand`: Optional property for launching an application/package. If omitted copy files only.
+* `autoStart`: If set to true then agent will execute launch command when agent starts up.
+* `files`: Specifies files to be installed
+  * `fileName`: Name of file as written to file system
+  * `fileSource.url`: Location of file to be downloaded from
+  * `checksum`: Optional file checksum (currently ignored)
+    * `inline.value`: Checksum value
+    * `hashAlgorithm`: Checksum hash algorithm used
+##### start operation
+When the jobs-agent receives a start job document it will attempt to startup the specified package.
+```
+ {
+  "operation": "start",
+  "packageName": "somePackageName"
+ }
+```
+##### stop operation
+When the jobs-agent receives a stop job document it will attempt to stop the specified package.
+```
+ {
+  "operation": "stop",
+  "packageName": "somePackageName"
+ }
+```
+##### restart operation
+When the jobs-agent receives a restart job document it will attempt to restart the specified package.
+```
+ {
+  "operation": "restart",
+  "packageName": "somePackageName"
+ }
+```
+
 ### Discovery Sample
 This sample demonstrates how the discovery operation can be performed to get the connectivity information to connect to a Greengrass Core (GGC).
 The configuration for this example is slightly different as the Discovery operation is a HTTP call, and uses port 8443, instead of port 8883 which is used for MQTT operations. The endpoint is the same IoT host endpoint used to connect the IoT thing to the cloud.
