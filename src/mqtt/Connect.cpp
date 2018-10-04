@@ -484,7 +484,10 @@ namespace awsiotsdk {
                                     std::shared_ptr<mqtt::SubscribePacket>
                                         p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
                                     p_subscribe_packet->SetPacketId(p_client_state_->GetNextPacketId());
-                                    rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
+
+                                    rc = p_client_state_->PerformAction(ActionType::SUBSCRIBE,
+                                                                        p_subscribe_packet,
+                                                                        p_client_state_->GetMqttCommandTimeout());
                                     if (ResponseCode::SUCCESS != rc) {
                                         AWS_LOG_ERROR(KEEPALIVE_LOG_TAG,
                                                       "Resubscribe attempt returned unhandled error. \n%s",
@@ -500,7 +503,10 @@ namespace awsiotsdk {
                                     std::shared_ptr<mqtt::SubscribePacket>
                                         p_subscribe_packet = mqtt::SubscribePacket::Create(topic_vector);
                                     p_subscribe_packet->SetPacketId(p_client_state_->GetNextPacketId());
-                                    rc = WriteToNetworkBuffer(p_network_connection, p_subscribe_packet->ToString());
+
+                                    rc = p_client_state_->PerformAction(ActionType::SUBSCRIBE,
+                                                                        p_subscribe_packet,
+                                                                        p_client_state_->GetMqttCommandTimeout());
                                 }
                             }
 
