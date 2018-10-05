@@ -100,7 +100,7 @@ namespace awsiotsdk {
          */
         class PendingAckData {
         public:
-            std::chrono::system_clock::time_point time_of_request_;           ///< Time at which the request was sent
+            std::chrono::steady_clock::time_point time_of_request_;           ///< Time at which the request was sent
             ActionData::AsyncAckNotificationHandlerPtr p_async_ack_handler_;  ///< Handler to which response must be sent
         };
 

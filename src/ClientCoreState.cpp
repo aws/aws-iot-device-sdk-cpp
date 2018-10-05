@@ -140,7 +140,7 @@ namespace awsiotsdk {
                 continue;
             }
             std::lock_guard<std::mutex> sync_action_lock(sync_action_request_lock_);
-            auto next = std::chrono::system_clock::now() + std::chrono::milliseconds(action_execution_delay);
+            auto next = std::chrono::steady_clock::now() + std::chrono::milliseconds(action_execution_delay);
             ActionType action_type = outbound_action_queue_.front().first;
             std::shared_ptr<ActionData> p_action_data = outbound_action_queue_.front().second;
 
@@ -193,7 +193,7 @@ namespace awsiotsdk {
 
         std::unique_ptr<PendingAckData> p_pending_ack_data = std::unique_ptr<PendingAckData>(new PendingAckData());
         p_pending_ack_data->p_async_ack_handler_ = p_async_ack_handler;
-        p_pending_ack_data->time_of_request_ = std::chrono::system_clock::now();
+        p_pending_ack_data->time_of_request_ = std::chrono::steady_clock::now();
 
         std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
         pending_ack_map_.insert(std::make_pair(action_id, std::move(p_pending_ack_data)));
@@ -210,7 +210,7 @@ namespace awsiotsdk {
 
     void ClientCoreState::DeleteExpiredAcks() {
         std::lock_guard<std::mutex> sync_action_lock(ack_map_lock_);
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
         util::Map<uint16_t, std::unique_ptr<PendingAckData>>::const_iterator itr = pending_ack_map_.begin();
         while (itr != pending_ack_map_.end()) {
             std::chrono::seconds diff = std::chrono::duration_cast<std::chrono::seconds>(

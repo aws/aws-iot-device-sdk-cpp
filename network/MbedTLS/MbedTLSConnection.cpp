@@ -283,7 +283,7 @@ namespace awsiotsdk {
             bool isErrorFlag = false;
             int ret;
 
-            const auto start = std::chrono::system_clock::now();
+            const auto start = std::chrono::steady_clock::now();
             auto elapsed_time = std::chrono::duration<double>();
 
             do {
@@ -297,7 +297,7 @@ namespace awsiotsdk {
                     isErrorFlag = true;
                     break;
                 }
-                elapsed_time = std::chrono::system_clock::now() - start;
+                elapsed_time = std::chrono::steady_clock::now() - start;
             } while (tls_write_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time) &&
                     total_written_length < bytes_to_write);
 
@@ -318,7 +318,7 @@ namespace awsiotsdk {
             int ret;
             size_t total_read_length = 0;
             size_t remaining_bytes_to_read = size_bytes_to_read;
-            const auto start = std::chrono::system_clock::now();
+            const auto start = std::chrono::steady_clock::now();
             auto elapsed_time = std::chrono::duration<double>();
             do {
                 // This read will timeout after IOT_SSL_READ_TIMEOUT if there's no data to be read
@@ -332,7 +332,7 @@ namespace awsiotsdk {
                     && ret != MBEDTLS_ERR_SSL_TIMEOUT) {
                     return ResponseCode::NETWORK_SSL_READ_ERROR;
                 }
-                elapsed_time = std::chrono::system_clock::now() - start;
+                elapsed_time = std::chrono::steady_clock::now() - start;
             } while (remaining_bytes_to_read > 0 &&
                     tls_read_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time));
 

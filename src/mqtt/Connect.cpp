@@ -358,7 +358,6 @@ namespace awsiotsdk {
 
             //Ignore error codes, always assume disconnect
             p_client_state_->SetConnected(false);
-
             ResponseCode rc = ResponseCode::SUCCESS;
 
             // Attempt to send MQTT Disconnect if Network is still connected
@@ -429,7 +428,7 @@ namespace awsiotsdk {
             std::chrono::seconds reconnect_backoff_timer = p_client_state_->GetMinReconnectBackoffTimeout();
             std::chrono::seconds max_backoff_value = p_client_state_->GetMaxReconnectBackoffTimeout();
             std::chrono::seconds keep_alive_interval = p_client_state_->GetKeepAliveTimeout() / 2;
-            auto next = std::chrono::system_clock::now() + std::chrono::seconds(keep_alive_interval);
+            auto next = std::chrono::steady_clock::now() + std::chrono::seconds(keep_alive_interval);
 
             do {
                 if (p_client_state_->IsAutoReconnectEnabled() && p_client_state_->IsAutoReconnectRequired()) {
@@ -554,7 +553,7 @@ namespace awsiotsdk {
                     }
                 }
 
-                if (std::chrono::system_clock::now() > next) {
+                if (std::chrono::steady_clock::now() > next) {
                     if (p_client_state_->IsPingreqPending()) {
                         if (p_client_state_->IsConnected()) {
                             rc = p_client_state_->PerformAction(ActionType::DISCONNECT,
@@ -588,7 +587,7 @@ namespace awsiotsdk {
                         }
 
                         p_client_state_->SetPingreqPending(true);
-                        next = std::chrono::system_clock::now() + std::chrono::seconds(keep_alive_interval);
+                        next = std::chrono::steady_clock::now() + std::chrono::seconds(keep_alive_interval);
                     }
                 }
                 std::this_thread::sleep_for(thread_sleep_duration);
