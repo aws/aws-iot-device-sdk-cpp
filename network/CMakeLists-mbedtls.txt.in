@@ -5,7 +5,7 @@ project(mbedtls-download NONE)
 include(ExternalProject)
 ExternalProject_Add(mbedtls
 	GIT_REPOSITORY    https://github.com/ARMmbed/mbedtls.git
-	GIT_TAG           mbedtls-2.6.0
+	GIT_TAG           mbedtls-2.13.1
 	SOURCE_DIR        "${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/src"
 	BINARY_DIR        "${CMAKE_BINARY_DIR}/${DEPENDENCY_DIR}/mbedtls/build"
 	CONFIGURE_COMMAND ""

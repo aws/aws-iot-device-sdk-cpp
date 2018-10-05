@@ -105,6 +105,7 @@ namespace awsiotsdk {
             char port_buf[6];
             char vrfy_buf[512];
             const char* alpn_protocol_list[] = {"x-amzn-mqtt-ca", nullptr};
+            is_connected_ = false;
 
             mbedtls_net_init(&server_fd_);
             mbedtls_ssl_init(&ssl_);
@@ -271,7 +272,8 @@ namespace awsiotsdk {
             }
 
             mbedtls_ssl_conf_read_timeout(&conf_, static_cast<uint32_t>(tls_read_timeout_.count()));
-            is_connected_ = true;
+            if(rc == ResponseCode::SUCCESS)
+              is_connected_ = true;
             return rc;
         }
 
@@ -304,6 +306,7 @@ namespace awsiotsdk {
             size_written_bytes_out = total_written_length;
 
             if (isErrorFlag) {
+                is_connected_ = false;
                 rc = ResponseCode::NETWORK_SSL_WRITE_ERROR;
             } else if (tls_write_timeout_ > std::chrono::duration_cast<std::chrono::milliseconds>(elapsed_time) &&
                     total_written_length != bytes_to_write) {
@@ -330,6 +333,7 @@ namespace awsiotsdk {
                     size_read_bytes_out = total_read_length;
                 } else if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE
                     && ret != MBEDTLS_ERR_SSL_TIMEOUT) {
+                    is_connected_ = false;
                     return ResponseCode::NETWORK_SSL_READ_ERROR;
                 }
                 elapsed_time = std::chrono::system_clock::now() - start;
@@ -341,9 +345,10 @@ namespace awsiotsdk {
             } else if (size_read_bytes_out == size_bytes_to_read) {
                 return ResponseCode::SUCCESS;
             } else if (0 < total_read_length) {
+                is_connected_ = false;
                 return ResponseCode::NETWORK_SSL_READ_TIMEOUT_ERROR;
             }
-
+            is_connected_ = false;
             return ResponseCode::NETWORK_SSL_READ_ERROR;
         }
 

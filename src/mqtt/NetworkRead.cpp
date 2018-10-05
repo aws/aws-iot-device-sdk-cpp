@@ -167,6 +167,8 @@ namespace awsiotsdk {
                             // Packet types used for QoS2 are currently unsupported
                             break;
                     }
+                } else if (ResponseCode::NETWORK_SSL_READ_ERROR == rc) {
+                  break;
                 } else if (!is_waiting_for_connack_) {
                     is_waiting_for_connack_ = true;
                     if (_p_thread_continue_ && p_client_state_->IsConnected()) {
@@ -184,6 +186,8 @@ namespace awsiotsdk {
                         }
                         p_client_state_->SetAutoReconnectRequired(true);
                     }
+                } else if (rc == ResponseCode::NETWORK_DISCONNECTED_ERROR) {
+                    break;
                 }
             } while (_p_thread_continue_);
             return rc;
