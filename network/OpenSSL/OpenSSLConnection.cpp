@@ -192,6 +192,9 @@ namespace awsiotsdk {
                 return ResponseCode::NETWORK_SSL_INIT_ERROR;
             }
 
+            // Certificates must be read again when resetting `p_ssl_context_`
+            certificates_read_flag_ = false;
+
             return ResponseCode::SUCCESS;
         }
 
