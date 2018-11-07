@@ -6,7 +6,7 @@ add_definitions(-DUNIT_TESTS)
 # Section : Disable in-source builds #
 ######################################
 
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if (${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles folder.")
 endif ()
 
@@ -48,7 +48,7 @@ add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../samples/Job
 # add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
-target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${SDK_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../include)
 # target_include_directories(${SDK_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/JobsAgent)
 
 # Configure Threading library
@@ -76,10 +76,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_BINARY_DIR}/third_party/googletest/src
         ${CMAKE_BINARY_DIR}/third_party/googletest/build EXCLUDE_FROM_ALL)
 
-file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/tests/unit/src/*.cpp)
+file(GLOB_RECURSE SDK_UNIT_TEST_SOURCES FOLLOW_SYMLINKS ${PROJECT_SOURCE_DIR}/src/*.cpp)
 target_sources(${UNIT_TEST_TARGET_NAME} PUBLIC ${SDK_UNIT_TEST_SOURCES})
-target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/common)
-target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/tests/unit/include)
+target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../common)
+target_include_directories(${UNIT_TEST_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} gtest gtest_main gmock gmock_main)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${THREAD_LIBRARY_LINK_STRING})
 target_link_libraries(${UNIT_TEST_TARGET_NAME} ${SDK_TARGET_NAME})
@@ -128,7 +128,7 @@ endif ()
 
 add_custom_command(TARGET ${UNIT_TEST_TARGET_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E
-        copy ${CMAKE_SOURCE_DIR}/tests/unit/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
+        copy ${PROJECT_SOURCE_DIR}/src/util/TestParser.json $<TARGET_FILE_DIR:${UNIT_TEST_TARGET_NAME}>/TestParser.json)
 
 set_property(TARGET ${UNIT_TEST_TARGET_NAME} APPEND_STRING PROPERTY COMPILE_FLAGS ${CUSTOM_COMPILER_FLAGS})
 
