@@ -64,7 +64,13 @@ namespace awsiotsdk {
         static uint32_t action_processing_rate_hz_;
 
         static ResponseCode InitializeCommon(const util::String &config_file_path);
+        static ResponseCode InitializeCommon(const util::String &config_absolute_path,
+                                             const util::String &config_file);
         static util::String GetCurrentPath();
+
+    private:
+        static ResponseCode PopulateCommon(const util::String &config_absolute_path,
+                                           const util::String &config_file);
     };
 }
 

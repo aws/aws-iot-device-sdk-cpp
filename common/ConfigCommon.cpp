@@ -105,7 +105,7 @@ namespace awsiotsdk {
     uint32_t ConfigCommon::action_processing_rate_hz_;
 
     void ConfigCommon::LogParseError(const ResponseCode &response_code,
-                                     const util::JsonDocument &config,
+                                     const util::JsonDocument &/*config*/,
                                      util::String key) {
         AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
                       "Error in Parsing Key: %s\n. %s\n parse error code : %d, offset : %d",
@@ -130,8 +130,31 @@ namespace awsiotsdk {
 #else
         config_file_absolute_path.append("/");
 #endif
-        config_file_absolute_path.append(config_file_relative_path);
-        ResponseCode rc = util::JsonParser::InitializeFromJsonFile(sdk_config_json_, config_file_absolute_path);
+
+        return (PopulateCommon(config_file_absolute_path, config_file_relative_path));
+    }
+
+    ResponseCode ConfigCommon::InitializeCommon(const util::String &config_absolute_path,
+                                                const util::String &config_file) {
+        util::String temp_config_absolute_path = config_absolute_path;
+        if (0 == config_absolute_path.length()) {
+            return ResponseCode::FILE_OPEN_ERROR;
+        }
+
+#ifdef WIN32
+        temp_config_absolute_path.append("\\");
+#else
+        temp_config_absolute_path.append("/");
+#endif
+
+        return (PopulateCommon(temp_config_absolute_path, config_file));
+    }
+
+    ResponseCode ConfigCommon::PopulateCommon(const util::String &config_absolute_path,
+                                              const util::String &config_file) {
+        ResponseCode rc = util::JsonParser::InitializeFromJsonFile(sdk_config_json_,
+                                                                   config_absolute_path + config_file);
+
         if (ResponseCode::SUCCESS != rc) {
             AWS_LOG_ERROR(LOG_TAG_SAMPLE_CONFIG_COMMON,
                           "Error in Parsing. %s\n parse error code : %d, offset : %d",
@@ -175,36 +198,21 @@ namespace awsiotsdk {
             LogParseError(rc, sdk_config_json_, SDK_CONFIG_ROOT_CA_RELATIVE_KEY);
             return rc;
         }
-        root_ca_path_ = GetCurrentPath();
-        if (0 == root_ca_path_.length()) {
-            return ResponseCode::FILE_OPEN_ERROR;
-        }
-        root_ca_path_.append("/");
-        root_ca_path_.append(temp_str);
+        root_ca_path_ = config_absolute_path + temp_str;
 
         rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_DEVICE_CERT_RELATIVE_KEY, temp_str);
         if (ResponseCode::SUCCESS != rc) {
             LogParseError(rc, sdk_config_json_, SDK_CONFIG_DEVICE_CERT_RELATIVE_KEY);
             return rc;
         }
-        client_cert_path_ = GetCurrentPath();
-        if (0 == client_cert_path_.length()) {
-            return ResponseCode::FILE_OPEN_ERROR;
-        }
-        client_cert_path_.append("/");
-        client_cert_path_.append(temp_str);
+        client_cert_path_ = config_absolute_path + temp_str;
 
         rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_DEVICE_PRIVATE_KEY_RELATIVE_KEY, temp_str);
         if (ResponseCode::SUCCESS != rc) {
             LogParseError(rc, sdk_config_json_, SDK_CONFIG_DEVICE_PRIVATE_KEY_RELATIVE_KEY);
             return rc;
         }
-        client_key_path_ = GetCurrentPath();
-        if (0 == client_key_path_.length()) {
-            return ResponseCode::FILE_OPEN_ERROR;
-        }
-        client_key_path_.append("/");
-        client_key_path_.append(temp_str);
+        client_key_path_ = config_absolute_path + temp_str;
 
         rc = util::JsonParser::GetStringValue(sdk_config_json_, SDK_CONFIG_CLIENT_ID_KEY, base_client_id_);
         if (ResponseCode::SUCCESS != rc) {
