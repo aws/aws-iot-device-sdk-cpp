@@ -1,11 +1,6 @@
-## ***** NOTICE *****
+## New Version Available in Developer Preview
 
-Customers have [reported deadlocks](https://github.com/aws/aws-iot-device-sdk-cpp/issues/14) while using the AWS IoT Device SDK for C++. If you are affected, consider using an alternative MQTT library such as:
-- [AWS IoT Device SDK for embedded C](https://github.com/aws/aws-iot-device-sdk-embedded-C)
-- [Eclipse Mosquitto MQTT C/C++ Client Library](https://github.com/eclipse/mosquitto)
-- [Eclipse Paho MQTT C++ Client Library](https://github.com/eclipse/paho.mqtt.cpp)
-
-A complete rework of the AWS IoT Device SDK for C++, which addresses this issue, is [currently in Developer Preview](https://github.com/awslabs/aws-iot-device-sdk-cpp-v2) and feedback is welcome.
+A preview of the new AWS IoT Device SDK is [now available](https://github.com/awslabs/aws-iot-device-sdk-cpp-v2). It is a complete rework, built to improve reliability, performance, and security. We invite your feedback!
 
 ## AWS IoT C++ Device SDK
 
@@ -267,3 +262,7 @@ This SDK is distributed under the [Apache License, Version 2.0](http://www.apach
 
 If you have any technical questions about AWS IoT C++ SDK, use the [AWS IoT forum](https://forums.aws.amazon.com/forum.jspa?forumID=210).
 For any other questions on AWS IoT, contact [AWS Support](https://aws.amazon.com/contact-us/).
+
+A list of known issues is maintained in [KnownIssues.md](KnownIssues.md).
+
+Note: customers have [reported deadlocks](https://github.com/aws/aws-iot-device-sdk-cpp/issues/14) while using the AWS IoT Device SDK for C++. If you are affected, a fix is available in the [locking-fixes](https://github.com/aws/aws-iot-device-sdk-cpp/tree/locking-fixes) branch. This issue is also resolved in the new AWS IoT Device SDK for C++, which is [currently in Developer Preview](https://github.com/awslabs/aws-iot-device-sdk-cpp-v2).
