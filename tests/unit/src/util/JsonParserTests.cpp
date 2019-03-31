@@ -24,6 +24,8 @@
 #include "TestHelper.hpp"
 
 #include "util/JsonParser.hpp"
+#include <fstream>
+#include <iostream>
 
 #define KEY_INVALID "test_invalid_key"
 
@@ -101,6 +103,19 @@
 "    }," \
 "    \"level1_key\": \"level1_target_value\"" \
 "}"
+
+#define BROKEN_JSON_STRING "{" \
+"    \"level1\" : {" \
+"        \"level2\" : {" \
+"        	\"level3_key\" : \"level3_target_value\"," \
+"        	\"level3_key_2\" : \"level3_target_value\"" \
+"        }," \
+"        \"level2_key\" : \"level2_target_value\"" \
+"    },"
+
+#define SINGLE_VALUE_JSON_KEY "Key"
+#define JSON_STRING_OUTPUT "\"Key\""
+
 
 namespace awsiotsdk {
     namespace tests {
@@ -239,8 +254,12 @@ namespace awsiotsdk {
                 util::JsonDocument source_doc;
                 util::JsonDocument target_doc;
                 util::JsonDocument expected_doc;
-                ResponseCode
-                    rc = util::JsonParser::InitializeFromJsonString(source_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
+                util::JsonValue empty_json;
+
+                ResponseCode rc = util::JsonParser::MergeValues(empty_json, empty_json, target_doc.GetAllocator());
+                EXPECT_EQ(ResponseCode::JSON_MERGE_FAILED, rc);
+
+                rc = util::JsonParser::InitializeFromJsonString(source_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 rc = util::JsonParser::InitializeFromJsonString(target_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
@@ -259,8 +278,12 @@ namespace awsiotsdk {
                 util::JsonDocument new_doc;
                 util::JsonDocument target_doc;
                 util::JsonDocument expected_doc;
-                ResponseCode
-                    rc = util::JsonParser::InitializeFromJsonString(old_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
+                util::JsonValue  empty_json;
+
+                ResponseCode rc = util::JsonParser::DiffValues(target_doc, empty_json, empty_json, target_doc.GetAllocator());
+                EXPECT_EQ(ResponseCode::JSON_MERGE_FAILED, rc);
+
+                rc = util::JsonParser::InitializeFromJsonString(old_doc, JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 rc = util::JsonParser::InitializeFromJsonString(new_doc, JSON_MERGE_TEST_TARGET_DOCUMENT_STRING);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
@@ -272,6 +295,53 @@ namespace awsiotsdk {
 
                 // Json library has overloaded == operator
                 EXPECT_TRUE(target_doc == expected_doc);
+            }
+
+            TEST_F(JsonParserTester, BrokenJsonTest) {
+                util::JsonDocument broken_doc;
+                util::String zero_length_string("");
+                util::String broken_string(BROKEN_JSON_STRING);
+
+                ResponseCode rc = util::JsonParser::InitializeFromJsonString(broken_doc, zero_length_string);
+                EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+
+                std::ofstream out("broken_json_test.json");
+                out << broken_string;
+                out.close();
+
+                rc = util::JsonParser::InitializeFromJsonFile(broken_doc, "broken_json_test.json");
+                EXPECT_EQ(ResponseCode::JSON_PARSING_ERROR, rc);
+
+                rapidjson::ParseErrorCode error_code = util::JsonParser::GetParseErrorCode(broken_doc);
+                EXPECT_NE(0, error_code);
+
+                size_t error_offset = util::JsonParser::GetParseErrorOffset(broken_doc);
+                EXPECT_NE((size_t)0, error_offset);
+
+                util::JsonDocument file_json;
+                util::String document(JSON_MERGE_TEST_SOURCE_DOCUMENT_STRING);
+
+                rc = util::JsonParser::InitializeFromJsonString(file_json, document);
+                EXPECT_EQ(ResponseCode::SUCCESS, rc);
+            }
+
+            TEST_F(JsonParserTester, WriteToFileTest) {
+                util::JsonDocument file_json;
+
+                const util::String file_name = "js>.json";
+                util::String null_file_name("");
+                ResponseCode rc = util::JsonParser::WriteToFile(file_json, null_file_name);
+                EXPECT_EQ(ResponseCode::FILE_NAME_INVALID, rc);
+           }
+
+            TEST_F(JsonParserTester, StringConversionTest) {
+                util::JsonDocument string_test_json;
+
+                util::JsonValue key(SINGLE_VALUE_JSON_KEY, string_test_json.GetAllocator());
+
+                util::String json_value_string = util::JsonParser::ToString(key);
+
+                EXPECT_EQ(JSON_STRING_OUTPUT, json_value_string);
             }
         }
     }

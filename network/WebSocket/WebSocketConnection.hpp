@@ -50,6 +50,10 @@ namespace awsiotsdk {
             util::String aws_access_key_id_;                     ///< Pointer to string containing the AWS Access Key Id.
             util::String aws_secret_access_key_;                 ///< Pointer to sstring containing the AWS Secret Access Key.
             util::String aws_session_token_;                     ///< Pointer to string containing the AWS Session Token.
+            util::String custom_authorizer_name_;                ///< Pointer to string containing the custom authorizer name.
+            util::String custom_authorizer_signature_;           ///< Pointer to string containing the authorizer signature.
+            util::String custom_authorizer_token_name_;          ///< Pointer to string containing the authorizer token name.
+            util::String custom_authorizer_token_;               ///< Pointer to string containing the authorizer token.
             util::String aws_region_;                            ///< Region for this connection
             util::String endpoint_;                              ///< Endpoint for this connection
             uint16_t endpoint_port_;                             ///< Endpoint port
@@ -163,6 +167,8 @@ namespace awsiotsdk {
             ResponseCode InitializeCanonicalQueryString(util::String &canonical_query_string) const;
 
             ssize_t WssFrameSendCallback(const uint8_t *data, size_t len, int flags, void *user_data);
+            
+            void UrlEncode(util::String &string, const util::Vector<unsigned char> &ignore_chars) const;
 
             ssize_t WssFrameRecvCallback(uint8_t *buf, size_t len, int flags, void *user_data);
 
@@ -208,6 +214,31 @@ namespace awsiotsdk {
                                 util::String aws_secret_access_key, util::String aws_session_token,
                                 std::chrono::milliseconds tls_handshake_timeout,
                                 std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
+                                bool server_verification_flag);
+
+            /**
+             * @brief Constructor for the WebSocket for MQTT implementation using custom authentication
+             *
+             * Performs any initialization required by the WebSocket layer.
+             *
+             * @param util::String endpoint - The target endpoint to connect to
+             * @param uint16_t endpoint_port - The port on the target to connect to
+             * @param util::String root_ca_location - Path of the location of the Root CA
+             * @param std::chrono::milliseconds tls_handshake_timeout - The value to use for timeout of handshake operation
+             * @param std::chrono::milliseconds tls_read_timeout - The value to use for timeout of read operation
+             * @param std::chrono::milliseconds tls_write_timeout - The value to use for timeout of write operation
+             * @param util::String custom_authorizer_name - Name of the authorizer function
+             * @param util::String custom_authorizer_signature - Authorizer signature
+             * @param util::String custom_authorizer_token_name - Authorizer token name
+             * @param util::String custom_authorizer_token - Authorizer token
+             * @param bool server_verification_flag - used to decide whether server verification is needed or not
+             *
+             */
+            WebSocketConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+                                std::chrono::milliseconds tls_handshake_timeout,
+                                std::chrono::milliseconds tls_read_timeout, std::chrono::milliseconds tls_write_timeout,
+                                util::String custom_authorizer_name, util::String custom_authorizer_signature,
+                                util::String custom_authorizer_token_name, util::String custom_authorizer_token,
                                 bool server_verification_flag);
 
             /**

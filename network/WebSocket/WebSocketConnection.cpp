@@ -32,6 +32,8 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <cstring>
+#include <iomanip>
+#include <algorithm>
 
 #include "WebSocketConnection.hpp"
 #include "util/logging/LogMacros.hpp"
@@ -47,6 +49,8 @@
 #define X_AMZ_DATE "X-Amz-Date"
 #define X_AMZ_EXPIRES "X-Amz-Expires"
 #define X_AMZ_SECURITY_TOKEN "X-Amz-Security-Token"
+#define X_AMZ_CUSTOMAUTHORIZER_NAME "X-Amz-CustomAuthorizer-Name"
+#define X_AMZ_CUSTOMAUTHORIZER_SIGNATURE "X-Amz-CustomAuthorizer-Signature"
 #define SIGNING_KEY "AWS4"
 #define LONG_DATE_FORMAT_STR "%Y%m%dT%H%M%SZ"
 #define SIMPLE_DATE_FORMAT_STR "%Y%m%d"
@@ -78,6 +82,7 @@
 #define MQTT_PROTOCOL "mqttv3.1.1"
 #define WSSGUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 #define WSS_SUCCESS_HANDSHAKE_RESP_HEADER "sec-websocket-accept"
+#define NOT_ENCODED_CHARS {'/'}
 
 #define TO_HASH_BUF_LEN 64
 #define WSS_CLIENT_KEY_MAX_LEN 64
@@ -99,6 +104,11 @@ namespace awsiotsdk {
                                                  bool server_verification_flag)
             : openssl_connection_(endpoint, endpoint_port, root_ca_location, tls_handshake_timeout, tls_read_timeout,
                                   tls_write_timeout, server_verification_flag) {
+            custom_authorizer_name_.clear();
+            custom_authorizer_signature_.clear();
+            custom_authorizer_token_name_.clear();
+            custom_authorizer_token_.clear();
+
             endpoint_ = endpoint;
             endpoint_port_ = endpoint_port;
             root_ca_location_ = root_ca_location;
@@ -120,9 +130,25 @@ namespace awsiotsdk {
             p_wslay_frame_Callbacks_->genmask_callback = std::bind(&WebSocketConnection::WssFrameGenMaskCallback, this,
                                                                    std::placeholders::_1, std::placeholders::_2,
                                                                    std::placeholders::_3);
+            p_wslay_frame_Context_ = nullptr;
 
             wss_frame_read_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
             wss_frame_write_ = std::unique_ptr<wslay_frame_iocb>(new wslay_frame_iocb());
+        }
+
+        WebSocketConnection::WebSocketConnection(util::String endpoint, uint16_t endpoint_port, util::String root_ca_location,
+                                                 std::chrono::milliseconds tls_handshake_timeout,
+                                                 std::chrono::milliseconds tls_read_timeout,
+                                                 std::chrono::milliseconds tls_write_timeout,
+                                                 util::String custom_authorizer_name, util::String custom_authorizer_signature,
+                                                 util::String custom_authorizer_token_name, util::String custom_authorizer_token,
+                                                 bool server_verification_flag)
+            : WebSocketConnection(endpoint, endpoint_port, root_ca_location, "", "", "", "", tls_handshake_timeout, tls_read_timeout,
+                                  tls_write_timeout, false) {
+            custom_authorizer_name_ = custom_authorizer_name;
+            custom_authorizer_signature_ = custom_authorizer_signature;
+            custom_authorizer_token_name_ = custom_authorizer_token_name;
+            custom_authorizer_token_ = custom_authorizer_token;
         }
 
         ResponseCode WebSocketConnection::ConnectInternal() {
@@ -515,11 +541,39 @@ namespace awsiotsdk {
                 canonical_query_string.append("&");
                 canonical_query_string.append(X_AMZ_SECURITY_TOKEN);
                 canonical_query_string.append("=");
-                canonical_query_string.append(aws_session_token_);
+                util::String encoded_string = util::String(aws_session_token_);
+                UrlEncode(encoded_string, NOT_ENCODED_CHARS);
+                canonical_query_string.append(encoded_string);
             }
             AWS_LOG_DEBUG(WEBSOCKET_WRAPPER_LOG_TAG, "CompletedCanonicalQuery: %s", canonical_query_string.c_str());
             return ResponseCode::SUCCESS;
         }
+
+        void WebSocketConnection::UrlEncode(util::String &string,
+                                            const util::Vector<unsigned char> &ignore_chars) const{
+            if (!string.empty()) {
+                util::OStringStream escaped_string;
+                escaped_string << std::hex;
+                for (util::String::iterator iterator = string.begin(); iterator != string.end(); ++iterator) {
+                    auto current_char = (unsigned char) (*iterator);
+
+                    // Keep alphanumeric and other accepted characters intact
+                    if (isalnum(current_char) ||
+                        std::find(ignore_chars.begin(), ignore_chars.end(), current_char) != ignore_chars.end()) {
+                        escaped_string << current_char;
+                        continue;
+                    }
+
+                    // Any other characters are percent-encoded
+                    escaped_string << std::uppercase;
+                    escaped_string << '%' << std::setw(2) << int(current_char);
+                    escaped_string << std::nouppercase;
+                }
+                string = escaped_string.str();
+            } else {
+            }
+        }
+
 
         ssize_t WebSocketConnection::WssFrameSendCallback(const uint8_t *data, size_t len, int flags, void *user_data) {
             util::String out_data((char *) data, len);
@@ -563,16 +617,11 @@ namespace awsiotsdk {
         }
 
         ResponseCode WebSocketConnection::WssHandshake() {
+            ResponseCode rc;
+            util::OStringStream stringStream;
+
             // Assuming:
             // 1. Ssl socket is ready to do read/write.
-
-            // Create canonical query string
-            util::String canonical_query_string;
-            canonical_query_string.reserve(CANONICAL_QUERY_BUF_LEN);
-            ResponseCode rc = InitializeCanonicalQueryString(canonical_query_string);
-            if (ResponseCode::SUCCESS != rc) {
-                return rc;
-            }
 
             // Create Wss handshake Http request
             // -> Generate Wss client key
@@ -583,15 +632,32 @@ namespace awsiotsdk {
                 return rc;
             }
 
-            // -> Assemble Wss Http request
-            util::OStringStream stringStream;
-            stringStream << "GET /mqtt?" << canonical_query_string << " " << HTTP_1_1 << "\r\n"
-                         << "Host: " << endpoint_ << "\r\n"
+            if (custom_authorizer_name_.empty()) {
+                // Create canonical query string
+                util::String canonical_query_string;
+                canonical_query_string.reserve(CANONICAL_QUERY_BUF_LEN);
+                rc = InitializeCanonicalQueryString(canonical_query_string);
+                if (ResponseCode::SUCCESS != rc) {
+                    return rc;
+                }
+
+                // -> Assemble Wss Http request
+                stringStream << "GET /mqtt?" << canonical_query_string << " " << HTTP_1_1 << "\r\n";
+            } else {
+                // -> Assemble Wss Http request
+                stringStream << "GET /mqtt " << HTTP_1_1 << "\r\n"
+                             << X_AMZ_CUSTOMAUTHORIZER_NAME << ": " << custom_authorizer_name_ << "\r\n"
+                             << X_AMZ_CUSTOMAUTHORIZER_SIGNATURE << ": " << custom_authorizer_signature_ << "\r\n"
+                             << custom_authorizer_token_name_ << ": " << custom_authorizer_token_ << "\r\n";
+            }
+
+            stringStream << "Host: " << endpoint_ << "\r\n"
                          << "Connection: " << UPGRADE << "\r\n"
                          << "Upgrade: " << WEBSOCKET << "\r\n"
                          << "Sec-WebSocket-Version: " << SEC_WEBSOCKET_VERSION_13 << "\r\n"
                          << "sec-websocket-key: " << client_key_buf << "\r\n"
                          << "Sec-WebSocket-Protocol: " << MQTT_PROTOCOL << "\r\n\r\n";
+
             util::String request_string = stringStream.str();
 
             // Send out request

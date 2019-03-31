@@ -27,11 +27,12 @@
 
 #include "mqtt/Subscribe.hpp"
 #include "mqtt/NetworkRead.hpp"
+#include "mqtt/GreengrassMqttClient.hpp"
 
 #define K 1024
 #define LARGE_PAYLOAD_SIZE 127 * K
-#define VALID_WILDCARD_TOPICS 6
-#define INVALID_WILDCARD_TOPICS 4
+#define VALID_WILDCARD_TOPICS 8
+#define INVALID_WILDCARD_TOPICS 6
 #define WILDCARD_TEST_TOPICS 10
 #define UNMATCHED_WILDCARD_TEST_TOPICS 2
 
@@ -68,6 +69,16 @@ namespace awsiotsdk {
                     p_subscribe_action_ = mqtt::SubscribeActionAsync::Create(p_core_state_);
                     p_unsubscribe_action_ = mqtt::UnsubscribeActionAsync::Create(p_core_state_);
 
+                    // Test for null values being used in PerformAction
+                    ResponseCode rc = p_subscribe_action_->PerformAction(nullptr, nullptr);
+                    EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+
+                    rc = p_subscribe_action_->PerformAction(p_network_connection_, nullptr);
+                    EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+
+                    rc = p_unsubscribe_action_->PerformAction(p_network_connection_, nullptr);
+                    EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+
                     EXPECT_CALL(*p_network_mock_, IsConnected()).WillRepeatedly(::testing::Return(true));
                 }
 
@@ -97,7 +108,9 @@ namespace awsiotsdk {
                 "+/+",
                 "/+",
                 "sport/tennis/#",
-                "+/tennis/#"
+                "+/tennis/#",
+                "$/tennis/#",
+                "$sport/tennis/+"
             };
 
             const util::String SubUnsubActionTester::valid_topic_regexes[VALID_WILDCARD_TOPICS] = {
@@ -105,15 +118,19 @@ namespace awsiotsdk {
                 "sport/[^/]*/player1",
                 "[^/]*/[^/]*",
                 "/[^/]*",
-                "sport/tennis/[^\uc1bf]*",
-                "[^/]*/tennis/[^\uc1bf]*"
+                u8"sport/tennis/[^\uc1bf]*",
+                u8"[^/]*/tennis/[^\uc1bf]*",
+                u8"\\$/tennis/[^\uc1bf]*",
+                "\\$sport/tennis/[^/]*"
             };
 
             const util::String SubUnsubActionTester::invalid_wildcard_test_topics[INVALID_WILDCARD_TOPICS] = {
                 "sport/tennis#",
                 "sport/tennis/#/ranking",
                 "sport+",
-                "$"
+                "$",
+                "+sport/",
+                "spo+rt"
             };
 
             const util::String SubUnsubActionTester::test_topics_for_wildcards[WILDCARD_TEST_TOPICS] = {
@@ -260,6 +277,73 @@ namespace awsiotsdk {
                 }
 
                 return rc;
+            }
+
+            TEST_F(SubUnsubActionTester, SubscriptionNullValueChecks) {
+                util::Vector<unsigned char> empty_char_vector;
+                std::shared_ptr<mqtt::SubackPacket> suback_packet = mqtt::SubackPacket::Create(empty_char_vector);
+                EXPECT_EQ(nullptr, suback_packet);
+
+                util::Vector<std::unique_ptr<Utf8String>> empty_topic_list;
+                std::shared_ptr<mqtt::UnsubscribePacket>
+                    unsub_packet = mqtt::UnsubscribePacket::Create(std::move(empty_topic_list));
+                EXPECT_EQ(nullptr, unsub_packet);
+
+                std::shared_ptr<mqtt::UnsubackPacket> unsuback_packet = mqtt::UnsubackPacket::Create(empty_char_vector);
+                EXPECT_EQ(nullptr, unsuback_packet);
+
+                std::unique_ptr<Action> SubActionAsync = mqtt::SubscribeActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, SubActionAsync);
+
+                std::unique_ptr<Action> UnsubActionAsync = mqtt::UnsubscribeActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, UnsubActionAsync);
+
+                util::String sub_topic = test_topic_base_;
+                sub_topic.append("_");
+                sub_topic.append(std::to_string(0));
+                std::shared_ptr<mqtt::Subscription>
+                    subscription = mqtt::Subscription::Create(Utf8String::Create(sub_topic),
+                                                              mqtt::QoS::QOS1,
+                                                              nullptr,
+                                                              nullptr);
+                EXPECT_EQ(nullptr, subscription);
+
+                mqtt::Subscription::ApplicationCallbackHandlerPtr p_app_handler =
+                    std::bind(&SubUnsubActionTester::SubscribeCallback,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3);
+                subscription = mqtt::Subscription::Create(nullptr,
+                                                          mqtt::QoS::QOS1,
+                                                          p_app_handler,
+                                                          nullptr);
+                EXPECT_EQ(nullptr, subscription);
+
+            }
+
+            TEST_F(SubUnsubActionTester, WillOptionsTest) {
+                util::String will_message = "You got disconnected!";
+
+                std::unique_ptr<mqtt::WillOptions> will_options = mqtt::WillOptions::Create(false, mqtt::QoS::QOS1,
+                                                                                            nullptr,
+                                                                                            will_message);
+                EXPECT_EQ(nullptr, will_options);
+
+                util::String sub_topic = test_topic_base_;
+                sub_topic.append("_");
+                sub_topic.append(std::to_string(0));
+                mqtt::WillOptions will_options_2(true, mqtt::QoS::QOS1,
+                                                 Utf8String::Create(sub_topic),
+                                                 will_message);
+
+                unsigned char connect_flag = 0x0;
+                will_options_2.SetConnectFlags(connect_flag);
+                EXPECT_EQ(0x2C, connect_flag);
+
+                mqtt::WillOptions copied_will_options(will_options_2);
+
+                EXPECT_EQ(will_options_2.Length(), copied_will_options.Length());
             }
 
             TEST_F(SubUnsubActionTester, SubscribeActionTestWithOneTopicAndQoS0) {
@@ -673,6 +757,73 @@ namespace awsiotsdk {
                 for (unsigned int i = 0; i < UNMATCHED_WILDCARD_TEST_TOPICS; ++i) {
                     EXPECT_EQ(nullptr, p_core_state_->GetSubscription(unmatched_test_topics_for_wildcards[i]));
                 }
+            }
+
+            TEST_F(SubUnsubActionTester, ClientSubscribeAndUnsubscribeErrorTest) {
+                EXPECT_NE(nullptr, p_network_connection_);
+                EXPECT_NE(nullptr, p_core_state_);
+
+                std::shared_ptr<GreengrassMqttClient> p_iot_greengrass_client =
+                    std::shared_ptr<GreengrassMqttClient>(GreengrassMqttClient::Create(p_network_connection_,
+                                                                                       std::chrono::milliseconds(2000)));
+                EXPECT_NE(nullptr, p_iot_greengrass_client);
+
+                util::Vector<std::shared_ptr<mqtt::Subscription>> subscription_list;
+
+                mqtt::Subscription::ApplicationCallbackHandlerPtr p_app_handler =
+                    std::bind(&SubUnsubActionTester::SubscribeCallback,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2,
+                              std::placeholders::_3);
+                util::Vector<std::shared_ptr<mqtt::Subscription>> long_subscription_list;
+                for (int i = 0; i < MAX_TOPICS_IN_ONE_SUBSCRIBE_PACKET + 1; ++i) {
+                    util::String topic = "Topic " + std::to_string(i);
+                    std::shared_ptr<mqtt::Subscription> p_subscription =
+                        mqtt::Subscription::Create(Utf8String::Create(topic),
+                                                   mqtt::QoS::QOS1,
+                                                   p_app_handler,
+                                                   nullptr);
+                    EXPECT_NE(nullptr, p_subscription);
+                    long_subscription_list.push_back(p_subscription);
+                }
+
+                ResponseCode
+                    rc = p_iot_greengrass_client->Subscribe(subscription_list, std::chrono::milliseconds(20000));
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
+
+                rc = p_iot_greengrass_client->Subscribe(long_subscription_list, std::chrono::milliseconds(20000));
+                EXPECT_EQ(ResponseCode::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST, rc);
+
+                util::Vector<std::unique_ptr<Utf8String>> topic_list;
+                rc = p_iot_greengrass_client->Unsubscribe(std::move(topic_list), std::chrono::milliseconds(20000));
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
+
+                util::Vector<std::unique_ptr<Utf8String>> long_topic_list;
+                for (int i = 0; i < MAX_TOPICS_IN_ONE_SUBSCRIBE_PACKET+1; ++i) {
+                    util::String topic = "Topic " + std::to_string(i);
+                    long_topic_list.push_back(Utf8String::Create(topic));
+                }
+                rc = p_iot_greengrass_client->Unsubscribe(std::move(long_topic_list), std::chrono::milliseconds(20000));
+                EXPECT_EQ(ResponseCode::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST, rc);
+
+                uint16_t packet_id_out = 10;
+                rc = p_iot_greengrass_client->SubscribeAsync(subscription_list, nullptr, packet_id_out);
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
+
+                rc = p_iot_greengrass_client->SubscribeAsync(long_subscription_list, nullptr, packet_id_out);
+                EXPECT_EQ(ResponseCode::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST, rc);
+
+                rc = p_iot_greengrass_client->UnsubscribeAsync(std::move(topic_list), nullptr, packet_id_out);
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
+
+                util::Vector<std::unique_ptr<Utf8String>> long_topic_list_2;
+                for (int i = 0; i < MAX_TOPICS_IN_ONE_SUBSCRIBE_PACKET+1; ++i) {
+                    util::String topic = "Topic " + std::to_string(i);
+                    long_topic_list_2.push_back(Utf8String::Create(topic));
+                }
+                rc = p_iot_greengrass_client->UnsubscribeAsync(std::move(long_topic_list_2), nullptr, packet_id_out);
+                EXPECT_EQ(ResponseCode::MQTT_TOO_MANY_SUBSCRIPTIONS_IN_REQUEST, rc);
             }
         }
     }

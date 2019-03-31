@@ -201,8 +201,9 @@ namespace awsiotsdk {
              */
             util::String ToString();
 
-            uint16_t GetPublishPacketId() { return publish_packet_id_; }
-            void SetPublishPacketId(uint16_t publish_packet_id) { publish_packet_id_ = publish_packet_id; }
+            uint16_t GetPublishPacketId() { return (uint16_t) publish_packet_id_.load(std::memory_order_relaxed); }
+            void SetPublishPacketId(uint16_t publish_packet_id) { publish_packet_id_.store(publish_packet_id,
+                                                                                           std::memory_order_relaxed); }
         };
 
         /**

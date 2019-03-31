@@ -14,7 +14,7 @@
  */
 
 /**
- * @file MbedTLSConnection.hpp
+ * @file MbedTLSConnection.cpp
  * @brief
  *
  */
@@ -52,6 +52,22 @@ namespace awsiotsdk {
 
             is_connected_ = false;
             requires_free_ = false;
+            enable_alpn_ = false;
+        }
+
+        MbedTLSConnection::MbedTLSConnection(util::String endpoint,
+                                             uint16_t endpoint_port,
+                                             util::String root_ca_location,
+                                             util::String device_cert_location,
+                                             util::String device_private_key_location,
+                                             std::chrono::milliseconds tls_handshake_timeout,
+                                             std::chrono::milliseconds tls_read_timeout,
+                                             std::chrono::milliseconds tls_write_timeout,
+                                             bool server_verification_flag, bool enable_alpn)
+                : MbedTLSConnection(endpoint, endpoint_port, root_ca_location, device_cert_location,
+                                    device_private_key_location, tls_handshake_timeout, tls_read_timeout,
+                                    tls_write_timeout, server_verification_flag) {
+            enable_alpn_ = enable_alpn;
         }
 
         bool MbedTLSConnection::IsPhysicalLayerConnected() {
@@ -88,6 +104,7 @@ namespace awsiotsdk {
             const util::String pers = "aws_iot_tls_wrapper";
             char port_buf[6];
             char vrfy_buf[512];
+            const char* alpn_protocol_list[] = {"x-amzn-mqtt-ca", nullptr};
 
             mbedtls_net_init(&server_fd_);
             mbedtls_ssl_init(&ssl_);
@@ -96,6 +113,18 @@ namespace awsiotsdk {
             mbedtls_x509_crt_init(&cacert_);
             mbedtls_x509_crt_init(&clicert_);
             mbedtls_pk_init(&pkey_);
+
+            if (enable_alpn_) {
+#ifdef MBEDTLS_SSL_ALPN
+                if (0 != mbedtls_ssl_conf_alpn_protocols(&conf_, alpn_protocol_list)) {
+                    AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, " SSL INIT Failed - Unable to set ALPN options");
+                    return ResponseCode::NETWORK_SSL_INIT_ERROR;
+                }
+#else
+                AWS_LOG_ERROR(MBEDTLS_WRAPPER_LOG_TAG, " SSL INIT Failed - No ALPN support");
+                return ResponseCode::NETWORK_SSL_INIT_ERROR;
+#endif
+            }
 
             requires_free_ = true;
 

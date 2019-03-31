@@ -117,6 +117,9 @@ namespace awsiotsdk {
     }
 
     Shadow::~Shadow() {
+        if (nullptr == p_mqtt_client_) {
+            return;
+        }
         if (p_mqtt_client_->IsConnected()) {
             util::Vector<std::unique_ptr<Utf8String>> topic_list;
             if (is_get_subscription_active_) {
@@ -172,16 +175,14 @@ namespace awsiotsdk {
             return ResponseCode::SHADOW_UNEXPECTED_RESPONSE_TYPE;
         }
 
-        // Validate payload
-        if (!payload.IsObject()
-            || !payload.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
-            return ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
-        }
-
         ResponseCode rc = ResponseCode::SHADOW_REQUEST_ACCEPTED;
         if (ShadowResponseType::Rejected == response_type) {
             AWS_LOG_WARN(SHADOW_LOG_TAG, "Get request rejected for shadow : %s", thing_name_.c_str());
             rc = ResponseCode::SHADOW_REQUEST_REJECTED;
+        } else  if (!payload.IsObject()
+            || !payload.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+            // Invalid payload
+            rc = ResponseCode::SHADOW_UNEXPECTED_RESPONSE_PAYLOAD;
         } else {
             AWS_LOG_DEBUG(SHADOW_LOG_TAG, "Get request accepted for shadow : %s", thing_name_.c_str());
             cur_server_state_document_.RemoveAllMembers();
@@ -265,11 +266,16 @@ namespace awsiotsdk {
             }
         }
 
+        ShadowRequestType shadow_req_type = ShadowRequestType::Update;
+        if (ShadowResponseType::Delta == response_type) {
+            shadow_req_type = ShadowRequestType::Delta;
+        }
+
         util::Map<ShadowRequestType, RequestHandlerPtr>::iterator request_itr
-            = request_mapping_.find(ShadowRequestType::Update);
+            = request_mapping_.find(shadow_req_type);
         if (request_itr != request_mapping_.end() && nullptr != request_itr->second) {
             RequestHandlerPtr ptr = request_itr->second;
-            ResponseCode rc_handler = ptr(thing_name_, ShadowRequestType::Update, response_type, payload);
+            ResponseCode rc_handler = ptr(thing_name_, shadow_req_type, response_type, payload);
             IOT_UNUSED(rc_handler);
         }
 
