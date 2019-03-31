@@ -33,6 +33,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <signal.h>
 #endif
 
 #include <atomic>
