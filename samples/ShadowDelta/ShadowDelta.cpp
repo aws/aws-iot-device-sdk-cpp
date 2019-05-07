@@ -121,7 +121,7 @@ namespace awsiotsdk {
                               ResponseHelper::ToString(rc).c_str());
                 rc = ResponseCode::FAILURE;
             } else {
-                p_network_connection_ = std::dynamic_pointer_cast<NetworkConnection>(p_network_connection);
+                p_network_connection_ = p_network_connection;
             }
 #endif
             return rc;
