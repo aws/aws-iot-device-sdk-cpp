@@ -1,8 +1,6 @@
-## ***** NOTICE *****
+## New Version Available in Developer Preview
 
-This repository is moving to a new branching system. The master branch will now contain bug fixes/features that have been minimally tested to ensure nothing major is broken. The release branch will contain new releases for the SDK that have been tested thoroughly on all supported platforms. Please ensure that you are tracking the release branch for all production work.
-
-This change will allow us to push out bug fixes quickly and avoid having situations where issues stay open for a very long time.
+A preview of the new AWS IoT Device SDK is [now available](https://github.com/awslabs/aws-iot-device-sdk-cpp-v2). It is a complete rework, built to improve reliability, performance, and security. We invite your feedback!
 
 ## AWS IoT C++ Device SDK
 
@@ -46,7 +44,7 @@ Primary aspects are:
  * Support for multiple platforms and compilers. Tested on Linux, Windows (with VS2015) and Mac OS
  * Flexibility in picking and choosing functionality, can create Clients which only perform a subset of MQTT operations
  * Support for Rapidjson allowing use of complex shadow document structures
- 
+
  <a name="metrics"></a>
  ## Collection of Metrics
  Beginning with Release v1.2.0 of the SDK, AWS collects usage metrics indicating which language and version of the SDK is being used. This allows us to prioritize our resources towards addressing issues faster in SDKs that see the most and is an important data point. However, we do understand that not all customers would want to report this data by default. In that case, the sending of usage metrics can be easily disabled by the user by using the overloaded Connect action which takes in a boolean for enabling or disabling the SDK metrics:
@@ -66,7 +64,7 @@ This section explains the individual steps to retrieve the necessary files and b
 The SDK uses CMake to generate the necessary Makefile. CMake version 3.2 and above is required.
 
 Prerequisites:
- 
+
  * Make sure to have latest CMake installed. Minimum required version is 3.2
  * Compiler should support C++11 features. We have tested this SDK with gcc 5+, clang 3.8 and on Visual Studio 2015.
  * Openssl has version 1.0.2 and libssl-dev has version 1.0.2. OpenSSL v1.1.0 reference wrapper implementation is not included in this version of the SDK.
@@ -81,10 +79,10 @@ Build Targets:
  * Sample - `shadow-delta-sample`
 
  This following sample targets are generated only if OpenSSL is being used:
- * Sample - `discovery-sample`. 
- * Sample - `robot-arm-sample`. 
+ * Sample - `discovery-sample`.
+ * Sample - `robot-arm-sample`.
  * Sample - `switch-sample`
- 
+
 Steps:
 
  * Clone the SDK from the github repository
@@ -92,7 +90,7 @@ Steps:
  * Run `cmake ../.` to build the SDK with the CLI.
  * The command will download required third party libraries automatically and generate a Makefile
  * Type `make <target name>` to build the desired target. It will create a folder called `bin` that will have the build output
-   
+
 <a name="porting"></a>
 ## Porting to different platforms
 The SDK has been written to adhere to C++11 standard without any additional compiler specific features enabled. It should compile on any platform that has a modern C++11 enabled compiler without issue.
@@ -120,20 +118,20 @@ Procedure for testing cross compiling (if using OpenSSL):
  ```
  # specify toolchain directory
  SET(TOOLCHAIN_DIR /home/toolchain/dir/here/bin)
-   
+
  # specify cross compilation target
  SET(TARGET_CROSS target-here)`
  ```
-3. Cross-compile OpenSSL using the same toolchain 
+3. Cross-compile OpenSSL using the same toolchain
 4. modify `network/CMakeLists.txt.in` and change OpenSSL library location to cross-compiled OpenSSL
 
-5. 
+5.
 ```
 cd build
 cmake ../. -DCMAKE_TOOLCHAIN_FILE=../ToolchainFile.cmake
 make
 ```
-6. Scp the application binary, certs and config for the application into the platform you're testing 
+6. Scp the application binary, certs and config for the application into the platform you're testing
 7. Run `./<application>`
 
 For MbedTLS, you don't need to cross-compile MbedTLS as it gets compiled when you run `make` with the same compiler as pointed to by the toolchain file.
@@ -264,3 +262,7 @@ This SDK is distributed under the [Apache License, Version 2.0](http://www.apach
 
 If you have any technical questions about AWS IoT C++ SDK, use the [AWS IoT forum](https://forums.aws.amazon.com/forum.jspa?forumID=210).
 For any other questions on AWS IoT, contact [AWS Support](https://aws.amazon.com/contact-us/).
+
+A list of known issues is maintained in [KnownIssues.md](KnownIssues.md).
+
+Note: customers have [reported deadlocks](https://github.com/aws/aws-iot-device-sdk-cpp/issues/14) while using the AWS IoT Device SDK for C++. If you are affected, a fix is available in the [locking-fixes](https://github.com/aws/aws-iot-device-sdk-cpp/tree/locking-fixes) branch. This issue is also resolved in the new AWS IoT Device SDK for C++, which is [currently in Developer Preview](https://github.com/awslabs/aws-iot-device-sdk-cpp-v2).
