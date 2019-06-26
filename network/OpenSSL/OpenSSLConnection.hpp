@@ -105,7 +105,7 @@ namespace awsiotsdk {
             bool certificates_read_flag_;
             bool enable_alpn_;
 
-            bool ipv6_connection;                       ///< Connect using ipv6
+            int address_family;                       ///< Should be AF_INET or AF_INET6
 
             std::mutex clean_shutdown_action_lock_;
             std::condition_variable shutdown_timeout_condition_;
