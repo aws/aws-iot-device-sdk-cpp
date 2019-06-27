@@ -79,7 +79,7 @@ namespace awsiotsdk {
             initializer = OpenSSLInitializer::getInstance();
             p_ssl_handle_ = nullptr;
             enable_alpn_ = false;
-            address_family = AF_INET6;
+            address_family_ = AF_INET6;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -222,7 +222,7 @@ namespace awsiotsdk {
             sockaddr_in6 dest_addr6{};
             void *addressPointer = nullptr;
 
-            if (address_family == AF_INET6) {
+            if (address_family_ == AF_INET6) {
                 dest_addr6.sin6_family = AF_INET6;
                 dest_addr6.sin6_port = htons(endpoint_port_);
             } else {
@@ -235,7 +235,7 @@ namespace awsiotsdk {
             struct addrinfo hints{}, *result_add, *iterator;
             memset(&hints, 0, sizeof(hints));
 
-            hints.ai_family = address_family;
+            hints.ai_family = address_family_;
 
             int error = getaddrinfo(endpoint_char, nullptr, &hints, &result_add);
             if ((error != 0) || (result_add == nullptr)) {
@@ -252,7 +252,7 @@ namespace awsiotsdk {
                 socklen_t socketLength;
                 sockaddr *sock_addr;
                 // add the address to the service used.
-                if (address_family == AF_INET6) {
+                if (address_family_ == AF_INET6) {
                     dest_addr6.sin6_addr = ((struct sockaddr_in6 *) (iterator->ai_addr))->sin6_addr;
                     sock_addr = reinterpret_cast<sockaddr *>(&dest_addr6);
                     socketLength = sizeof(dest_addr6);
@@ -266,7 +266,7 @@ namespace awsiotsdk {
                 }
 
                 char straddr[INET6_ADDRSTRLEN];
-                inet_ntop(address_family, addressPointer, straddr, sizeof(straddr));
+                inet_ntop(address_family_, addressPointer, straddr, sizeof(straddr));
                 AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG, "resolved %s to %s", endpoint_.c_str(), straddr);
 
                 connect_status = connect(server_tcp_socket_fd_, sock_addr, socketLength);
@@ -391,7 +391,7 @@ namespace awsiotsdk {
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
 
-            server_tcp_socket_fd_ = (int)socket(address_family, SOCK_STREAM, 0);
+            server_tcp_socket_fd_ = (int)socket(address_family_, SOCK_STREAM, 0);
             if (-1 == server_tcp_socket_fd_) {
                 return ResponseCode::NETWORK_TCP_SETUP_ERROR;
             }
@@ -487,9 +487,9 @@ namespace awsiotsdk {
             }
 
             networkResponse = PerformSSLConnect();
-            if (ResponseCode::SUCCESS != networkResponse && address_family == AF_INET6) {
+            if (ResponseCode::SUCCESS != networkResponse && address_family_ == AF_INET6) {
                 // IPv6 connection unsucessful retry with IPv4
-                address_family = AF_INET;
+                address_family_ = AF_INET;
                 networkResponse = PerformSSLConnect();
             }
 
