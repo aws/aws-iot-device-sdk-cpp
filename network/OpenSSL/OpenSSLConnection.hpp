@@ -105,6 +105,8 @@ namespace awsiotsdk {
             bool certificates_read_flag_;
             bool enable_alpn_;
 
+            int address_family_;                       ///< Should be AF_INET or AF_INET6
+
             std::mutex clean_shutdown_action_lock_;
             std::condition_variable shutdown_timeout_condition_;
 
