@@ -253,6 +253,9 @@ namespace awsiotsdk {
                 if (p_client_state_->subscription_map_.end() != existing_itr) {
                     if (existing_itr->second->IsActive()) {
                         itr = p_subscribe_packet->subscription_list_.erase(itr);
+                        if (is_ack_registered) {
+                            p_client_state_->DeletePendingAck(packet_id);
+                        }
                         // TODO: This needs to be reworked
                         continue;
                     } else {
@@ -267,7 +270,9 @@ namespace awsiotsdk {
             }
 
             const util::String packet_data = p_subscribe_packet->ToString();
-            rc = WriteToNetworkBuffer(p_network_connection, packet_data);
+            if (p_subscribe_packet->subscription_list_.size() > 0) {
+                rc = WriteToNetworkBuffer(p_network_connection, packet_data);
+            }
             if (ResponseCode::SUCCESS != rc) {
                 AWS_LOG_ERROR(SUBSCRIBE_ACTION_LOG_TAG, "Subscribe Write to Network Failed. %s",
                               ResponseHelper::ToString(rc).c_str());
