@@ -636,7 +636,8 @@ namespace awsiotsdk {
                                 // User account running agent must have passwordless sudo access on /sbin/shutdown
                                 // Recommended online search for permissions setup instructions https://www.google.com/search?q=passwordless+sudo+access+instructions
                                 systemCommand = GetShutdownSystemCommand(false, operation == "reboot");
-                                system(systemCommand.c_str());
+                                int rc = system(systemCommand.c_str());
+                                IOT_UNUSED(rc);
                                 std::cout << std::endl << outputMessage << std::endl;
                             }
                         }
