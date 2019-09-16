@@ -604,26 +604,27 @@ namespace awsiotsdk {
             }
             is_connected_ = false;
 
-            std::chrono::milliseconds timeout = std::chrono::milliseconds(tls_read_timeout_.tv_sec * 1000 +
-                tls_read_timeout_.tv_usec / 1000);
+            if (nullptr != p_ssl_handle_) {
+                std::chrono::milliseconds timeout =
+                        std::chrono::milliseconds(tls_read_timeout_.tv_sec * 1000 + tls_read_timeout_.tv_usec / 1000);
 
-            std::unique_lock<std::mutex> shutdown_lock(clean_shutdown_action_lock_);
+                std::unique_lock<std::mutex> shutdown_lock(clean_shutdown_action_lock_);
 
-            // TODO: add config for disconnect timeout
-            // wait for tls_read_timeout and then exit the shutdown loop if it is not successful
-            this->shutdown_timeout_condition_.wait_for(shutdown_lock, std::chrono::milliseconds(timeout), [this] {
-                int rc = SSL_shutdown(p_ssl_handle_);
-                if (1 == rc) {
-                    return true;
-                }
-                int errorCode = SSL_get_error(p_ssl_handle_, rc);
-                WaitForSelect(errorCode);
-                return false;
-            });
+                // TODO: add config for disconnect timeout
+                // wait for tls_read_timeout and then exit the shutdown loop if it is not successful
+                this->shutdown_timeout_condition_.wait_for(shutdown_lock, std::chrono::milliseconds(timeout), [this] {
+                    int rc = SSL_shutdown(p_ssl_handle_);
+                    if (1 == rc) {
+                        return true;
+                    }
+                    int errorCode = SSL_get_error(p_ssl_handle_, rc);
+                    WaitForSelect(errorCode);
+                    return false;
+                });
 
-            SSL_free(p_ssl_handle_);
-            p_ssl_handle_ = nullptr;
-
+                SSL_free(p_ssl_handle_);
+                p_ssl_handle_ = nullptr;
+            }
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
             ERR_remove_thread_state(NULL);
 #endif
