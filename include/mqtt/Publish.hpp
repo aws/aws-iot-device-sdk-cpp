@@ -41,21 +41,14 @@ namespace awsiotsdk {
             std::unique_ptr<Utf8String> p_topic_name_;  ///< Topic Name this packet was published to
             util::String payload_;                      ///< MQTT message payload
         public:
-            // Ensure Default and Copy Constructors and Copy assignment operator are deleted
-            // Use default move constructors and assignment operators
-            // Default virtual destructor
-            // Delete Default constructor
-            PublishPacket() = delete;
-            // Delete Copy constructor
-            PublishPacket(const PublishPacket &) = delete;
-            // Default Move constructor
-            PublishPacket(PublishPacket &&) = default;
-            // Delete Copy assignment operator
-            PublishPacket &operator=(const PublishPacket &) & = delete;
-            // Default Move assignment operator
-            PublishPacket &operator=(PublishPacket &&) & = default;
-            // Default destructor
-            virtual ~PublishPacket() = default;
+            // Ensure Default Constructor is deleted
+            // Disabling default, move and copy constructors to match Packet parent
+            PublishPacket() = delete;                                   // Default constructor
+            PublishPacket(const PublishPacket &) = delete;              // Copy constructor
+            PublishPacket(PublishPacket &&) = delete;                   // Move constructor
+            PublishPacket &operator=(const PublishPacket &) & = delete; // Copy assignment operator
+            PublishPacket &operator=(PublishPacket &&) & = delete;      // Move assignment operator
+            virtual ~PublishPacket() = default;                         // Default destructor
 
             /**
              * @brief Constructor, Individual data
@@ -166,20 +159,14 @@ namespace awsiotsdk {
         protected:
             std::atomic_uint_fast16_t publish_packet_id_;
         public:
-            // Ensure Default Constructor is deleted, default to move and copy constructors and assignment operators
-            // Default virtual destructor
-            // Delete Default constructor
-            PubackPacket() = delete;
-            // Default Copy constructor
-            PubackPacket(const PubackPacket &) = default;
-            // Default Move constructor
-            PubackPacket(PubackPacket &&) = default;
-            // Default Copy assignment operator
-            PubackPacket &operator=(const PubackPacket &) & = default;
-            // Default Move assignment operator
-            PubackPacket &operator=(PubackPacket &&) & = default;
-            // Default destructor
-            virtual ~PubackPacket() = default;
+            // Ensure Default Constructor is deleted
+            // Disabling default, move and copy constructors to match Packet parent
+            PubackPacket() = delete;                                    // Default constructor
+            PubackPacket(const PubackPacket &) = delete;                // Copy constructor
+            PubackPacket(PubackPacket &&) = delete;                     // Move constructor
+            PubackPacket &operator=(const PubackPacket &) & = delete;   // Copy assignment operator
+            PubackPacket &operator=(PubackPacket &&) & = delete;        // Move assignment operator
+            virtual ~PubackPacket() = default;                          // Default destructor
 
             /**
              * @brief Constructor
@@ -218,13 +205,13 @@ namespace awsiotsdk {
             // Disabling default, move and copy constructors to match Action parent
             // Default virtual destructor
             PublishActionAsync() = delete;
-            // Default Copy constructor
+            // Delete Copy constructor
             PublishActionAsync(const PublishActionAsync &) = delete;
-            // Default Move constructor
+            // Delete Move constructor
             PublishActionAsync(PublishActionAsync &&) = delete;
-            // Default Copy assignment operator
+            // Delete Copy assignment operator
             PublishActionAsync &operator=(const PublishActionAsync &) & = delete;
-            // Default Move assignment operator
+            // Delete Move assignment operator
             PublishActionAsync &operator=(PublishActionAsync &&) & = delete;
             // Default destructor
             virtual ~PublishActionAsync() = default;
@@ -272,15 +259,14 @@ namespace awsiotsdk {
             std::shared_ptr<ClientState> p_client_state_;  ///< Shared Client State instance
         public:
             // Disabling default, move and copy constructors to match Action parent
-            // Default virtual destructor
             PubackActionAsync() = delete;
-            // Default Copy constructor
+            // Delete Copy constructor
             PubackActionAsync(const PubackActionAsync &) = delete;
-            // Default Move constructor
+            // Delete Move constructor
             PubackActionAsync(PubackActionAsync &&) = delete;
-            // Default Copy assignment operator
+            // Delete Copy assignment operator
             PubackActionAsync &operator=(const PubackActionAsync &) & = delete;
-            // Default Move assignment operator
+            // Delete Move assignment operator
             PubackActionAsync &operator=(PubackActionAsync &&) & = delete;
             // Default destructor
             virtual ~PubackActionAsync() = default;
