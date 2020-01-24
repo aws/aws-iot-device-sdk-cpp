@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-project(aws-iot-sdk-cpp CXX)
+project(aws-iot-sdk-cpp VERSION 1.4.0 LANGUAGES CXX)
 option(BUILD_SHARED_LIBRARY "Build the library as a shared object, will build it as a static library otherwise." OFF)
 option(BUILD_CLI "Build the cli." ON)
 option(BUILD_SAMPLES "Build the samples." ON)
@@ -47,13 +47,13 @@ endif()
 #############################
 # Add SDK Target #
 #############################
-add_definitions(-DSDK_VERSION_STRING="1.4.0")
+add_definitions(-DSDK_VERSION_STRING="${PROJECT_VERSION}")
 
 # Create library file. The Client applications MUST link to below target if using this CMake file
 set(SDK_TARGET_NAME aws-iot-sdk-cpp)
 if (BUILD_SHARED_LIBRARY)
     add_library(${SDK_TARGET_NAME} SHARED "")
-    set_target_properties(${SDK_TARGET_NAME} PROPERTIES SUFFIX ".so")
+    set_target_properties(${SDK_TARGET_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR} VERSION ${PROJECT_VERSION})
 else()
     add_library(${SDK_TARGET_NAME} "")
     set_target_properties(${SDK_TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
