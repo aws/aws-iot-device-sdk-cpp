@@ -69,7 +69,7 @@ Prerequisites:
 
  * Make sure to have latest CMake installed. Minimum required version is 3.2
  * Compiler should support C++11 features. We have tested this SDK with gcc 5+, clang 3.8 and on Visual Studio 2015.
- * Openssl has version 1.1.0 and libssl-dev has version 1.0.2. OpenSSL v1.1.0 reference wrapper implementation is not included in this version of the SDK.
+ * OpenSSL has version 1.1.0 and libssl-dev has version 1.1.0. OpenSSL v1.1.0 reference wrapper implementation is not included in this version of the SDK.
  * You can find basic information on how to set up the above on some popular platforms in [Platform.md](https://github.com/aws/aws-iot-device-sdk-cpp/blob/master/Platform.md)
 
 Build Targets:

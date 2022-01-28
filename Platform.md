@@ -51,11 +51,11 @@ This file contains instructions for installing dependencies on different platfor
        /usr/local/Cellar/openssl/1.0.2l (1,709 files, 12.1MB)
          Poured from bottle on 2017-05-31 at 15:32:30`
       Use the latest stable 1.0.2 version available, which is 1.0.2l here   
-    * Run `brew switch openssl <latest stable 1.1.0 version>`. If the version is already installed, the path for this version of OpenSSL will be displayed.
+    * Run `brew switch openssl@<latest stable 1.1 version>`. If the version is already installed, the path for this version of OpenSSL will be displayed.
       Example output:
       `Cleaning /usr/local/Cellar/openssl/1.0.2l
-       Opt link created for /usr/local/Cellar/openssl/1.1.0l`
-      Use the path (`/usr/local/Cellar/openssl/1.1.0l` in the example above) in your <BASE_SDK_DIRECTORY>/network/CMakeLists.txt 
+       Opt link created for /usr/local/Cellar/openssl@1.1/1.1.1m`
+      Use the path (`/usr/local/Cellar/openssl@1.1/1.1.1m` in the example above) in your <BASE_SDK_DIRECTORY>/network/CMakeLists.txt 
     * If not installed, run `brew install openssl --force`  after the switch operation. The path will be displayed at the end of the installation. 
   
   After that follow the below steps.
@@ -93,7 +93,7 @@ This file contains instructions for installing dependencies on different platfor
   * To update to OpenSSL 1.1.0
     
     * `sudo apt-get install make` (if not already installed)
-    * `wget https://www.openssl.org/source/openssl-1.1.0g.tar.gz` 
+    * `wget https://www.openssl.org/source/openssl-1.1.0.tar.gz` 
     * `tar -xzvf openssl-1.1.0g.tar.gz` 
     * `cd openssl-1.1.0g`
     * `sudo ./config` 
