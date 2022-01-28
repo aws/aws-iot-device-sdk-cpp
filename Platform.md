@@ -25,10 +25,8 @@ This file contains instructions for installing dependencies on different platfor
     
  `sudo update-alternatives --config gcc`
  `sudo update-alternatives --config g++`
-  * Install Openssl 1.0.2. Linux From Scratch has good guides on installing versions of OpenSSL from source. 
-  * Build libssl-dev 1.0.2 or above.
-    * Download libssl-dev_1.0.2 [libssl-dev_1.0.2](http://mirrors.manchester.m247.com/raspbian/pool/main/o/openssl/libssl-dev_1.0.2j-1_armhf.deb)
-    * run `sudo dpkg -i libssl-dev_1.0.2j-1_armhf.deb`
+  * Install Openssl 1.1.0. Linux From Scratch has good guides on installing versions of OpenSSL from source. 
+  * Build libssl-dev 1.1.0 or above.
 
 ### Mac OS
   * Install Homebrew if it's not installed `$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
@@ -40,8 +38,8 @@ This file contains instructions for installing dependencies on different platfor
       * Add the following line to the paths already present `/Applications/CMake.app/Contents/bin`
       * save and quit
       * In a new terminal window, run `echo $PATH`. The path for CMake should be displayed, along with the other paths. 
-  * With Mac OS, the default version of OpenSSL is not 1.0.2 and cannot be used with the SDK. Instead, version 1.0.2 needs to be installed.
-    To install OpenSSL 1.0.2:
+  * With Mac OS, the default version of OpenSSL is not 1.1.0 and cannot be used with the SDK. Instead, version 1.1.0 needs to be installed.
+    To install OpenSSL 1.1.0:
     * Update brew `brew update && brew upgrade`
     * Run `brew info openssl` to list the versions of openssl available
       Example output:
@@ -53,11 +51,11 @@ This file contains instructions for installing dependencies on different platfor
        /usr/local/Cellar/openssl/1.0.2l (1,709 files, 12.1MB)
          Poured from bottle on 2017-05-31 at 15:32:30`
       Use the latest stable 1.0.2 version available, which is 1.0.2l here   
-    * Run `brew switch openssl <latest stable 1.0.2 version>`. If the version is already installed, the path for this version of OpenSSL will be displayed.
+    * Run `brew switch openssl <latest stable 1.1.0 version>`. If the version is already installed, the path for this version of OpenSSL will be displayed.
       Example output:
       `Cleaning /usr/local/Cellar/openssl/1.0.2l
-       Opt link created for /usr/local/Cellar/openssl/1.0.2l`
-      Use the path (`/usr/local/Cellar/openssl/1.0.2l` in the example above) in your <BASE_SDK_DIRECTORY>/network/CMakeLists.txt 
+       Opt link created for /usr/local/Cellar/openssl/1.1.0l`
+      Use the path (`/usr/local/Cellar/openssl/1.1.0l` in the example above) in your <BASE_SDK_DIRECTORY>/network/CMakeLists.txt 
     * If not installed, run `brew install openssl --force`  after the switch operation. The path will be displayed at the end of the installation. 
   
   After that follow the below steps.
@@ -74,8 +72,8 @@ This file contains instructions for installing dependencies on different platfor
     
 ### Windows
 
-  * Both the Websocket and OpenSSL builds work on windows. The latest version of OpenSSL 1.0.2 needs to be installed for them to work properly.
-  * Download and install the latest version of OpenSSL 1.0.2 from [this link](https://slproweb.com/products/Win32OpenSSL.html)
+  * Both the Websocket and OpenSSL builds work on windows. The latest version of OpenSSL 1.1.0 needs to be installed for them to work properly.
+  * Download and install the latest version of OpenSSL 1.1.0 from [this link](https://slproweb.com/products/Win32OpenSSL.html)
   * Download and install CMake for Windows from [this link](https://cmake.org/download/)
   * Download and install git from [this link](https://git-scm.com/downloads). Please be sure to install git bash as well.
   * Open the Git Bash terminal and navigate to the folder where you want the SDK to be downloaded.
@@ -92,12 +90,12 @@ This file contains instructions for installing dependencies on different platfor
 
 ### Ubuntu 14.04
   * Install CMake [CMake Installation](https://cmake.org/install/)
-  * To update to OpenSSL 1.0.2
+  * To update to OpenSSL 1.1.0
     
     * `sudo apt-get install make` (if not already installed)
-    * `wget https://www.openssl.org/source/openssl-1.0.2g.tar.gz` 
-    * `tar -xzvf openssl-1.0.2g.tar.gz` 
-    * `cd openssl-1.0.2g`
+    * `wget https://www.openssl.org/source/openssl-1.1.0g.tar.gz` 
+    * `tar -xzvf openssl-1.1.0g.tar.gz` 
+    * `cd openssl-1.1.0g`
     * `sudo ./config` 
     * `sudo make install`
     * `sudo ln -sf /usr/local/ssl/bin/openssl <which openssl>`
