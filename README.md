@@ -69,7 +69,7 @@ Prerequisites:
 
  * Make sure to have latest CMake installed. Minimum required version is 3.2
  * Compiler should support C++11 features. We have tested this SDK with gcc 5+, clang 3.8 and on Visual Studio 2015.
- * Openssl has version 1.0.2 and libssl-dev has version 1.0.2. OpenSSL v1.1.0 reference wrapper implementation is not included in this version of the SDK.
+ * OpenSSL has version 1.1.0 and libssl-dev has version 1.1.0.
  * You can find basic information on how to set up the above on some popular platforms in [Platform.md](https://github.com/aws/aws-iot-device-sdk-cpp/blob/master/Platform.md)
 
 Build Targets:
@@ -100,13 +100,13 @@ The platform should be able to provide a C++11 compatible threading implementati
 TLS libraries can be added by simply implementing a derived class of NetworkConnection and providing an instance to the Client.
 We provide the following reference implementations for the Network layer:
 
- * OpenSSL - MQTT over TLS using OpenSSL v1.0.2. Tested on Windows (VS 2015) and Linux
+ * OpenSSL - MQTT over TLS using OpenSSL v1.1.0. Tested on Windows (VS 2015) and Linux
  	* The provided implementation requires OpenSSL to be pre-installed on the device
  	* Use the mqtt port setting from the config file while setting up the network instance
  * MbedTLS - MQTT over TLS using MbedTLS. Tested on Linux
  	* The provided implementation will download MbedTLS v2.3.0 from the github repo and build and link to the libraries. Please be warned that the default configuration of MbedTLS limits packet sizes to 16K
  	* Use the mqtt port setting from the config file while setting up the network instance
- * WebSocket - MQTT over WebSocket. Tested on both Windows (VS 2015) and Linux. Uses OpenSSL 1.0.2 as the underlying TLS layer
+ * WebSocket - MQTT over WebSocket. Tested on both Windows (VS 2015) and Linux. Uses OpenSSL 1.1.0 as the underlying TLS layer
  	* The provided implementation requires OpenSSL to be pre-installed on the device
  	* Please be aware that while the provided reference implementation allows initialization of credentials from any source, the recommended way to do so is to use the aws cli to generate credential files and read the generated files
  	* Use the https port setting from the config file while setting up the network instance
