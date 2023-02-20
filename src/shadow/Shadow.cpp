@@ -117,6 +117,9 @@ namespace awsiotsdk {
     }
 
     Shadow::~Shadow() {
+        if (nullptr == p_mqtt_client_) {
+            return;
+        }
         if (p_mqtt_client_->IsConnected()) {
             util::Vector<std::unique_ptr<Utf8String>> topic_list;
             if (is_get_subscription_active_) {
@@ -263,11 +266,16 @@ namespace awsiotsdk {
             }
         }
 
+        ShadowRequestType shadow_req_type = ShadowRequestType::Update;
+        if (ShadowResponseType::Delta == response_type) {
+            shadow_req_type = ShadowRequestType::Delta;
+        }
+
         util::Map<ShadowRequestType, RequestHandlerPtr>::iterator request_itr
-            = request_mapping_.find(ShadowRequestType::Update);
+            = request_mapping_.find(shadow_req_type);
         if (request_itr != request_mapping_.end() && nullptr != request_itr->second) {
             RequestHandlerPtr ptr = request_itr->second;
-            ResponseCode rc_handler = ptr(thing_name_, ShadowRequestType::Update, response_type, payload);
+            ResponseCode rc_handler = ptr(thing_name_, shadow_req_type, response_type, payload);
             IOT_UNUSED(rc_handler);
         }
 
@@ -567,6 +575,11 @@ namespace awsiotsdk {
 
         if (diff.HasMember(SHADOW_DOCUMENT_VERSION_KEY)) {
             diff.EraseMember(SHADOW_DOCUMENT_VERSION_KEY);
+        }
+
+        // make sure that payload is valid
+        if (!diff.HasMember(SHADOW_DOCUMENT_STATE_KEY)) {
+            return ResponseCode::SHADOW_NOTHING_TO_UPDATE;
         }
 
         util::String payload = util::JsonParser::ToString(diff);

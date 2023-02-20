@@ -46,9 +46,9 @@ The SDK will never create or destroy a Network Instance or perform any other ope
 An additional feature of the SDK is the ability for all actions to do partial Network Read and Writes. The Code for this is located in [src/Action.cpp](./src/Action.cpp).
 
 As mentioned in the [README.md](./README.md) file, The SDK itself provides the below reference implementations for Network Connection:
- * MQTT over TLS using OpenSSL 1.0.2
+ * MQTT over TLS using OpenSSL 1.1.0
  * MQTT over TLS using MbedTLS
- * MQTT over WebSocket using OpenSSL 1.0.2 as the underlying TLS layer
+ * MQTT over WebSocket using OpenSSL 1.1.0 as the underlying TLS layer
 
 Details on how a custom network connection class can be created are available in the Network Connection [README.md](./network/README.md)
 
