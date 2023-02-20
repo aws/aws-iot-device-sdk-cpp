@@ -383,6 +383,18 @@ namespace awsiotsdk {
             }
 
             // Test Client Core destroy, all threads should successfully stop, no exceptions
+
+            TEST_F(ClientCoreTester, TestNullRegisterAction) {
+                EXPECT_NE(nullptr, p_client_core_);
+                EXPECT_NE(nullptr, p_core_state_);
+
+                TestAction::Reset();
+
+                std::shared_ptr<TestActionData> p_test_action_data = nullptr;
+
+                ResponseCode rc = p_client_core_->RegisterAction(ActionType::RESERVED_ACTION, nullptr);
+                EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+            }
         }
     }
 }

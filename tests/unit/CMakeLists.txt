@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 project(aws-iot-cpp-unit-tests CXX)
+add_definitions(-DUNIT_TESTS)
 
 ######################################
 # Section : Disable in-source builds #
@@ -43,14 +44,20 @@ endif()
 #############################
 enable_testing()
 set(UNIT_TEST_TARGET_NAME aws-iot-unit-tests)
-add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
+add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../samples/JobsAgent/JobsAgentOperations.cpp;${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
+# add_executable(${UNIT_TEST_TARGET_NAME} "${PROJECT_SOURCE_DIR}/../../common/ConfigCommon.cpp")
 
 target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_BINARY_DIR}/third_party/rapidjson/src/include)
 target_include_directories(${SDK_TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+# target_include_directories(${SDK_TARGET_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/../../samples/JobsAgent)
 
 # Configure Threading library
 find_package(Threads REQUIRED)
 target_link_libraries(${UNIT_TEST_TARGET_NAME} "Threads::Threads")
+
+# Configure CURL library
+find_package(CURL REQUIRED)
+target_link_libraries(${UNIT_TEST_TARGET_NAME} ${CURL_LIBRARIES})
 
 # Download and unpack googletest at configure time
 configure_file(${CMAKE_CURRENT_LIST_DIR}/CMakeLists-gtest.txt.in

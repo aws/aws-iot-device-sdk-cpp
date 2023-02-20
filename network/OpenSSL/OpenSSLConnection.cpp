@@ -79,6 +79,7 @@ namespace awsiotsdk {
             initializer = OpenSSLInitializer::getInstance();
             p_ssl_handle_ = nullptr;
             enable_alpn_ = false;
+            address_family_ = AF_INET6;
         }
 
         OpenSSLConnection::OpenSSLConnection(util::String endpoint,
@@ -207,6 +208,7 @@ namespace awsiotsdk {
         ResponseCode OpenSSLConnection::ConnectTCPSocket() {
             const char *endpoint_char = endpoint_.c_str();
             if (nullptr == endpoint_char) {
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "Hostname was null or empty.");
                 return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
             }
 
@@ -216,28 +218,69 @@ namespace awsiotsdk {
             }
 #endif
 
-            hostent *host = gethostbyname(endpoint_char);
-            if (nullptr == host) {
-                return ResponseCode::NETWORK_TCP_NO_ENDPOINT_SPECIFIED;
+            sockaddr_in dest_addr{};
+            sockaddr_in6 dest_addr6{};
+            void *addressPointer = nullptr;
+
+            if (address_family_ == AF_INET6) {
+                memset(&dest_addr6, 0, sizeof(struct sockaddr_in6));
+                dest_addr6.sin6_family = AF_INET6;
+                dest_addr6.sin6_port = htons(endpoint_port_);
+            } else {
+                memset(&(dest_addr.sin_zero), '\0', 8);
+                dest_addr.sin_family = AF_INET;
+                dest_addr.sin_port = htons(endpoint_port_);
             }
 
-            sockaddr_in dest_addr;
+            //gethostbyname is not to be used anymore.
+            struct addrinfo hints{}, *result_add, *iterator;
+            memset(&hints, 0, sizeof(hints));
 
-            dest_addr.sin_family = AF_INET;
-            dest_addr.sin_port = htons(endpoint_port_);
-            dest_addr.sin_addr.s_addr = *(uint32_t *) (host->h_addr);
-            memset(&(dest_addr.sin_zero), '\0', 8);
+            hints.ai_family = address_family_;
 
-            AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG,
-                         "resolved %s to %s",
-                         endpoint_.c_str(),
-                         inet_ntoa(dest_addr.sin_addr));
+            int error = getaddrinfo(endpoint_char, nullptr, &hints, &result_add);
+            if ((error != 0) || (result_add == nullptr)) {
+                // found no ip address for the server
+                AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "Error resolving hostname: %i", error);
+                return ResponseCode::NETWORK_TCP_UNKNOWN_HOST;
+            }
 
-            int connect_status = connect(server_tcp_socket_fd_, (sockaddr *) &dest_addr, sizeof(sockaddr));
+            // getaddrinfo can return multiple ip addresses.
+            iterator = result_add;
+            int connect_status;
+            do {
+                // init structs for address data
+                socklen_t socketLength;
+                sockaddr *sock_addr;
+                // add the address to the service used.
+                if (address_family_ == AF_INET6) {
+                    dest_addr6.sin6_addr = ((struct sockaddr_in6 *) (iterator->ai_addr))->sin6_addr;
+                    sock_addr = reinterpret_cast<sockaddr *>(&dest_addr6);
+                    socketLength = sizeof(dest_addr6);
+                    addressPointer = &dest_addr6.sin6_addr;
+                } else {
+                    dest_addr.sin_addr.s_addr =
+                            ((struct sockaddr_in *) (iterator->ai_addr))->sin_addr.s_addr;//set ip address
+                    sock_addr = reinterpret_cast<sockaddr *>(&dest_addr);
+                    socketLength = sizeof(dest_addr);
+                    addressPointer = &dest_addr.sin_addr;
+                }
+
+                char straddr[INET6_ADDRSTRLEN];
+                inet_ntop(address_family_, addressPointer, straddr, sizeof(straddr));
+                AWS_LOG_INFO(OPENSSL_WRAPPER_LOG_TAG, "resolved %s to %s", endpoint_.c_str(), straddr);
+
+                connect_status = connect(server_tcp_socket_fd_, sock_addr, socketLength);
+
+                iterator = iterator->ai_next; //next value in address array
+            } while (connect_status == -1 && iterator != nullptr);
+
+            // free address info
+            freeaddrinfo(result_add);
+
             if (-1 != connect_status) {
                 return ResponseCode::SUCCESS;
             }
-
             AWS_LOG_ERROR(OPENSSL_WRAPPER_LOG_TAG, "connect - %s", strerror(errno));
             return ResponseCode::NETWORK_TCP_CONNECT_ERROR;
         }
@@ -349,7 +392,7 @@ namespace awsiotsdk {
             // Configure a non-zero callback if desired
             SSL_set_verify(p_ssl_handle_, SSL_VERIFY_PEER, nullptr);
 
-            server_tcp_socket_fd_ = (int)socket(AF_INET, SOCK_STREAM, 0);
+            server_tcp_socket_fd_ = (int)socket(address_family_, SOCK_STREAM, 0);
             if (-1 == server_tcp_socket_fd_) {
                 return ResponseCode::NETWORK_TCP_SETUP_ERROR;
             }
@@ -445,6 +488,12 @@ namespace awsiotsdk {
             }
 
             networkResponse = PerformSSLConnect();
+            if (ResponseCode::SUCCESS != networkResponse && address_family_ == AF_INET6) {
+                // IPv6 connection unsucessful retry with IPv4
+                address_family_ = AF_INET;
+                networkResponse = PerformSSLConnect();
+            }
+
             if (ResponseCode::SUCCESS != networkResponse) {
                 SSL_free(p_ssl_handle_);
                 p_ssl_handle_ = nullptr;
@@ -555,26 +604,27 @@ namespace awsiotsdk {
             }
             is_connected_ = false;
 
-            std::chrono::milliseconds timeout = std::chrono::milliseconds(tls_read_timeout_.tv_sec * 1000 +
-                tls_read_timeout_.tv_usec / 1000);
+            if (nullptr != p_ssl_handle_) {
+                std::chrono::milliseconds timeout =
+                        std::chrono::milliseconds(tls_read_timeout_.tv_sec * 1000 + tls_read_timeout_.tv_usec / 1000);
 
-            std::unique_lock<std::mutex> shutdown_lock(clean_shutdown_action_lock_);
+                std::unique_lock<std::mutex> shutdown_lock(clean_shutdown_action_lock_);
 
-            // TODO: add config for disconnect timeout
-            // wait for tls_read_timeout and then exit the shutdown loop if it is not successful
-            this->shutdown_timeout_condition_.wait_for(shutdown_lock, std::chrono::milliseconds(timeout), [this] {
-                int rc = SSL_shutdown(p_ssl_handle_);
-                if (1 == rc) {
-                    return true;
-                }
-                int errorCode = SSL_get_error(p_ssl_handle_, rc);
-                WaitForSelect(errorCode);
-                return false;
-            });
+                // TODO: add config for disconnect timeout
+                // wait for tls_read_timeout and then exit the shutdown loop if it is not successful
+                this->shutdown_timeout_condition_.wait_for(shutdown_lock, std::chrono::milliseconds(timeout), [this] {
+                    int rc = SSL_shutdown(p_ssl_handle_);
+                    if (1 == rc) {
+                        return true;
+                    }
+                    int errorCode = SSL_get_error(p_ssl_handle_, rc);
+                    WaitForSelect(errorCode);
+                    return false;
+                });
 
-            SSL_free(p_ssl_handle_);
-            p_ssl_handle_ = nullptr;
-
+                SSL_free(p_ssl_handle_);
+                p_ssl_handle_ = nullptr;
+            }
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L && OPENSSL_VERSION_NUMBER < 0x10100000L
             ERR_remove_thread_state(NULL);
 #endif

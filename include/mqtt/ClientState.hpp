@@ -56,12 +56,12 @@ namespace awsiotsdk {
             util::Map<util::String, std::shared_ptr<Subscription>> subscription_map_;
 
             // Rule of 5 stuff
-            // Disable copying because class contains std::atomic<> types used for thread synchronization
+            // Disable copying and moving because class contains std::atomic<> types used for thread synchronization
             ClientState() = delete;                                  // Default constructor
             ClientState(const ClientState &) = delete;               // Delete Copy constructor
-            ClientState(ClientState &&) = default;                   // Move constructor
+            ClientState(ClientState &&) = delete;                    // Move constructor
             ClientState &operator=(const ClientState &) & = delete;  // Delete Copy assignment operator
-            ClientState &operator=(ClientState &&) & = default;      // Move assignment operator
+            ClientState &operator=(ClientState &&) & = delete;       // Move assignment operator
             ~ClientState() = default;                                // Default destructor
 
             ClientState(std::chrono::milliseconds mqtt_command_timeout);
