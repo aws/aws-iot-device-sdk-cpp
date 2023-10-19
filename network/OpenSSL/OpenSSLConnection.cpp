@@ -168,8 +168,16 @@ namespace awsiotsdk {
 
             if (!is_lib_initialized) {
                 OpenSSL_add_all_algorithms();
+/*
+* ERR_load_*(), ERR_func_error_string(), ERR_get_error_line(), ERR_get_error_line_data(), ERR_get_state()
+* OpenSSL now loads error strings automatically so these functions are not needed.
+* SEE FOR MORE:
+*	https://www.openssl.org/docs/manmaster/man7/migration_guide.html
+*/
+#if OPENSSL_VERSION_NUMBER <= 0x30000000L && !defined(LIBRESSL_VERSION_NUMBER)
                 ERR_load_BIO_strings();
                 ERR_load_crypto_strings();
+#endif
                 SSL_load_error_strings();
 #ifndef WIN32
                 signal(SIGPIPE, SIG_IGN);
