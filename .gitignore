@@ -486,3 +486,5 @@ cmake-build-debug/
 certs/*.key
 certs/*.pem
 certs/*.crt
+
+/docs
