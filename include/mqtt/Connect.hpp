@@ -59,21 +59,14 @@ namespace awsiotsdk {
             //std::unique_ptr<Utf8String> p_password_;   ///< MQTT Password
 
         public:
-            // Ensure Default and Copy Constructors and Copy assignment operator are deleted
-            // Use default move constructors and assignment operators
-            // Default virtual destructor
-            // Delete Default constructor
-            ConnectPacket() = delete;
-            // Delete Copy constructor
-            ConnectPacket(const ConnectPacket &) = delete;
-            // Default Move constructor
-            ConnectPacket(ConnectPacket &&) = default;
-            // Delete Copy assignment operator
-            ConnectPacket &operator=(const ConnectPacket &) & = delete;
-            // Default Move assignment operator
-            ConnectPacket &operator=(ConnectPacket &&) & = default;
-            // Default destructor
-            virtual ~ConnectPacket() = default;
+            // Ensure Default Constructor is deleted
+            // Disabling default, move and copy constructors to match Packet parent
+            ConnectPacket() = delete;                                   // Default constructor
+            ConnectPacket(const ConnectPacket &) = delete;              // Copy constructor
+            ConnectPacket(ConnectPacket &&) = delete;                   // Move constructor
+            ConnectPacket &operator=(const ConnectPacket &) & = delete; // Copy assignment operator
+            ConnectPacket &operator=(ConnectPacket &&) & = delete;      // Move assignment operator
+            virtual ~ConnectPacket() = default;                         // Default destructor
 
             /**
              * @brief Constructor
@@ -185,17 +178,12 @@ namespace awsiotsdk {
          */
         class DisconnectPacket : public Packet {
         public:
-            // Ensure Default move and copy constructors and assignment operators are created
-            // Default virtual destructor
-            DisconnectPacket(const DisconnectPacket &) = default;
-            // Default Move constructor
-            DisconnectPacket(DisconnectPacket &&) = default;
-            // Default Copy assignment operator
-            DisconnectPacket &operator=(const DisconnectPacket &) & = default;
-            // Default Move assignment operator
-            DisconnectPacket &operator=(DisconnectPacket &&) & = default;
-            // Default destructor
-            virtual ~DisconnectPacket() = default;
+            // Disabling default, move and copy constructors to match Packet parent
+            DisconnectPacket(const DisconnectPacket &) = delete;                // Copy constructor
+            DisconnectPacket(DisconnectPacket &&) = delete;                     // Move constructor
+            DisconnectPacket &operator=(const DisconnectPacket &) & = delete;   // Copy assignment operator
+            DisconnectPacket &operator=(DisconnectPacket &&) & = delete;        // Move assignment operator
+            virtual ~DisconnectPacket() = default;                              // Default destructor
 
             /**
              * @brief Constructor
@@ -218,18 +206,12 @@ namespace awsiotsdk {
 
         class PingreqPacket : public Packet {
         public:
-            // Ensure Default move and copy constructors and assignment operators are created
-            // Default virtual destructor
-            // Default Copy constructor
-            PingreqPacket(const PingreqPacket &) = default;
-            // Default Move constructor
-            PingreqPacket(PingreqPacket &&) = default;
-            // Default Copy assignment operator
-            PingreqPacket &operator=(const PingreqPacket &) & = default;
-            // Default Move assignment operator
-            PingreqPacket &operator=(PingreqPacket &&) & = default;
-            // Default destructor
-            virtual ~PingreqPacket() = default;
+            // Disabling default, move and copy constructors to match Packet parent
+            PingreqPacket(const PingreqPacket &) = delete;              // Copy constructor
+            PingreqPacket(PingreqPacket &&) = delete;                   // Move constructor
+            PingreqPacket &operator=(const PingreqPacket &) & = delete; // Copy assignment operator
+            PingreqPacket &operator=(PingreqPacket &&) & = delete;      // Move assignment operator
+            virtual ~PingreqPacket() = default;                         // Default destructor
 
             /**
              * @brief Constructor

@@ -70,7 +70,7 @@ else()
 			set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
 		endif()
 		find_package(OpenSSL REQUIRED)
-		#if using Mac OS, you can comment find_package(OpenSSL REQUIRED) and uncomment following two lines. Change the path to your openssl 1.0.2 directory.
+		#if using Mac OS, you can comment find_package(OpenSSL REQUIRED) and uncomment following two lines. Change the path to your openssl 1.1.0 directory.
 		#set(OPENSSL_INCLUDE_DIR "YOUR_OPENSSL_PATH/include")
 		#set(OPENSSL_LIBRARIES "YOUR_OPENSSL_PATH/lib/libssl.a;YOUR_OPENSSL_PATH/lib/libcrypto.a")
 	endif()

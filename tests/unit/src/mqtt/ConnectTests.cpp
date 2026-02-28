@@ -28,13 +28,14 @@
 
 #include "mqtt/Connect.hpp"
 #include "mqtt/ClientState.hpp"
+#include "mqtt/GreengrassMqttClient.hpp"
 #include "mqtt/NetworkRead.hpp"
 
 #define CONNECT_FIXED_HEADER_VAL 0x10
 #define DISCONNECT_FIXED_HEADER_VAL 0xE0
 
 #define KEEP_ALIVE_TIMEOUT_SECS 30
-
+#define MQTT_COMMAND_TIMEOUT_MSECS 20000
 #define MQTT_FIXED_HEADER_BYTE_PINGREQ 0xC0
 
 #define SDK_USAGE_METRICS_STRING "?SDK=CPP&Version="
@@ -54,6 +55,7 @@ namespace awsiotsdk {
                 static const util::String test_user_name_;
                 static const util::String test_topic_name_;
                 static const std::chrono::seconds keep_alive_timeout_;
+                static const std::chrono::milliseconds mqtt_command_timeout_;
 
                 ConnectDisconnectActionTester() {
                     p_core_state_ = mqtt::ClientState::Create(std::chrono::milliseconds(200));
@@ -69,6 +71,87 @@ namespace awsiotsdk {
             const util::String ConnectDisconnectActionTester::test_user_name_ = SDK_USAGE_METRICS_STRING;
             const std::chrono::seconds
                 ConnectDisconnectActionTester::keep_alive_timeout_ = std::chrono::seconds(KEEP_ALIVE_TIMEOUT_SECS);
+            const std::chrono::milliseconds ConnectDisconnectActionTester::mqtt_command_timeout_ =
+                std::chrono::milliseconds(MQTT_COMMAND_TIMEOUT_MSECS);
+
+            TEST_F(ConnectDisconnectActionTester, ConnectWithNullValues) {
+                EXPECT_NE(nullptr, p_network_connection_);
+                EXPECT_NE(nullptr, p_core_state_);
+
+                std::unique_ptr<Action> p_null_connect_action = mqtt::ConnectActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, p_null_connect_action);
+
+                std::unique_ptr<Action> p_connect_action = mqtt::ConnectActionAsync::Create(p_core_state_);
+                ResponseCode rc = p_connect_action->PerformAction(p_network_connection_, nullptr);
+                EXPECT_EQ(ResponseCode::NULL_VALUE_ERROR, rc);
+            }
+
+            TEST_F(ConnectDisconnectActionTester, ConnectPacketWithNullClientID) {
+                std::shared_ptr<mqtt::ConnectPacket> p_created_connect_packet = mqtt::ConnectPacket::Create(false,
+                                                                                                            mqtt::Version::MQTT_3_1_1,
+                                                                                                            keep_alive_timeout_,
+                                                                                                            nullptr,
+                                                                                                            nullptr,
+                                                                                                            nullptr,
+                                                                                                            nullptr);
+                EXPECT_EQ(nullptr, p_created_connect_packet);
+
+                mqtt::ConnectPacket p_constructed_connect_packet(false,
+                                                                 mqtt::Version::MQTT_3_1_1,
+                                                                 keep_alive_timeout_,
+                                                                 nullptr,
+                                                                 nullptr,
+                                                                 nullptr,
+                                                                 nullptr);
+                EXPECT_NE((unsigned int) 0, p_constructed_connect_packet.ToString().length());
+            }
+
+            TEST_F(ConnectDisconnectActionTester, ConnectPacketWithKeepAliveOverLimit) {
+                std::shared_ptr<mqtt::ConnectPacket> p_connect_packet = mqtt::ConnectPacket::Create(true,
+                                                                                                    mqtt::Version::MQTT_3_1_1,
+                                                                                                    std::chrono::seconds(
+                                                                                                        UINT16_MAX + 2),
+                                                                                                    Utf8String::Create(
+                                                                                                        test_client_id_),
+                                                                                                    nullptr,
+                                                                                                    nullptr,
+                                                                                                    nullptr);
+
+                EXPECT_EQ(nullptr, p_connect_packet);
+
+                mqtt::ConnectPacket p_constructed_connect_packet(true,
+                                                                 mqtt::Version::MQTT_3_1_1,
+                                                                 std::chrono::seconds(
+                                                                     UINT16_MAX + 1),
+                                                                 Utf8String::Create(
+                                                                     test_client_id_),
+                                                                 nullptr,
+                                                                 nullptr,
+                                                                 nullptr);
+                EXPECT_NE((unsigned int) 0, p_constructed_connect_packet.ToString().length());
+            }
+
+            TEST_F(ConnectDisconnectActionTester, DisconnectActionAsyncWithNullClientState) {
+                std::unique_ptr<Action> p_disconnect_action_async = mqtt::DisconnectActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, p_disconnect_action_async);
+            }
+
+            TEST_F(ConnectDisconnectActionTester, DisconnectActionAsyncWithDisconnectedNetwork) {
+                EXPECT_NE(nullptr, p_network_connection_);
+                EXPECT_NE(nullptr, p_core_state_);
+
+                std::unique_ptr<Action> p_disconnect_action_async = mqtt::DisconnectActionAsync::Create(p_core_state_);
+                EXPECT_NE(nullptr, p_disconnect_action_async);
+
+                p_core_state_->SetConnected(false);
+                ResponseCode rc = p_disconnect_action_async->PerformAction(p_network_connection_, nullptr);
+                EXPECT_EQ(ResponseCode::NETWORK_DISCONNECTED_ERROR, rc);
+            }
+
+            TEST_F(ConnectDisconnectActionTester, KeepaliveActionRunnerWithNullClientState) {
+                std::unique_ptr<Action> p_keepalive_action_runner = mqtt::KeepaliveActionRunner::Create(nullptr);
+                EXPECT_EQ(nullptr, p_keepalive_action_runner);
+            }
 
             TEST_F(ConnectDisconnectActionTester, ConnectPacketCreateWithWrongKeepalive) {
                 std::shared_ptr<mqtt::ConnectPacket> p_connect_packet = mqtt::ConnectPacket::Create(true,

@@ -20,19 +20,22 @@
  */
 
 #include "util/threading/ThreadTask.hpp"
+#include "util/logging/LogMacros.hpp"
+#define THREAD_TASK_LOG_TAG "[Thread Task]"
 
 namespace awsiotsdk {
     namespace util {
         namespace Threading {
             ThreadTask::ThreadTask(DestructorAction destructor_action, std::shared_ptr<std::atomic_bool> sync_point,
                                    util::String thread_descriptor)
-                : destructor_action_(destructor_action), m_continue_(sync_point),
-                  thread_descriptor_(thread_descriptor) {
+                : destructor_action_(destructor_action), m_continue_(std::move(sync_point)),
+                  thread_descriptor_(std::move(thread_descriptor)) {
+                AWS_LOGSTREAM_DEBUG(THREAD_TASK_LOG_TAG, "Creating Thread " << thread_descriptor_ << "!!");
             }
 
             ThreadTask::~ThreadTask() {
                 Stop();
-                std::cout << "Exiting Thread " << thread_descriptor_ << "!!" << std::endl;
+                AWS_LOGSTREAM_DEBUG(THREAD_TASK_LOG_TAG, "Exiting Thread " << thread_descriptor_ << "!!");
                 if (m_thread_.joinable()) {
                     if (destructor_action_ == DestructorAction::JOIN) {
                         m_thread_.join();
@@ -40,7 +43,7 @@ namespace awsiotsdk {
                         m_thread_.detach();
                     }
                 }
-                std::cout << "Successfully Exited Thread " << thread_descriptor_ << "!!" << std::endl;
+                AWS_LOGSTREAM_DEBUG(THREAD_TASK_LOG_TAG, "Successfully Exited Thread " << thread_descriptor_ << "!!");
             }
 
             void ThreadTask::Stop() {

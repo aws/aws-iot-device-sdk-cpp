@@ -44,21 +44,16 @@ namespace awsiotsdk {
 
         public:
             DiscoveryResponse discovery_response_;              ///< Response received in Discover request
-            // Ensure Default and Copy Constructors and Copy assignment operator are deleted
-            // Use default move constructors and assignment operators
-            // Default virtual destructor
+
+            // Rule of 5 stuff
+            // Disable copying and moving because class contains DiscoveryResponse
             // Delete Default constructor
-            DiscoverRequestData() = delete;
-            // Delete Copy constructor
-            DiscoverRequestData(const DiscoverRequestData &) = delete;
-            // Default Move constructor
-            DiscoverRequestData(DiscoverRequestData &&) = default;
-            // Delete Copy assignment operator
-            DiscoverRequestData &operator=(const DiscoverRequestData &) & = delete;
-            // Default Move assignment operator
-            DiscoverRequestData &operator=(DiscoverRequestData &&) & = default;
-            // Default destructor
-            virtual ~DiscoverRequestData() = default;
+            DiscoverRequestData() = delete;                                         // Default constructor
+            DiscoverRequestData(const DiscoverRequestData &) = delete;              // Copy constructor
+            DiscoverRequestData(DiscoverRequestData &&) = delete;                   // Move constructor
+            DiscoverRequestData &operator=(const DiscoverRequestData &) & = delete; // Copy assignment operator
+            DiscoverRequestData &operator=(DiscoverRequestData &&) & = delete;      // Move assignment operator
+            virtual ~DiscoverRequestData() = default;                               // Default destructor
 
             /**
              * @brief Constructor

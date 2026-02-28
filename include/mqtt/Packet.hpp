@@ -118,6 +118,15 @@ namespace awsiotsdk {
             std::atomic_uint_fast16_t packet_id_;  ///< Message sequence identifier.  Handled automatically by the MQTT client
 
         public:
+            // Rule of 5 stuff
+            // Disable copying and moving because class contains std::atomic<> types used for thread synchronization
+            Packet() = default;                             // Default constructor
+            Packet(const Packet &) = delete;                // Copy constructor
+            Packet(Packet &&) = delete;                     // Move constructor
+            Packet &operator=(const Packet &) & = delete;   // Copy assignment operator
+            Packet &operator=(Packet &&) & = delete;        // Move assignment operator
+            virtual ~Packet() = default;                    // Default destructor
+
             uint16_t GetActionId() { return (uint16_t) packet_id_.load(std::memory_order_relaxed); }
             void SetActionId(uint16_t action_id) { packet_id_.store(action_id, std::memory_order_relaxed); }
             bool isPacketDataValid();
@@ -136,7 +145,6 @@ namespace awsiotsdk {
                                                                         size_t &extract_index);
 
             virtual util::String ToString() = 0;
-            virtual ~Packet() {}
         };
     }
 }

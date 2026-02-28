@@ -27,6 +27,7 @@
 #include "mqtt/Publish.hpp"
 #include "mqtt/ClientState.hpp"
 #include "mqtt/NetworkRead.hpp"
+#include "mqtt/GreengrassMqttClient.hpp"
 
 #define PUBLISH_QOS0_FIXED_HEADER_RETAINED_FALSE_VAL 0x30
 #define PUBLISH_QOS0_FIXED_HEADER_RETAINED_TRUE_VAL 0x31
@@ -70,6 +71,22 @@ namespace awsiotsdk {
                 EXPECT_EQ(test_packet_id_, action_id);
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 callback_received_ = true;
+            }
+
+            TEST_F(PublishActionTester, PublishNullValueChecks) {
+                std::shared_ptr<mqtt::PublishPacket> p_publish_packet = mqtt::PublishPacket::Create(
+                    nullptr, false, false, mqtt::QoS::QOS1, test_payload_);
+                EXPECT_EQ(p_publish_packet, nullptr);
+
+                util::Vector<unsigned char> buf;
+                p_publish_packet = mqtt::PublishPacket::Create(buf, false, false, mqtt::QoS::QOS1);
+                EXPECT_EQ(p_publish_packet, nullptr);
+
+                std::unique_ptr<Action> publish_action = mqtt::PublishActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, publish_action);
+
+                std::unique_ptr<Action> puback_action = mqtt::PubackActionAsync::Create(nullptr);
+                EXPECT_EQ(nullptr, puback_action);
             }
 
             TEST_F(PublishActionTester, PubackActiontest) {
@@ -371,6 +388,26 @@ namespace awsiotsdk {
                 EXPECT_EQ(ResponseCode::SUCCESS, rc);
                 EXPECT_TRUE(p_network_connection_->was_read_called_);
                 EXPECT_TRUE(callback_received_);
+            }
+
+            TEST_F(PublishActionTester, ClientPublishErrorTest) {
+                EXPECT_NE(nullptr, p_network_connection_);
+                EXPECT_NE(nullptr, p_core_state_);
+
+                std::shared_ptr<GreengrassMqttClient> p_iot_greengrass_client =
+                    std::shared_ptr<GreengrassMqttClient>(GreengrassMqttClient::Create(p_network_connection_,
+                                                                                       std::chrono::milliseconds(2000)));
+                EXPECT_NE(nullptr, p_iot_greengrass_client);
+
+                ResponseCode
+                    rc = p_iot_greengrass_client->Publish(nullptr, false, false, mqtt::QoS::QOS0, test_payload_,
+                                                          std::chrono::milliseconds(20000));
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
+
+                uint16_t packet_id_out = 10;
+                rc = p_iot_greengrass_client->PublishAsync(nullptr, false, false, mqtt::QoS::QOS0, test_payload_,
+                                                           nullptr, packet_id_out);
+                EXPECT_EQ(ResponseCode::MQTT_INVALID_DATA_ERROR, rc);
             }
         }
     }
